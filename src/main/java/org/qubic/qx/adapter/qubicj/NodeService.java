@@ -1,4 +1,4 @@
-package org.qubic.qx.adapter.computor;
+package org.qubic.qx.adapter.qubicj;
 
 import io.github.resilience4j.bulkhead.Bulkhead;
 import io.github.resilience4j.bulkhead.BulkheadConfig;

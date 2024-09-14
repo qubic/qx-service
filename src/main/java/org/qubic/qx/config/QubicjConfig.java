@@ -6,7 +6,7 @@ import org.mio.qubic.computor.network.*;
 import org.mio.qubic.computor.properties.ComputorProperties;
 import org.mio.qubic.computor.properties.NetworkProperties;
 import org.mio.qubic.computor.service.ComputorService;
-import org.qubic.qx.adapter.computor.NodeService;
+import org.qubic.qx.adapter.qubicj.NodeService;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

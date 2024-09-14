@@ -6,7 +6,7 @@ import org.mio.qubic.computor.crypto.IdentityUtil;
 import org.mio.qubic.computor.domain.qx.Qx;
 import org.mio.qubic.computor.domain.std.SignedTransaction;
 import org.mio.qubic.computor.domain.std.Transaction;
-import org.qubic.qx.adapter.computor.NodeService;
+import org.qubic.qx.adapter.qubicj.NodeService;
 import org.qubic.qx.repository.TickRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
