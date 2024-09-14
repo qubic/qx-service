@@ -22,13 +22,15 @@ public class QxServiceApplication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        final long syncToTick = getSyncToTickValue(args.getOptionValues("sync-to-tick"));
+        final long syncToTick = getSyncToTickValue(args.getOptionValues("sync"));
         if (syncToTick > 0) {
-            log.info("Syncing to target tick [{}].", syncToTick);
+            log.info("Starting. Syncing to target tick [{}].", syncToTick);
             tickSyncJobRunner.loopUntilTargetTick(syncToTick);
-        } else {
-            log.info("Starting sync job...");
+        } else if (args.containsOption("sync")) {
+            log.info("Starting. Running sync job...");
             tickSyncJobRunner.loopForever();
+        } else {
+            log.info("Starting without sync job...");
         }
     }
 
