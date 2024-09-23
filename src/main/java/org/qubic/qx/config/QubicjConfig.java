@@ -1,11 +1,11 @@
 package org.qubic.qx.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.mio.qubic.computor.crypto.IdentityUtil;
-import org.mio.qubic.computor.network.*;
-import org.mio.qubic.computor.properties.ComputorProperties;
-import org.mio.qubic.computor.properties.NetworkProperties;
-import org.mio.qubic.computor.service.ComputorService;
+import at.qubic.api.crypto.IdentityUtil;
+import at.qubic.api.network.*;
+import at.qubic.api.properties.ComputorProperties;
+import at.qubic.api.properties.NetworkProperties;
+import at.qubic.api.service.ComputorService;
 import org.qubic.qx.adapter.qubicj.NodeService;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;

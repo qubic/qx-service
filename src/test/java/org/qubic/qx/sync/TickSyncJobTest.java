@@ -1,9 +1,9 @@
 package org.qubic.qx.sync;
 
 import org.junit.jupiter.api.Test;
-import org.mio.qubic.computor.crypto.IdentityUtil;
-import org.mio.qubic.computor.domain.std.SignedTransaction;
-import org.mio.qubic.computor.domain.std.Transaction;
+import at.qubic.api.crypto.IdentityUtil;
+import at.qubic.api.domain.std.SignedTransaction;
+import at.qubic.api.domain.std.Transaction;
 import org.qubic.qx.adapter.qubicj.NodeService;
 import org.qubic.qx.repository.TickRepository;
 import reactor.core.publisher.Flux;

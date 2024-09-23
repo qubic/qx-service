@@ -5,9 +5,9 @@
    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
   <logger name="ch.qos.logback" level="WARN"/>
-  <logger name="org.mio.qubic" level="WARN"/>
-  <logger name="org.mio.qubic.node" level="WARN"/>
-  <logger name="org.mio.qubic.tcp" level="INFO"/>
+  <logger name="at.qubic.api.computor" level="WARN"/>
+  <logger name="at.qubic.api.computor.node" level="WARN"/>
+  <logger name="at.qubic.api.computor.tcp" level="INFO"/>
   <logger name="org.springframework" level="WARN"/>
   <logger name="org.qubic" level="DEBUG"/>
 

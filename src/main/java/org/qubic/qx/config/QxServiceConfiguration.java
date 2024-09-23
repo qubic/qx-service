@@ -1,6 +1,6 @@
 package org.qubic.qx.config;
 
-import org.mio.qubic.computor.crypto.IdentityUtil;
+import at.qubic.api.crypto.IdentityUtil;
 import org.qubic.qx.adapter.qubicj.NodeService;
 import org.qubic.qx.adapter.il.qx.QxApiClient;
 import org.qubic.qx.api.mapping.QxMapper;
