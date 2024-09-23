@@ -1,5 +1,6 @@
 package org.qubic.qx.config;
 
+import at.qubic.api.crypto.NoCrypto;
 import lombok.extern.slf4j.Slf4j;
 import at.qubic.api.crypto.IdentityUtil;
 import at.qubic.api.network.*;
@@ -56,7 +57,7 @@ public class QubicjConfig {
 
     @Bean
     IdentityUtil identityUtil() {
-        return new IdentityUtil();
+        return new IdentityUtil(true, new NoCrypto());
     }
 
     @Bean
