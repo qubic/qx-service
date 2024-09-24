@@ -12,8 +12,8 @@ public class TickRepository {
 
     public static final String KEY_TICK_SYNCED_LATEST = "tick:synced:latest"; // key value
     public static final String KEY_TICKS_PROCESSED = "ticks:processed"; // set
-    public static final String KEY_TICK_TRANSACTIONS = "tick:%d:transactions"; // list
-    // TODO public static final String KEY_TICKS_RELEVANT -> set with tick numbers that have qx transactions
+    public static final String KEY_TICKS_QX = "ticks:qx"; // set
+    public static final String KEY_TICK_TRANSACTIONS = "tick:%d:txs"; // list
 
     private final ReactiveStringRedisTemplate redisStringTemplate;
 
@@ -33,6 +33,10 @@ public class TickRepository {
         return addToSet(KEY_TICKS_PROCESSED, String.valueOf(tickNumber));
     }
 
+    public Mono<Long> addToQxTicks(long tickNumber) {
+        return addToSet(KEY_TICKS_QX, String.valueOf(tickNumber));
+    }
+
     public Mono<Boolean> isProcessedTick(long tickNumber) {
         return redisStringTemplate.opsForSet()
                 .isMember(KEY_TICKS_PROCESSED, String.valueOf(tickNumber));
@@ -42,15 +46,29 @@ public class TickRepository {
         return redisStringTemplate
                 .opsForSet()
                 .add(key, value)
-                .doOnNext(count -> log.info("Added [{}] to set [{}].", value, key));
+                .doOnNext(count -> {
+                    if (count > 0) {
+                        log.info("Added [{}] to set [{}].", value, key);
+                    } else {
+                        log.debug("[{}] is already member of set [{}].", value, key);
+                    }
+                });
     }
 
     public Mono<Long> setTickTransactions(long tickNumber, List<String> transactionHashes) {
         return redisStringTemplate.opsForList()
                 .rightPushAll(String.format(KEY_TICK_TRANSACTIONS, tickNumber), transactionHashes)
-                .doOnSuccess(success -> log.debug("Set transactions for tick [{}]: {}", tickNumber, transactionHashes))
+                .doOnSuccess(success -> log.info("Added transactions for tick [{}]: {}", tickNumber, transactionHashes))
                 .doOnError(t -> log.error("Error setting transactions {} for tick [{}]: {}", transactionHashes, tickNumber, t.toString()));
     }
+
+    public Mono<Long> addTickTransaction(long tickNumber, String transactionHash) {
+        return redisStringTemplate.opsForList()
+                .rightPush(String.format(KEY_TICK_TRANSACTIONS, tickNumber), transactionHash)
+                .doOnSuccess(success -> log.info("Added transaction for tick [{}]: [{}]", tickNumber, transactionHash))
+                .doOnError(t -> log.error("Error adding transaction [{}] for tick [{}]: {}", transactionHash, tickNumber, t.toString()));
+    }
+
 
     public Flux<String> getTickTransactions(long tickNumber) {
         return redisStringTemplate.opsForList()

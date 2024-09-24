@@ -1,23 +1,17 @@
 package org.qubic.qx.repository;
 
-import lombok.SneakyThrows;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.qubic.qx.AbstractRedisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import redis.embedded.RedisServer;
 
-import java.io.IOException;
 import java.util.List;
 
 @SpringBootTest(properties = {"spring.data.redis.port=16379"})
-class TickRepositorySpringIT {
-
-    private static final RedisServer REDIS_SERVER = createRedis();
+class TickRepositorySpringIT extends AbstractRedisTest {
 
     @Autowired
     private TickRepository tickRepository;
@@ -87,8 +81,25 @@ class TickRepositorySpringIT {
                 .expectNext(6L)
                 .verifyComplete();
 
-        StepVerifier.create(redisStringTemplate.opsForList().size("tick:123:transactions"))
+        StepVerifier.create(redisStringTemplate.opsForList().size("tick:123:txs"))
                 .expectNext(6L)
+                .verifyComplete();
+
+    }
+
+    @Test
+    void addTickTransaction() {
+
+        StepVerifier.create(tickRepository.addTickTransaction(234, "a"))
+                .expectNext(1L)
+                .verifyComplete();
+
+        StepVerifier.create(tickRepository.addTickTransaction(234, "b"))
+                .expectNext(2L)
+                .verifyComplete();
+
+        StepVerifier.create(tickRepository.addTickTransaction(234, "c"))
+                .expectNext(3L)
                 .verifyComplete();
 
     }
@@ -109,23 +120,6 @@ class TickRepositorySpringIT {
 
         StepVerifier.create(tickRepository.getTickTransactions(666L))
                 .verifyComplete();
-    }
-
-    @BeforeAll
-    public static void startRedis() throws IOException {
-        REDIS_SERVER.start();
-    }
-
-    @AfterAll
-    public static void stopRedis() throws IOException {
-        REDIS_SERVER.stop();
-    }
-
-    @SneakyThrows
-    private static RedisServer createRedis() {
-        return RedisServer.newRedisServer()
-                .port(16379)
-                .build();
     }
 
 }

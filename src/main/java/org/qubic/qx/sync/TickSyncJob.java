@@ -2,31 +2,28 @@ package org.qubic.qx.sync;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import at.qubic.api.crypto.IdentityUtil;
-import at.qubic.api.domain.qx.Qx;
-import at.qubic.api.domain.std.SignedTransaction;
-import at.qubic.api.domain.std.Transaction;
 import org.qubic.qx.adapter.qubicj.NodeService;
+import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
+import org.qubic.qx.repository.TransactionRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 public class TickSyncJob {
 
     private final TickRepository tickRepository;
+    private final TransactionRepository transactionRepository;
     private final NodeService nodeService;
     private long syncFromTick;
     private long syncToTick;
-    private final byte[] qxPublicKey;
 
-    public TickSyncJob(TickRepository tickRepository, NodeService nodeService, IdentityUtil identityUtil) {
+    public TickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository, NodeService nodeService) {
         this.tickRepository = tickRepository;
+        this.transactionRepository = transactionRepository;
         this.nodeService = nodeService;
-        this.qxPublicKey = identityUtil.getPublicKeyFromIdentity(Qx.ADDRESS);
     }
 
     public Flux<Long> sync(long targetTick) {
@@ -38,7 +35,7 @@ public class TickSyncJob {
                                 : latestStoredTick))
                 // start from latest stored or lowest available tick
                 .doOnNext(tick -> this.syncFromTick = tick)
-                .doOnNext(tick -> log.info("Syncing from tick [{}].", this.syncFromTick))
+                .doOnNext(tick -> log.debug("Syncing from tick [{}].", this.syncFromTick))
 //                .then(getCurrentTick())
                 .flatMapMany(fromTick -> {
                     this.syncToTick = Math.max(targetTick, syncFromTick);
@@ -65,50 +62,41 @@ public class TickSyncJob {
 
     private Mono<Long> syncTick(Long tickNumber) {
         return tickRepository.isProcessedTick(tickNumber)
-                .doOnNext(processed -> log.info("Processing tick [{}]. Already stored: [{}].", tickNumber, processed))
                 .flatMap(alreadyProcessed -> alreadyProcessed
-                        ? Mono.just(tickNumber)
+                        ? Mono.just(tickNumber).doOnNext(n -> log.debug("Skipping already stored tick [{}].", n))
                         : queryTickTransactions(tickNumber));
     }
 
     private Mono<Long> queryTickTransactions(Long tickNumber) {
-        return nodeService.getTickTransactions(tickNumber)
-                .doFirst(() -> log.info("Tick [{}]: query node.", tickNumber))
-                .filter(this::isRelevantTransaction)
-                .map(this::processTransaction) // store transaction
+        return nodeService.getQxTransactions(tickNumber)
+                .doFirst(() -> log.debug("Query node for tick [{}].", tickNumber))
+                .flatMap(this::processTransaction)
                 .collectList()
-                .flatMap(txs -> storeTick(tickNumber, txs))
-                .map(l -> tickNumber)
+                .flatMap(list -> processTickTransactions(tickNumber, list))
+                .map(x -> tickNumber)
                 .doOnNext(tno -> log.debug("Synced tick [{}].", tno));
     }
 
-    private Mono<Long> storeTick(Long tickNumber, List<SignedTransaction> txs) {
+    private Mono<Transaction> processTransaction(Transaction transaction) {
+        return Mono.just(transaction)
+                .doOnNext(tx -> log.info("Processing transaction [{}] from tick [{}] with input type [{}].",
+                        tx.transactionHash(), tx.tick(), tx.inputType()))
+                .flatMap(transactionRepository::putTransaction)
+                //.flatMap(tx -> tickRepository.addTickTransaction(tx.tick(), tx.transactionHash()))
+                .map(b -> transaction);
+
+    }
+
+    private Mono<Long> processTickTransactions(Long tickNumber, List<Transaction> txs) {
+        Mono<Long> storeTickNumberMono = tickRepository.addToProcessedTicks(tickNumber);
         if (CollectionUtils.isEmpty(txs)) {
-            return tickRepository.addToProcessedTicks(tickNumber)
-                    .then(Mono.just(0L));
+            return storeTickNumberMono.
+                    then(Mono.just(0L));
         } else {
-            return tickRepository.addToProcessedTicks(tickNumber)
-                    .then(tickRepository.setTickTransactions(tickNumber, txs.stream().map(SignedTransaction::getTransactionHash).toList())
-                    .doOnNext(count -> log.info("Stored [{}] transactions for tick [{}].", count, tickNumber)));
+            return storeTickNumberMono
+                    .then(tickRepository.addToQxTicks(tickNumber))
+                    .then(tickRepository.setTickTransactions(tickNumber, txs.stream().map(Transaction::transactionHash).toList()));
         }
-    }
-
-    private SignedTransaction processTransaction(SignedTransaction signedTransaction) {
-        Transaction transaction = signedTransaction.getTransaction();
-        log.info("Processing qx transaction [{}] in tick [{}] with input type [{}].",
-                signedTransaction.getTransactionHash(),
-                transaction.getTick(),
-                transaction.getInputType());
-        return signedTransaction;
-    }
-
-    private boolean isRelevantTransaction(SignedTransaction stx) {
-        Transaction transaction = stx.getTransaction();
-        return Objects.deepEquals(transaction.getDestinationPublicKey(), qxPublicKey)
-                && (transaction.getInputType() == Qx.Procedure.QX_ADD_ASK_ORDER.getCode()
-                || transaction.getInputType() == Qx.Procedure.QX_REMOVE_ASK_ORDER.getCode()
-                || transaction.getInputType() == Qx.Procedure.QX_ADD_BID_ORDER.getCode()
-                || transaction.getInputType() == Qx.Procedure.QX_REMOVE_BID_ORDER.getCode());
     }
 
     private Mono<Long> getLowestAvailableTick() {

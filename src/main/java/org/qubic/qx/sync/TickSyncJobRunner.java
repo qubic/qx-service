@@ -48,7 +48,7 @@ public class TickSyncJobRunner {
                 .retryWhen(Retry.indefinitely())
                 .doOnComplete(() -> log.info("Sync to [{}] completed.", targetTick))
                 .doOnError(t -> log.error("Error syncing to tick [{}].", targetTick, t))
-                .doOnTerminate(() -> log.info("Sync terminated. Next sync run at [{}].", Instant.now().plus(sleepDuration)))
+                .doOnTerminate(() -> log.info("Sync run finished. Next run at [{}].", Instant.now().plus(sleepDuration)))
                 .repeatWhen(repeat -> repeat.delayElements(sleepDuration))
                 .subscribe();
 
