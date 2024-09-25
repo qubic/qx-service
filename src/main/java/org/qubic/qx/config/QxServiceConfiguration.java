@@ -1,8 +1,8 @@
 package org.qubic.qx.config;
 
-import org.qubic.qx.adapter.il.qx.QxApiClient;
+import org.qubic.qx.adapter.il.qx.QxIntegrationApiClient;
 import org.qubic.qx.adapter.qubicj.NodeService;
-import org.qubic.qx.api.mapping.QxMapper;
+import org.qubic.qx.adapter.il.qx.mapping.QxIntegrationMapper;
 import org.qubic.qx.api.service.QxService;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
@@ -29,14 +29,14 @@ public class QxServiceConfiguration {
     }
 
     @Bean
-    QxApiClient qxApiClient(@Value("${il.base-url}") String baseUrl) {
+    QxIntegrationApiClient qxApiClient(@Value("${il.base-url}") String baseUrl, QxIntegrationMapper qxIntegrationMapper) {
         WebClient webClient = WebClient.builder().baseUrl(baseUrl).build();
-        return new QxApiClient(webClient);
+        return new QxIntegrationApiClient(webClient, qxIntegrationMapper);
     }
 
     @Bean
-    QxService qxService(QxApiClient qxApiClient, QxMapper qxMapper) {
-        return new QxService(qxApiClient, qxMapper);
+    QxService qxService(QxIntegrationApiClient qxApiClient) {
+        return new QxService(qxApiClient);
     }
 
 }

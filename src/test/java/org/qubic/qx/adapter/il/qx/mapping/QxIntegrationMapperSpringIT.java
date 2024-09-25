@@ -1,4 +1,4 @@
-package org.qubic.qx.api.mapping;
+package org.qubic.qx.adapter.il.qx.mapping;
 
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.adapter.il.qx.domain.QxAssetOrder;
@@ -15,10 +15,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
-class QxMapperSpringIT {
+class QxIntegrationMapperSpringIT {
 
     @Autowired
-    private QxMapper qxMapper;
+    private QxIntegrationMapper qxMapper;
 
     @Test
     void mapFees() {
