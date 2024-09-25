@@ -21,7 +21,8 @@ public class NodeService {
 
     public static final byte[] QX_PUBLIC_KEY = new byte[] {
             1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
 
     private final ComputorService computorService;
     private final TransactionMapper transactionMapper;
@@ -57,6 +58,7 @@ public class NodeService {
                 .retryWhen(Retry.backoff(5, Duration.ofSeconds(1)))
                 .doOnError(t -> log.error("Failed to get transactions for tick: [{}].", tick))
                 .filter(this::isRelevantTransaction)
+                .doOnNext(tx -> log.debug("Qx transaction: {}", tx))
                 .map(transactionMapper::map)
                 ;
     }
@@ -68,8 +70,8 @@ public class NodeService {
                 || transaction.getInputType() == Qx.Procedure.QX_REMOVE_ASK_ORDER.getCode()
                 || transaction.getInputType() == Qx.Procedure.QX_ADD_BID_ORDER.getCode()
                 || transaction.getInputType() == Qx.Procedure.QX_REMOVE_BID_ORDER.getCode()
-                || transaction.getInputType() == Qx.Procedure.QX_TRANSFER_SHARE.getCode() // TODO support for fee calculation and display
-                || transaction.getInputType() == Qx.Procedure.QX_ISSUE_ASSET.getCode() // TODO support for fee calculation and display
+                || transaction.getInputType() == Qx.Procedure.QX_TRANSFER_SHARE.getCode()
+                || transaction.getInputType() == Qx.Procedure.QX_ISSUE_ASSET.getCode()
         );
     }
 

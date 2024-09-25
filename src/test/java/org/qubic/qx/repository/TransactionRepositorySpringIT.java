@@ -2,6 +2,7 @@ package org.qubic.qx.repository;
 
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.AbstractRedisTest;
+import org.qubic.qx.domain.QxAssetOrderData;
 import org.qubic.qx.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,20 +15,32 @@ import reactor.test.StepVerifier;
 public class TransactionRepositorySpringIT extends AbstractRedisTest {
 
     private static final String SERIALIZED_TX = """
-            {"transactionHash":"transaction-hash","sourcePublicId":"source-id","destinationPublicId":"target-id","amount":1,"tick":2,"inputType":3,"inputSize":4,"extraData":"01020304"}""";
-    private static final Transaction TX = new Transaction("transaction-hash", "source-id", "target-id", 1, 2, 3, 4, "01020304");
+            {"transactionHash":"transaction-hash","sourcePublicId":"source-id","destinationPublicId":"target-id",\
+            "amount":1,"tick":2,"inputType":3,"inputSize":4,"extraData":{"@class":".%s","issuer":"issuer","name":"name","price":42,\
+            "numberOfShares":123}}""".formatted(QxAssetOrderData.class.getSimpleName());
 
+    private static final QxAssetOrderData EXTRA_DATA = new QxAssetOrderData(
+            "issuer",
+            "name",
+            42L,
+            123L);
 
-    private final TransactionRepository transactionRepository;
-    private final ReactiveRedisTemplate<String, Transaction> redisTransactionOperations;
-    private final ReactiveStringRedisTemplate redisStringTemplate;
+    private static final Transaction TX = new Transaction(
+            "transaction-hash",
+            "source-id",
+            "target-id",
+            1,
+            2,
+            3,
+            4,
+             EXTRA_DATA);
 
     @Autowired
-    public TransactionRepositorySpringIT(TransactionRepository transactionRepository, ReactiveRedisTemplate<String, Transaction> redisTransactionOperations, ReactiveStringRedisTemplate redisStringTemplate) {
-        this.transactionRepository = transactionRepository;
-        this.redisTransactionOperations = redisTransactionOperations;
-        this.redisStringTemplate = redisStringTemplate;
-    }
+    private TransactionRepository transactionRepository;
+    @Autowired
+    private ReactiveRedisTemplate<String, Transaction> redisTransactionOperations;
+    @Autowired
+    private ReactiveStringRedisTemplate redisStringTemplate;
 
     @Test
     void putTransaction() {

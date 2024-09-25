@@ -8,5 +8,5 @@ public record Transaction(
         long tick,
         int inputType, // operation type
         int inputSize, // extra data size
-        String extraData // hex
+        ExtraData extraData // hex
 ) { }
