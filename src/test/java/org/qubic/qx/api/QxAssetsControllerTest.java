@@ -1,0 +1,35 @@
+package org.qubic.qx.api;
+
+import org.junit.jupiter.api.Test;
+import org.qubic.qx.assets.Asset;
+import org.qubic.qx.assets.Assets;
+import org.springframework.test.web.reactive.server.WebTestClient;
+
+class QxAssetsControllerTest {
+
+    private final Assets assets = new Assets();
+    private final QxAssetsController controller = new QxAssetsController(assets);
+
+    private final WebTestClient client = WebTestClient
+            .bindToController(controller)
+            .configureClient()
+            .baseUrl("/v1/qx")
+            .build();
+
+    @Test
+    void getAssets() {
+        Asset a = new Asset("issuerA", "nameA");
+        Asset b = new Asset("issuerB", "nameA");
+        Asset c = new Asset("issuerB", "nameB");
+        assets.add(a);
+        assets.add(b);
+        assets.add(c);
+
+        client.get().uri("/assets")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Asset.class)
+                .contains(a, b, c);
+    }
+
+}
