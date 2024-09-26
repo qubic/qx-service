@@ -29,14 +29,14 @@ import java.util.function.Consumer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
-class QxIntegrationApiClientIT {
+class QxIntegrationApiServiceIT {
 
     private static final String TEST_ID = "TESTRAIJSNPOJAKARTQNQVRROKWBKLHXIBEYMYKVIGTWYXLDKFMEAFMDRJIC";
     private static final String CFB_ISSUER = "CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL";
 
     private final WebClient webClient = createWebClient("http://localhost:1234");
     private final QxIntegrationMapper qxMapper = Mappers.getMapper(QxIntegrationMapper.class);
-    private final QxIntegrationApiClient apiClient = new QxIntegrationApiClient(webClient, qxMapper);
+    private final QxIntegrationApiService apiClient = new QxIntegrationApiService(webClient, qxMapper);
 
     private final MockWebServer integrationLayer = new MockWebServer();
 

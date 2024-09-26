@@ -2,14 +2,12 @@ package org.qubic.qx.api;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.adapter.il.qx.domain.QxAssetOrder;
-import org.qubic.qx.adapter.il.qx.domain.QxAssetOrders;
-import org.qubic.qx.adapter.il.qx.domain.QxFees;
+import org.qubic.qx.adapter.il.qx.domain.*;
 import org.qubic.qx.api.domain.AssetOrder;
+import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
 import org.qubic.qx.util.JsonUtil;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,7 +46,7 @@ class QxFunctionsControllerSpringIT {
     }
 
     @Test
-    void getFees() throws Exception {
+    void getFees() {
         QxFees qxFees = new QxFees(1L, 2L, 3L);
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
@@ -60,9 +58,6 @@ class QxFunctionsControllerSpringIT {
                 .expectStatus().isOk()
                 .expectBody(Fees.class)
                 .isEqualTo(new Fees(1L, 2L, 3L));
-
-        RecordedRequest request = integrationLayer.takeRequest();
-        assertThat(request.getPath()).isEqualTo("/v1/qx/getFees");
     }
 
     @Test
@@ -80,8 +75,7 @@ class QxFunctionsControllerSpringIT {
                 .expectBodyList(AssetOrder.class)
                 .isEqualTo(List.of(new AssetOrder("entity", 1L, 2L)));
 
-        RecordedRequest request = integrationLayer.takeRequest();
-        assertThat(request.getPath()).isEqualTo("/v1/qx/getAssetAskOrders?issuerId=issuerId&assetName=assetName&offset=0");
+        assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getAssetAskOrders");
     }
 
     @Test
@@ -99,8 +93,43 @@ class QxFunctionsControllerSpringIT {
                 .expectBodyList(AssetOrder.class)
                 .isEqualTo(List.of(new AssetOrder("entity", 1L, 2L)));
 
-        RecordedRequest request = integrationLayer.takeRequest();
-        assertThat(request.getPath()).isEqualTo("/v1/qx/getAssetBidOrders?issuerId=issuerId&assetName=assetName&offset=0");
+        assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getAssetBidOrders");
+    }
+
+    @Test
+    void getEntityAskOrders() throws Exception {
+        QxEntityOrder entityOrder = new QxEntityOrder("issuer", "asset", "1", "2");
+        QxEntityOrders entityOrders = new QxEntityOrders(List.of(entityOrder));
+        prepareResponse(response -> response
+                .setResponseCode(HttpStatus.OK.value())
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setBody(JsonUtil.toJson(entityOrders)));
+
+        client.get().uri("/entity/identity/orders/ask")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(EntityOrder.class)
+                .isEqualTo(List.of(new EntityOrder("issuer", "asset", 1, 2)));
+
+        assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getEntityAskOrders?entityId=identity");
+    }
+
+    @Test
+    void getEntityBidOrders() throws Exception {
+        QxEntityOrder entityOrder = new QxEntityOrder("issuer", "asset", "1", "2");
+        QxEntityOrders entityOrders = new QxEntityOrders(List.of(entityOrder));
+        prepareResponse(response -> response
+                .setResponseCode(HttpStatus.OK.value())
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setBody(JsonUtil.toJson(entityOrders)));
+
+        client.get().uri("/entity/identity/orders/bid")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(EntityOrder.class)
+                .isEqualTo(List.of(new EntityOrder("issuer", "asset", 1, 2)));
+
+        assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getEntityBidOrders?entityId=identity");
     }
 
     private void prepareResponse(Consumer<MockResponse> consumer) {

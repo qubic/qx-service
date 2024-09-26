@@ -2,6 +2,7 @@ package org.qubic.qx.api;
 
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.domain.AssetOrder;
+import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
 import org.qubic.qx.api.service.QxService;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -25,41 +26,62 @@ class QxFunctionsControllerTest {
 
     @Test
     void getFees() {
-        Fees fees = new Fees(1L, 2L, 3L);
-        when(qxService.getFees()).thenReturn(Mono.just(fees));
+        Fees expected = new Fees(1, 2, 3);
+        when(qxService.getFees()).thenReturn(Mono.just(expected));
 
         client.get().uri("/fees")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Fees.class)
-                .isEqualTo(fees);
+                .isEqualTo(expected);
     }
 
     @Test
     void getAssetAskOrders() {
-        AssetOrder assetOrder = new AssetOrder("entity", 1L, 2L);
-        List<AssetOrder> assetOrders = List.of(assetOrder);
-        when(qxService.getAskOrders("issuerId", "assetName")).thenReturn(Mono.just(assetOrders));
+        List<AssetOrder> expected = List.of(new AssetOrder("entity", 1, 2));
+        when(qxService.getAssetAskOrders("issuerId", "assetName")).thenReturn(Mono.just(expected));
 
         client.get().uri("/issuer/issuerId/asset/assetName/orders/ask")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(AssetOrder.class)
-                .isEqualTo(assetOrders);
+                .isEqualTo(expected);
     }
 
     @Test
     void getAssetBidOrders() {
-        AssetOrder assetOrder = new AssetOrder("entity", 1L, 2L);
-        List<AssetOrder> assetOrders = List.of(assetOrder);
-        when(qxService.getBidOrders("issuerId", "assetName")).thenReturn(Mono.just(assetOrders));
+        List<AssetOrder> expected = List.of(new AssetOrder("entity", 1, 2));
+        when(qxService.getAssetBidOrders("issuerId", "assetName")).thenReturn(Mono.just(expected));
 
         client.get().uri("/issuer/issuerId/asset/assetName/orders/bid")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(AssetOrder.class)
-                .isEqualTo(assetOrders);
+                .isEqualTo(expected);
     }
 
+    @Test
+    void getEntityAskOrders() {
+        List<EntityOrder> expected = List.of(new EntityOrder("issuer", "asset", 1, 2));
+        when(qxService.getEntityAskOrders("identity")).thenReturn(Mono.just(expected));
+
+        client.get().uri("/entity/identity/orders/ask")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(EntityOrder.class)
+                .isEqualTo(expected);
+    }
+
+    @Test
+    void getEntityBidOrders() {
+        List<EntityOrder> expected = List.of(new EntityOrder("issuer", "asset", 1, 2));
+        when(qxService.getEntityBidOrders("identity")).thenReturn(Mono.just(expected));
+
+        client.get().uri("/entity/identity/orders/bid")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(EntityOrder.class)
+                .isEqualTo(expected);
+    }
 
 }

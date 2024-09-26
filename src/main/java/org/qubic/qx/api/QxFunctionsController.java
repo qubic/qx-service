@@ -2,6 +2,7 @@ package org.qubic.qx.api;
 
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.domain.AssetOrder;
+import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
 import org.qubic.qx.api.service.QxService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,12 +31,22 @@ public class QxFunctionsController {
 
     @GetMapping("/issuer/{issuer}/asset/{asset}/orders/ask")
     public Mono<List<AssetOrder>> getAssetAskOrders(@PathVariable("issuer") String issuer, @PathVariable("asset") String asset) {
-        return qxService.getAskOrders(issuer, asset);
+        return qxService.getAssetAskOrders(issuer, asset);
     }
 
     @GetMapping("/issuer/{issuer}/asset/{asset}/orders/bid")
     public Mono<List<AssetOrder>> getAssetBidOrders(@PathVariable("issuer") String issuer, @PathVariable("asset") String asset) {
-        return qxService.getBidOrders(issuer, asset);
+        return qxService.getAssetBidOrders(issuer, asset);
+    }
+
+    @GetMapping("/entity/{identity}/orders/ask")
+    public Mono<List<EntityOrder>> getEntityAskOrders(@PathVariable("identity") String identity) {
+        return qxService.getEntityAskOrders(identity);
+    }
+
+    @GetMapping("/entity/{identity}/orders/bid")
+    public Mono<List<EntityOrder>> getEntityBidOrders(@PathVariable("identity") String identity) {
+        return qxService.getEntityBidOrders(identity);
     }
 
 }

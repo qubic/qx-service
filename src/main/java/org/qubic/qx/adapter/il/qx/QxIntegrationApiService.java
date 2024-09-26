@@ -15,12 +15,12 @@ import java.net.URI;
 import java.util.List;
 import java.util.function.Function;
 
-public class QxIntegrationApiClient {
+public class QxIntegrationApiService {
 
     private final WebClient webClient;
     private final QxIntegrationMapper qxMapper;
 
-    public QxIntegrationApiClient(WebClient webClient, QxIntegrationMapper qxMapper) {
+    public QxIntegrationApiService(WebClient webClient, QxIntegrationMapper qxMapper) {
         this.webClient = webClient;
         this.qxMapper = qxMapper;
     }

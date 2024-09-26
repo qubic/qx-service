@@ -1,6 +1,6 @@
 package org.qubic.qx.config;
 
-import org.qubic.qx.adapter.il.qx.QxIntegrationApiClient;
+import org.qubic.qx.adapter.il.qx.QxIntegrationApiService;
 import org.qubic.qx.adapter.qubicj.NodeService;
 import org.qubic.qx.adapter.il.qx.mapping.QxIntegrationMapper;
 import org.qubic.qx.api.service.QxService;
@@ -36,7 +36,7 @@ public class QxServiceConfiguration {
     }
 
     @Bean
-    QxIntegrationApiClient qxApiClient(@Value("${il.base-url}") String baseUrl, QxIntegrationMapper qxIntegrationMapper) {
+    QxIntegrationApiService qxApiClient(@Value("${il.base-url}") String baseUrl, QxIntegrationMapper qxIntegrationMapper) {
         HttpClient httpClient = HttpClient.create()
                 .responseTimeout(Duration.ofSeconds(1));
         WebClient webClient = WebClient.builder()
@@ -44,11 +44,11 @@ public class QxServiceConfiguration {
                 .baseUrl(baseUrl)
                 .defaultHeaders(httpHeaders -> httpHeaders.setAccept(List.of(MediaType.APPLICATION_JSON)))
                 .build();
-        return new QxIntegrationApiClient(webClient, qxIntegrationMapper);
+        return new QxIntegrationApiService(webClient, qxIntegrationMapper);
     }
 
     @Bean
-    QxService qxService(QxIntegrationApiClient qxApiClient) {
+    QxService qxService(QxIntegrationApiService qxApiClient) {
         return new QxService(qxApiClient);
     }
 
