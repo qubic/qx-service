@@ -15,14 +15,10 @@ class TickSyncJobSpringSIT extends AbstractRedisTest {
 
     @Test
     void sync() {
-
         tickSyncJob.getCurrentTick()
                 .flatMapMany(currentTick -> tickSyncJob.sync(currentTick)
                         .take(10))
                 .blockLast();
-
-
     }
-
 
 }
