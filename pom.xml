@@ -100,6 +100,11 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>mockwebserver</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- we could also use testcontainers instead of embedded redis -->
         <dependency>
             <groupId>com.github.codemonstur</groupId>
