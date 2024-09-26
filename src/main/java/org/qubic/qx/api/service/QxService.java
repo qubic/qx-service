@@ -20,11 +20,11 @@ public class QxService {
     }
 
     public Mono<List<AssetOrder>> getAskOrders(String issuer, String asset) {
-        return qxApiClient.getAskOrders(issuer, asset);
+        return qxApiClient.getAssetAskOrders(issuer, asset);
     }
 
     public Mono<List<AssetOrder>> getBidOrders(String issuer, String asset) {
-        return qxApiClient.getBidOrders(issuer, asset);
+        return qxApiClient.getAssetBidOrders(issuer, asset);
     }
 
 }
