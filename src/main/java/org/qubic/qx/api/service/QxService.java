@@ -12,8 +12,8 @@ public class QxService {
 
     private final QxIntegrationApiService integrationApi;
 
-    public QxService(QxIntegrationApiService integrationApi) {
-        this.integrationApi = integrationApi;
+    public QxService(QxIntegrationApiService integrationApiService) {
+        this.integrationApi = integrationApiService;
     }
 
     public Mono<Fees> getFees() {

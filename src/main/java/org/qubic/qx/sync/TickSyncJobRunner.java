@@ -20,22 +20,6 @@ public class TickSyncJobRunner {
         this.sleepDuration = sleepDuration;
     }
 
-    public void loopUntilTargetTick(long syncToTick) {
-
-        Flux<Long> syncTicks = Mono.just(syncToTick)
-                .doOnNext(t -> this.targetTick = t)
-                .flatMapMany(syncJob::sync);
-
-        Mono<Boolean> updateSyncedTick = Mono.defer(() -> syncJob.updateLatestSyncedTick(syncToTick));
-
-        Flux.concat(syncTicks, updateSyncedTick)
-                .retryWhen(Retry.indefinitely())
-                .doOnComplete(() -> log.info("Tick sync to [{}] completed.", this.targetTick))
-                .doOnError(t -> log.error("Error syncing to tick [{}].", this.targetTick, t))
-                .subscribe();
-
-    }
-
     public void loopForever() {
 
         Flux<Long> syncTicks = Flux.defer(() -> syncJob.getCurrentTick()

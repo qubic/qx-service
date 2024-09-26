@@ -1,15 +1,10 @@
 package org.qubic.qx.config;
 
 import org.qubic.qx.adapter.il.qx.QxIntegrationApiService;
-import org.qubic.qx.adapter.qubicj.NodeService;
 import org.qubic.qx.adapter.il.qx.mapping.QxIntegrationMapper;
 import org.qubic.qx.api.service.QxService;
 import org.qubic.qx.assets.Asset;
 import org.qubic.qx.assets.Assets;
-import org.qubic.qx.repository.TickRepository;
-import org.qubic.qx.repository.TransactionRepository;
-import org.qubic.qx.sync.TickSyncJob;
-import org.qubic.qx.sync.TickSyncJobRunner;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,17 +21,7 @@ import java.util.List;
 public class QxServiceConfiguration {
 
     @Bean
-    TickSyncJob tickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository, NodeService nodeService) {
-        return new TickSyncJob(tickRepository, transactionRepository, nodeService);
-    }
-
-    @Bean
-    TickSyncJobRunner tickSyncJobRunner(TickSyncJob tickSyncJob, @Value("${sync.interval}") Duration syncInterval) {
-        return new TickSyncJobRunner(tickSyncJob, syncInterval);
-    }
-
-    @Bean
-    QxIntegrationApiService qxApiClient(@Value("${il.base-url}") String baseUrl, QxIntegrationMapper qxIntegrationMapper) {
+    QxIntegrationApiService integrationApiService(@Value("${il.base-url}") String baseUrl, QxIntegrationMapper qxIntegrationMapper) {
         HttpClient httpClient = HttpClient.create()
                 .responseTimeout(Duration.ofSeconds(1));
         WebClient webClient = WebClient.builder()
@@ -48,8 +33,8 @@ public class QxServiceConfiguration {
     }
 
     @Bean
-    QxService qxService(QxIntegrationApiService qxApiClient) {
-        return new QxService(qxApiClient);
+    QxService qxService(QxIntegrationApiService integrationApiService) {
+        return new QxService(integrationApiService);
     }
 
     @Bean

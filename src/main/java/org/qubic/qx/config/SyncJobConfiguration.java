@@ -1,8 +1,12 @@
 package org.qubic.qx.config;
 
+import org.qubic.qx.adapter.qubicj.NodeService;
+import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
-import org.qubic.qx.domain.Transaction;
+import org.qubic.qx.sync.TickSyncJob;
+import org.qubic.qx.sync.TickSyncJobRunner;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
@@ -12,8 +16,10 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.time.Duration;
+
 @Configuration
-public class RepositoryConfiguration {
+public class SyncJobConfiguration {
 
     @Bean
     public ReactiveRedisTemplate<String, Transaction> redisTransactionOperations(ReactiveRedisConnectionFactory connectionFactory) {
@@ -32,6 +38,16 @@ public class RepositoryConfiguration {
     @Bean
     TickRepository tickRepository(ReactiveStringRedisTemplate redisStringTemplate) {
         return new TickRepository(redisStringTemplate);
+    }
+
+    @Bean
+    TickSyncJob tickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository, NodeService nodeService) {
+        return new TickSyncJob(tickRepository, transactionRepository, nodeService);
+    }
+
+    @Bean
+    TickSyncJobRunner tickSyncJobRunner(TickSyncJob tickSyncJob, @Value("${sync.interval}") Duration syncInterval) {
+        return new TickSyncJobRunner(tickSyncJob, syncInterval);
     }
 
 }
