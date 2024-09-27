@@ -54,11 +54,11 @@ public class TickSyncJob {
                 .doOnNext(tno -> log.debug("Synced tick [{}].", tno));
     }
 
-    private Mono<Long> processTickTransactions(Long tickNumber, List<Transaction> txs) {
+    private Mono<Boolean> processTickTransactions(Long tickNumber, List<Transaction> txs) {
         Mono<Long> storeTickNumberMono = tickRepository.addToProcessedTicks(tickNumber);
         if (CollectionUtils.isEmpty(txs)) {
             return storeTickNumberMono.
-                    then(Mono.just(0L));
+                    then(Mono.just(false));
         } else {
             return storeTickNumberMono
                     .then(tickRepository.addToQxTicks(tickNumber))

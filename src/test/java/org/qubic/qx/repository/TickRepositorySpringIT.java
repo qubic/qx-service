@@ -73,33 +73,11 @@ class TickRepositorySpringIT extends AbstractRedisTest {
     @Test
     void setTickTransactions() {
         StepVerifier.create(tickRepository.setTickTransactions(123, List.of("a", "b", "c")))
-                .expectNext(3L)
+                .expectNext(true)
                 .verifyComplete();
 
-        // it doesn't make sense to add the same transactions again, but we need a list to preserve the order
-        StepVerifier.create(tickRepository.setTickTransactions(123, List.of("a", "b", "c")))
-                .expectNext(6L)
-                .verifyComplete();
-
-        StepVerifier.create(redisStringTemplate.opsForList().size("tick:123:txs"))
-                .expectNext(6L)
-                .verifyComplete();
-
-    }
-
-    @Test
-    void addTickTransaction() {
-
-        StepVerifier.create(tickRepository.addTickTransaction(234, "a"))
-                .expectNext(1L)
-                .verifyComplete();
-
-        StepVerifier.create(tickRepository.addTickTransaction(234, "b"))
-                .expectNext(2L)
-                .verifyComplete();
-
-        StepVerifier.create(tickRepository.addTickTransaction(234, "c"))
-                .expectNext(3L)
+        StepVerifier.create(redisStringTemplate.opsForValue().get("txs:123"))
+                .expectNext("a,b,c")
                 .verifyComplete();
 
     }

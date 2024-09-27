@@ -1,10 +1,12 @@
 package org.qubic.qx.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -12,8 +14,9 @@ public class TickRepository {
 
     public static final String KEY_TICK_SYNCED_LATEST = "tick:synced:latest"; // key value
     public static final String KEY_TICKS_PROCESSED = "ticks:processed"; // set
-    public static final String KEY_TICKS_QX = "ticks:qx"; // set
-    public static final String KEY_TICK_TRANSACTIONS = "tick:%d:txs"; // list
+    public static final String KEY_TICKS_WITH_QX_TRANSACTIONS = "ticks:qx"; // set
+    public static final String KEY_TRANSACTIONS_IN_TICK = "txs:%d"; // list
+    public static final String LIST_SEPARATOR = ",";
 
     private final ReactiveStringRedisTemplate redisStringTemplate;
 
@@ -22,7 +25,9 @@ public class TickRepository {
     }
 
     public Mono<Long> getLatestSyncedTick() {
-        return getLongValue(KEY_TICK_SYNCED_LATEST);
+        return getValue(KEY_TICK_SYNCED_LATEST)
+                .defaultIfEmpty("0")
+                .map(this::toLongValue);
     }
 
     public Mono<Boolean> setLatestSyncedTick(long latestSyncedBlock) {
@@ -34,7 +39,7 @@ public class TickRepository {
     }
 
     public Mono<Long> addToQxTicks(long tickNumber) {
-        return addToSet(KEY_TICKS_QX, String.valueOf(tickNumber));
+        return addToSet(KEY_TICKS_WITH_QX_TRANSACTIONS, String.valueOf(tickNumber));
     }
 
     public Mono<Boolean> isProcessedTick(long tickNumber) {
@@ -55,43 +60,31 @@ public class TickRepository {
                 });
     }
 
-    public Mono<Long> setTickTransactions(long tickNumber, List<String> transactionHashes) {
-        return redisStringTemplate.opsForList()
-                .rightPushAll(String.format(KEY_TICK_TRANSACTIONS, tickNumber), transactionHashes)
-                .doOnSuccess(success -> log.info("Added transactions for tick [{}]: {}", tickNumber, transactionHashes))
-                .doOnError(t -> log.error("Error setting transactions {} for tick [{}]: {}", transactionHashes, tickNumber, t.toString()));
+    public Mono<Boolean> setTickTransactions(long tickNumber, List<String> transactionHashes) {
+        return setValue(String.format(KEY_TRANSACTIONS_IN_TICK, tickNumber), StringUtils.join(transactionHashes, LIST_SEPARATOR));
     }
-
-    public Mono<Long> addTickTransaction(long tickNumber, String transactionHash) {
-        return redisStringTemplate.opsForList()
-                .rightPush(String.format(KEY_TICK_TRANSACTIONS, tickNumber), transactionHash)
-                .doOnSuccess(success -> log.info("Added transaction for tick [{}]: [{}]", tickNumber, transactionHash))
-                .doOnError(t -> log.error("Error adding transaction [{}] for tick [{}]: {}", transactionHash, tickNumber, t.toString()));
-    }
-
 
     public Flux<String> getTickTransactions(long tickNumber) {
-        return redisStringTemplate.opsForList()
-                .range(String.format(KEY_TICK_TRANSACTIONS, tickNumber), 0, -1)
-                .doOnEach(hash -> log.debug("Retrieved transaction hash [{}] for tick [{}].", hash, tickNumber))
-                .doOnError(t -> log.error("Error getting transactions for tick [{}]: {}", tickNumber, t.toString()));
+        return getValue(String.format(KEY_TRANSACTIONS_IN_TICK, tickNumber))
+                .switchIfEmpty(Mono.just(StringUtils.EMPTY)
+                        .doOnNext(x -> log.warn("Could not get transactions. There are no transactions for tick: [{}].", tickNumber)))
+                .map(val -> Arrays.stream(StringUtils.split(val, LIST_SEPARATOR)).toList())
+                .flatMapIterable(val -> val);
     }
 
     private Mono<Boolean> setValue(String key, String value) {
         return redisStringTemplate
                 .opsForValue()
                 .set(key, value)
-                .doOnSuccess(success -> log.debug("Set key [{}] to [{}]: [{}]", key, value, success))
+                .doOnSuccess(success -> log.debug("Set key [{}] to [{}].", key, value))
                 .doOnError(t -> log.error("Updating key [{}] to [{}] failed: {}", key, value, t.toString()));
     }
 
-    private Mono<Long> getLongValue(String key) {
+    private Mono<String> getValue(String key) {
         return redisStringTemplate
                 .opsForValue()
                 .get(key)
-                .doOnNext(value -> log.debug("Retrieved [{}]: [{}].", key, value))
-                .defaultIfEmpty("0")
-                .map(this::toLongValue);
+                .doOnNext(value -> log.debug("Retrieved [{}]: [{}].", key, value));
     }
 
     private Long toLongValue(String value) {
