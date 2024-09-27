@@ -7,7 +7,7 @@ services:
       dockerfile: 'Dockerfile'
     image: 'qx-service:latest'
     ports:
-      - '8080'
+      - '8080:8080'
 #  redis:
 #    image: 'redis:latest'
 #    ports:
