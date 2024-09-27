@@ -1,4 +1,13 @@
+version: '2'
 services:
+  qx-server:
+    container_name: 'qx-service'
+    build:
+      context: .
+      dockerfile: 'Dockerfile'
+    image: 'qx-service:latest'
+    ports:
+      - '8080'
   redis:
     image: 'redis:latest'
     ports:
