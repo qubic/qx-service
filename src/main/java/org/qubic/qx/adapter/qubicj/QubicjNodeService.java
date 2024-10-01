@@ -1,13 +1,14 @@
 package org.qubic.qx.adapter.qubicj;
 
-import at.qubic.api.domain.qx.Qx;
 import at.qubic.api.domain.std.SignedTransaction;
 import io.github.resilience4j.bulkhead.Bulkhead;
 import io.github.resilience4j.bulkhead.BulkheadConfig;
 import io.github.resilience4j.reactor.bulkhead.operator.BulkheadOperator;
+import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import at.qubic.api.service.ComputorService;
 import org.qubic.qx.adapter.NodeService;
+import org.qubic.qx.adapter.QxSpecs;
 import org.qubic.qx.adapter.exception.EmptyResultException;
 import org.qubic.qx.domain.Transaction;
 import reactor.core.publisher.Flux;
@@ -64,14 +65,14 @@ public class QubicjNodeService implements NodeService {
 
     private boolean isRelevantTransaction(SignedTransaction stx) {
         at.qubic.api.domain.std.Transaction transaction = stx.getTransaction();
-        return Objects.deepEquals(transaction.getDestinationPublicKey(), QX_PUBLIC_KEY)
-                && (transaction.getInputType() == Qx.Procedure.QX_ADD_ASK_ORDER.getCode()
-                || transaction.getInputType() == Qx.Procedure.QX_REMOVE_ASK_ORDER.getCode()
-                || transaction.getInputType() == Qx.Procedure.QX_ADD_BID_ORDER.getCode()
-                || transaction.getInputType() == Qx.Procedure.QX_REMOVE_BID_ORDER.getCode()
-                || transaction.getInputType() == Qx.Procedure.QX_TRANSFER_SHARE.getCode()
-                || transaction.getInputType() == Qx.Procedure.QX_ISSUE_ASSET.getCode()
-        );
+        String relevantQxOperation = QxSpecs.INPUT_TYPES.get((int) transaction.getInputType());
+        if (Objects.deepEquals(transaction.getDestinationPublicKey(), QxSpecs.QX_PUBLIC_KEY)
+                && StringUtils.isNotBlank(relevantQxOperation)) {
+            log.debug("[{}]: [{}].", relevantQxOperation, stx.getTransactionHash());
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

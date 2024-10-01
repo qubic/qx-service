@@ -1,8 +1,9 @@
 package org.qubic.qx.config;
 
-import org.qubic.qx.adapter.il.IntegrationCoreApiService;
+import at.qubic.api.crypto.IdentityUtil;
+import at.qubic.api.crypto.NoCrypto;
+import org.qubic.qx.adapter.ExtraDataMapper;
 import org.qubic.qx.adapter.il.IntegrationQxApiService;
-import org.qubic.qx.adapter.il.mapping.IlTransactionMapper;
 import org.qubic.qx.adapter.il.mapping.QxIntegrationMapper;
 import org.qubic.qx.api.service.QxService;
 import org.qubic.qx.assets.Asset;
@@ -37,14 +38,20 @@ public class QxServiceConfiguration {
                 .build();
     }
 
+    // create bean without shared lib crypto dependency
     @Bean
-    IntegrationQxApiService integrationQxApiService(WebClient integrationApiWebClient, QxIntegrationMapper qxIntegrationMapper) {
-        return new IntegrationQxApiService(integrationApiWebClient, qxIntegrationMapper);
+    IdentityUtil identityUtil() {
+        return new IdentityUtil(true, new NoCrypto());
     }
 
     @Bean
-    IntegrationCoreApiService integrationCoreApiService(WebClient integrationApiWebClient, IlTransactionMapper transactionMapper) {
-        return new IntegrationCoreApiService(integrationApiWebClient, transactionMapper);
+    ExtraDataMapper extraDataMapper(IdentityUtil identityUtil) {
+        return new ExtraDataMapper(identityUtil);
+    }
+
+    @Bean
+    IntegrationQxApiService integrationQxApiService(WebClient integrationApiWebClient, QxIntegrationMapper qxIntegrationMapper) {
+        return new IntegrationQxApiService(integrationApiWebClient, qxIntegrationMapper);
     }
 
     @Bean
