@@ -1,7 +1,10 @@
 package org.qubic.qx.config;
 
-import org.qubic.qx.adapter.il.qx.QxIntegrationApiService;
-import org.qubic.qx.adapter.il.qx.mapping.QxIntegrationMapper;
+import at.qubic.api.crypto.IdentityUtil;
+import at.qubic.api.crypto.NoCrypto;
+import org.qubic.qx.adapter.ExtraDataMapper;
+import org.qubic.qx.adapter.il.IntegrationQxApiService;
+import org.qubic.qx.adapter.il.mapping.QxIntegrationMapper;
 import org.qubic.qx.api.service.QxService;
 import org.qubic.qx.assets.Asset;
 import org.qubic.qx.assets.Assets;
@@ -21,19 +24,38 @@ import java.util.List;
 public class QxServiceConfiguration {
 
     @Bean
-    QxIntegrationApiService integrationApiService(@Value("${il.base-url}") String baseUrl, QxIntegrationMapper qxIntegrationMapper) {
+    WebClient integrationApiWebClient(@Value("${il.base-url}") String baseUrl) {
         HttpClient httpClient = HttpClient.create()
-                .responseTimeout(Duration.ofSeconds(1));
-        WebClient webClient = WebClient.builder()
+                .responseTimeout(Duration.ofSeconds(3));
+
+        return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .baseUrl(baseUrl)
-                .defaultHeaders(httpHeaders -> httpHeaders.setAccept(List.of(MediaType.APPLICATION_JSON)))
+                .defaultHeaders(httpHeaders -> {
+                    httpHeaders.setAccept(List.of(MediaType.APPLICATION_JSON));
+                    httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                })
                 .build();
-        return new QxIntegrationApiService(webClient, qxIntegrationMapper);
+    }
+
+    // create bean without shared lib crypto dependency
+    @Bean
+    IdentityUtil identityUtil() {
+        return new IdentityUtil(true, new NoCrypto());
     }
 
     @Bean
-    QxService qxService(QxIntegrationApiService integrationApiService) {
+    ExtraDataMapper extraDataMapper(IdentityUtil identityUtil) {
+        return new ExtraDataMapper(identityUtil);
+    }
+
+    @Bean
+    IntegrationQxApiService integrationQxApiService(WebClient integrationApiWebClient, QxIntegrationMapper qxIntegrationMapper) {
+        return new IntegrationQxApiService(integrationApiWebClient, qxIntegrationMapper);
+    }
+
+    @Bean
+    QxService qxService(IntegrationQxApiService integrationApiService) {
         return new QxService(integrationApiService);
     }
 

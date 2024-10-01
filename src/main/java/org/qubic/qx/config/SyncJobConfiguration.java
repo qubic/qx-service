@@ -1,12 +1,15 @@
 package org.qubic.qx.config;
 
-import org.qubic.qx.adapter.qubicj.NodeService;
+import org.qubic.qx.adapter.NodeService;
+import org.qubic.qx.adapter.il.IntegrationCoreApiService;
+import org.qubic.qx.adapter.il.mapping.IlTransactionMapper;
 import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
 import org.qubic.qx.sync.TickSyncJob;
 import org.qubic.qx.sync.TickSyncJobRunner;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
@@ -15,6 +18,7 @@ import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
 
@@ -38,6 +42,12 @@ public class SyncJobConfiguration {
     @Bean
     TickRepository tickRepository(ReactiveStringRedisTemplate redisStringTemplate) {
         return new TickRepository(redisStringTemplate);
+    }
+
+    @ConditionalOnProperty(value = "backend", havingValue = "integration", matchIfMissing = true)
+    @Bean
+    NodeService integrationCoreApiService(WebClient integrationApiWebClient, IlTransactionMapper transactionMapper) {
+        return new IntegrationCoreApiService(integrationApiWebClient, transactionMapper);
     }
 
     @Bean

@@ -1,6 +1,6 @@
 package org.qubic.qx.api.service;
 
-import org.qubic.qx.adapter.il.qx.QxIntegrationApiService;
+import org.qubic.qx.adapter.il.IntegrationQxApiService;
 import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
@@ -10,9 +10,9 @@ import java.util.List;
 
 public class QxService {
 
-    private final QxIntegrationApiService integrationApi;
+    private final IntegrationQxApiService integrationApi;
 
-    public QxService(QxIntegrationApiService integrationApiService) {
+    public QxService(IntegrationQxApiService integrationApiService) {
         this.integrationApi = integrationApiService;
     }
 

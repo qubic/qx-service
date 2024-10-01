@@ -5,7 +5,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.adapter.il.qx.domain.*;
+import org.qubic.qx.adapter.il.domain.*;
 import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
@@ -47,11 +47,11 @@ class QxFunctionsControllerSpringIT {
 
     @Test
     void getFees() {
-        QxFees qxFees = new QxFees(1L, 2L, 3L);
+        IlFees ilFees = new IlFees(1L, 2L, 3L);
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(JsonUtil.toJson(qxFees)));
+                .setBody(JsonUtil.toJson(ilFees)));
 
         client.get().uri("/fees")
                 .exchange()
@@ -62,8 +62,8 @@ class QxFunctionsControllerSpringIT {
 
     @Test
     void getAssetAskOrders() throws Exception {
-        QxAssetOrder assetOrder = new QxAssetOrder("entity", "1", "2");
-        QxAssetOrders assetOrders = new QxAssetOrders(List.of(assetOrder));
+        IlAssetOrder assetOrder = new IlAssetOrder("entity", "1", "2");
+        IlAssetOrders assetOrders = new IlAssetOrders(List.of(assetOrder));
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -80,8 +80,8 @@ class QxFunctionsControllerSpringIT {
 
     @Test
     void getAssetBidOrders() throws Exception {
-        QxAssetOrder assetOrder = new QxAssetOrder("entity", "1", "2");
-        QxAssetOrders assetOrders = new QxAssetOrders(List.of(assetOrder));
+        IlAssetOrder assetOrder = new IlAssetOrder("entity", "1", "2");
+        IlAssetOrders assetOrders = new IlAssetOrders(List.of(assetOrder));
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -98,8 +98,8 @@ class QxFunctionsControllerSpringIT {
 
     @Test
     void getEntityAskOrders() throws Exception {
-        QxEntityOrder entityOrder = new QxEntityOrder("issuer", "asset", "1", "2");
-        QxEntityOrders entityOrders = new QxEntityOrders(List.of(entityOrder));
+        IlEntityOrder entityOrder = new IlEntityOrder("issuer", "asset", "1", "2");
+        IlEntityOrders entityOrders = new IlEntityOrders(List.of(entityOrder));
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -116,8 +116,8 @@ class QxFunctionsControllerSpringIT {
 
     @Test
     void getEntityBidOrders() throws Exception {
-        QxEntityOrder entityOrder = new QxEntityOrder("issuer", "asset", "1", "2");
-        QxEntityOrders entityOrders = new QxEntityOrders(List.of(entityOrder));
+        IlEntityOrder entityOrder = new IlEntityOrder("issuer", "asset", "1", "2");
+        IlEntityOrders entityOrders = new IlEntityOrders(List.of(entityOrder));
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

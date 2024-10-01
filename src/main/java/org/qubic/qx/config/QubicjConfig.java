@@ -1,15 +1,18 @@
 package org.qubic.qx.config;
 
-import at.qubic.api.crypto.NoCrypto;
-import at.qubic.api.service.TransactionService;
-import lombok.extern.slf4j.Slf4j;
 import at.qubic.api.crypto.IdentityUtil;
+import at.qubic.api.crypto.NoCrypto;
 import at.qubic.api.network.*;
 import at.qubic.api.properties.ComputorProperties;
 import at.qubic.api.properties.NetworkProperties;
 import at.qubic.api.service.ComputorService;
-import org.qubic.qx.adapter.qubicj.NodeService;
+import at.qubic.api.service.TransactionService;
+import lombok.extern.slf4j.Slf4j;
+import org.qubic.qx.adapter.ExtraDataMapper;
+import org.qubic.qx.adapter.NodeService;
+import org.qubic.qx.adapter.qubicj.QubicjNodeService;
 import org.qubic.qx.adapter.qubicj.TransactionMapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +21,7 @@ import org.springframework.core.env.Environment;
 import java.util.Arrays;
 
 @Slf4j
+@ConditionalOnProperty(value = "backend", havingValue = "qubicj")
 @Configuration
 public class QubicjConfig {
 
@@ -59,12 +63,6 @@ public class QubicjConfig {
 
     // create bean without shared lib crypto dependency
     @Bean
-    IdentityUtil identityUtil() {
-        return new IdentityUtil(true, new NoCrypto());
-    }
-
-    // create bean without shared lib crypto dependency
-    @Bean
     TransactionService transactionService(IdentityUtil identityUtil) {
         return new TransactionService(identityUtil, new NoCrypto());
     }
@@ -76,14 +74,13 @@ public class QubicjConfig {
     }
 
     @Bean
-    TransactionMapper transactionMapper(IdentityUtil identityUtil) {
-        return new TransactionMapper(identityUtil);
+    TransactionMapper transactionMapper(ExtraDataMapper extraDataMapper, IdentityUtil identityUtil) {
+        return new TransactionMapper(extraDataMapper, identityUtil);
     }
 
-    // TODO extract interface for core integration layer
     @Bean
     NodeService nodeService(ComputorService computorService, TransactionMapper transactionMapper) {
-        return new NodeService(computorService, transactionMapper);
+        return new QubicjNodeService(computorService, transactionMapper);
     }
 
 }

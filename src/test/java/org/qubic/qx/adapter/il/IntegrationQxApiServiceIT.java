@@ -1,47 +1,32 @@
-package org.qubic.qx.adapter.il.qx;
+package org.qubic.qx.adapter.il;
 
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-import org.qubic.qx.adapter.il.qx.mapping.QxIntegrationMapper;
+import org.qubic.qx.adapter.il.mapping.QxIntegrationMapper;
 import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
 
-import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
-class QxIntegrationApiServiceIT {
+class IntegrationQxApiServiceIT extends AbstractIntegrationApiTest {
 
     private static final String TEST_ID = "TESTRAIJSNPOJAKARTQNQVRROKWBKLHXIBEYMYKVIGTWYXLDKFMEAFMDRJIC";
     private static final String CFB_ISSUER = "CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL";
 
     private final WebClient webClient = createWebClient("http://localhost:1234");
     private final QxIntegrationMapper qxMapper = Mappers.getMapper(QxIntegrationMapper.class);
-    private final QxIntegrationApiService apiClient = new QxIntegrationApiService(webClient, qxMapper);
-
-    private final MockWebServer integrationLayer = new MockWebServer();
+    private final IntegrationQxApiService apiClient = new IntegrationQxApiService(webClient, qxMapper);
 
     @Test
-    void getFees() throws Exception {
+    void getFees() {
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -56,7 +41,7 @@ class QxIntegrationApiServiceIT {
     }
 
     @Test
-    void getAssetAskOrders() throws Exception {
+    void getAssetAskOrders() {
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -72,7 +57,7 @@ class QxIntegrationApiServiceIT {
     }
 
     @Test
-    void getAssetBidOrders() throws Exception {
+    void getAssetBidOrders() {
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -88,7 +73,7 @@ class QxIntegrationApiServiceIT {
     }
 
     @Test
-    void getEntityAskOrders() throws Exception {
+    void getEntityAskOrders() {
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -106,7 +91,7 @@ class QxIntegrationApiServiceIT {
     }
 
     @Test
-    void getEntityBidOrders() throws Exception {
+    void getEntityBidOrders() {
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -121,41 +106,6 @@ class QxIntegrationApiServiceIT {
                 .verifyComplete();
 
         assertRequest(String.format("/v1/qx/getEntityBidOrders?entityId=%s&offset=0", TEST_ID));
-    }
-
-    private void prepareResponse(Consumer<MockResponse> consumer) {
-        MockResponse response = new MockResponse();
-        consumer.accept(response);
-        integrationLayer.enqueue(response);
-    }
-
-    private void assertRequest(String expectedPath) throws InterruptedException {
-        RecordedRequest request = integrationLayer.takeRequest(1, TimeUnit.SECONDS);
-        assertThat(request).isNotNull();
-        assertThat(request.getPath()).isEqualTo(expectedPath);
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private @NotNull WebClient createWebClient(String baseUrl) {
-
-        HttpClient httpClient = HttpClient.create()
-                .responseTimeout(Duration.ofSeconds(1));
-
-        return WebClient.builder()
-                .baseUrl(baseUrl)
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .defaultHeaders(httpHeaders -> httpHeaders.setAccept(List.of(MediaType.APPLICATION_JSON)))
-                .build();
-    }
-
-    @BeforeEach
-    void setUp() throws Exception {
-        integrationLayer.start(1234);
-    }
-
-    @AfterEach
-    void tearDown() throws Exception {
-        integrationLayer.shutdown();
     }
 
 }

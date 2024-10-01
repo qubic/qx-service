@@ -1,7 +1,7 @@
 package org.qubic.qx.sync;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.adapter.qubicj.NodeService;
+import org.qubic.qx.adapter.NodeService;
 import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;

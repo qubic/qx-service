@@ -1,9 +1,9 @@
-package org.qubic.qx.adapter.il.qx;
+package org.qubic.qx.adapter.il;
 
-import org.qubic.qx.adapter.il.qx.domain.QxAssetOrders;
-import org.qubic.qx.adapter.il.qx.domain.QxEntityOrders;
-import org.qubic.qx.adapter.il.qx.domain.QxFees;
-import org.qubic.qx.adapter.il.qx.mapping.QxIntegrationMapper;
+import org.qubic.qx.adapter.il.domain.IlEntityOrders;
+import org.qubic.qx.adapter.il.domain.IlAssetOrders;
+import org.qubic.qx.adapter.il.domain.IlFees;
+import org.qubic.qx.adapter.il.mapping.QxIntegrationMapper;
 import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
@@ -15,57 +15,58 @@ import java.net.URI;
 import java.util.List;
 import java.util.function.Function;
 
-public class QxIntegrationApiService {
+public class IntegrationQxApiService {
 
+    private static final String QX_BASE_PATH_V1 = "/v1/qx";
     private final WebClient webClient;
     private final QxIntegrationMapper qxMapper;
 
-    public QxIntegrationApiService(WebClient webClient, QxIntegrationMapper qxMapper) {
+    public IntegrationQxApiService(WebClient webClient, QxIntegrationMapper qxMapper) {
         this.webClient = webClient;
         this.qxMapper = qxMapper;
     }
 
     public Mono<Fees> getFees() {
         return webClient.get()
-                .uri("/v1/qx/getFees")
+                .uri(QX_BASE_PATH_V1 + "/getFees")
                 .retrieve()
-                .bodyToMono(QxFees.class)
+                .bodyToMono(IlFees.class)
                 .map(qxMapper::mapFees);
     }
 
     public Mono<List<AssetOrder>> getAssetAskOrders(String issuer, String asset) {
         return webClient.get()
-                .uri(assetOrderUri("/v1/qx/getAssetAskOrders", issuer, asset))
+                .uri(assetOrderUri(QX_BASE_PATH_V1 + "/getAssetAskOrders", issuer, asset))
                 .retrieve()
-                .bodyToMono(QxAssetOrders.class)
-                .map(QxAssetOrders::orders)
+                .bodyToMono(IlAssetOrders.class)
+                .map(IlAssetOrders::orders)
                 .map(qxMapper::mapAssetOrderList);
     }
 
     public Mono<List<AssetOrder>> getAssetBidOrders(String issuer, String asset) {
         return webClient.get()
-                .uri(assetOrderUri("/v1/qx/getAssetBidOrders", issuer, asset))
+                .uri(assetOrderUri(QX_BASE_PATH_V1 + "/getAssetBidOrders", issuer, asset))
                 .retrieve()
-                .bodyToMono(QxAssetOrders.class)
-                .map(QxAssetOrders::orders)
+                .bodyToMono(IlAssetOrders.class)
+                .map(IlAssetOrders::orders)
                 .map(qxMapper::mapAssetOrderList);
     }
 
     public Mono<List<EntityOrder>> getEntityAskOrders(String identity) {
         return webClient.get()
-                .uri(entityOrderUri("/v1/qx/getEntityAskOrders", identity))
+                .uri(entityOrderUri(QX_BASE_PATH_V1 + "/getEntityAskOrders", identity))
                 .retrieve()
-                .bodyToMono(QxEntityOrders.class)
-                .map(QxEntityOrders::orders)
+                .bodyToMono(IlEntityOrders.class)
+                .map(IlEntityOrders::orders)
                 .map(qxMapper::mapEntityOrderList);
     }
 
     public Mono<List<EntityOrder>> getEntityBidOrders(String identity) {
         return webClient.get()
-                .uri(entityOrderUri("/v1/qx/getEntityBidOrders", identity))
+                .uri(entityOrderUri(QX_BASE_PATH_V1 + "/getEntityBidOrders", identity))
                 .retrieve()
-                .bodyToMono(QxEntityOrders.class)
-                .map(QxEntityOrders::orders)
+                .bodyToMono(IlEntityOrders.class)
+                .map(IlEntityOrders::orders)
                 .map(qxMapper::mapEntityOrderList);
     }
 

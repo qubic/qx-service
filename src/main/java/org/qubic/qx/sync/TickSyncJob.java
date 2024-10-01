@@ -2,7 +2,7 @@ package org.qubic.qx.sync;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.qubic.qx.adapter.qubicj.NodeService;
+import org.qubic.qx.adapter.NodeService;
 import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
