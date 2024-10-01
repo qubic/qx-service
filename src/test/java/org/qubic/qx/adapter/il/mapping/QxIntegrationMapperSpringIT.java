@@ -1,9 +1,9 @@
-package org.qubic.qx.adapter.il.qx.mapping;
+package org.qubic.qx.adapter.il.mapping;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.adapter.il.qx.domain.QxAssetOrder;
-import org.qubic.qx.adapter.il.qx.domain.QxEntityOrder;
-import org.qubic.qx.adapter.il.qx.domain.QxFees;
+import org.qubic.qx.adapter.il.domain.IlAssetOrder;
+import org.qubic.qx.adapter.il.domain.IlEntityOrder;
+import org.qubic.qx.adapter.il.domain.IlFees;
 import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
@@ -22,7 +22,7 @@ class QxIntegrationMapperSpringIT {
 
     @Test
     void mapFees() {
-        QxFees source = new QxFees(1, 2, 3);
+        IlFees source = new IlFees(1, 2, 3);
         Fees target = qxMapper.mapFees(source);
         assertThat(target).isNotNull();
         assertThat(target.assetIssuanceFee()).isEqualTo(1);
@@ -32,7 +32,7 @@ class QxIntegrationMapperSpringIT {
 
     @Test
     void mapAssetOrder() {
-        QxAssetOrder source = new QxAssetOrder("identity", "1", "2");
+        IlAssetOrder source = new IlAssetOrder("identity", "1", "2");
         AssetOrder target = qxMapper.mapAssetOrder(source);
         assertThat(target).isNotNull();
         assertThat(target.entityId()).isEqualTo("identity");
@@ -42,7 +42,7 @@ class QxIntegrationMapperSpringIT {
 
     @Test
     void mapEntityOrder() {
-        QxEntityOrder source = new QxEntityOrder("issuer", "asset", "1", "2");
+        IlEntityOrder source = new IlEntityOrder("issuer", "asset", "1", "2");
         EntityOrder target = qxMapper.mapEntityOrder(source);
         assertThat(target).isNotNull();
         assertThat(target.issuerId()).isEqualTo("issuer");
@@ -53,9 +53,9 @@ class QxIntegrationMapperSpringIT {
 
     @Test
     void mapAssetOrderList() {
-        QxAssetOrder order1 = new QxAssetOrder("foo", "1", "2");
-        QxAssetOrder order2 = new QxAssetOrder("bar", "3", "4");
-        List<QxAssetOrder> source = List.of(order1, order2);
+        IlAssetOrder order1 = new IlAssetOrder("foo", "1", "2");
+        IlAssetOrder order2 = new IlAssetOrder("bar", "3", "4");
+        List<IlAssetOrder> source = List.of(order1, order2);
         List<AssetOrder> target = qxMapper.mapAssetOrderList(source);
         assertThat(target).isNotNull();
         assertThat(target.size()).isEqualTo(2);
@@ -65,9 +65,9 @@ class QxIntegrationMapperSpringIT {
 
     @Test
     void mapEntityOrderList() {
-        QxEntityOrder order1 = new QxEntityOrder("a", "b", "1", "2");
-        QxEntityOrder order2 = new QxEntityOrder("c", "d", "3", "4");
-        List<QxEntityOrder> source = List.of(order1, order2);
+        IlEntityOrder order1 = new IlEntityOrder("a", "b", "1", "2");
+        IlEntityOrder order2 = new IlEntityOrder("c", "d", "3", "4");
+        List<IlEntityOrder> source = List.of(order1, order2);
         List<EntityOrder> target = qxMapper.mapEntityOrderList(source);
         assertThat(target).isNotNull();
         assertThat(target.size()).isEqualTo(2);

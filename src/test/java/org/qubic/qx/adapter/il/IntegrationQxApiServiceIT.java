@@ -1,4 +1,4 @@
-package org.qubic.qx.adapter.il.qx;
+package org.qubic.qx.adapter.il;
 
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.MockResponse;
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-import org.qubic.qx.adapter.il.qx.mapping.QxIntegrationMapper;
+import org.qubic.qx.adapter.il.mapping.QxIntegrationMapper;
 import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
@@ -29,14 +29,14 @@ import java.util.function.Consumer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
-class QxIntegrationApiServiceIT {
+class IntegrationQxApiServiceIT {
 
     private static final String TEST_ID = "TESTRAIJSNPOJAKARTQNQVRROKWBKLHXIBEYMYKVIGTWYXLDKFMEAFMDRJIC";
     private static final String CFB_ISSUER = "CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL";
 
     private final WebClient webClient = createWebClient("http://localhost:1234");
     private final QxIntegrationMapper qxMapper = Mappers.getMapper(QxIntegrationMapper.class);
-    private final QxIntegrationApiService apiClient = new QxIntegrationApiService(webClient, qxMapper);
+    private final IntegrationQxApiService apiClient = new IntegrationQxApiService(webClient, qxMapper);
 
     private final MockWebServer integrationLayer = new MockWebServer();
 
