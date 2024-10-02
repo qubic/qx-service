@@ -24,7 +24,8 @@ import java.util.function.Consumer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = """
-il.base-url=http://localhost:1234
+    il.base-url=http://localhost:1234
+    backend=integration
 """)
 class QxFunctionsControllerSpringIT {
 

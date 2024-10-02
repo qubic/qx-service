@@ -3,6 +3,7 @@ package org.qubic.qx.sync;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.qubic.qx.adapter.CoreApiService;
+import org.qubic.qx.assets.AssetService;
 import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
@@ -19,11 +20,13 @@ public class TickSyncJob {
     private final TickRepository tickRepository;
     private final TransactionRepository transactionRepository;
     private final CoreApiService coreService;
+    private final AssetService assetService;
 
-    public TickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository, CoreApiService coreService) {
+    public TickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository, CoreApiService coreService, AssetService assetService) {
         this.tickRepository = tickRepository;
         this.transactionRepository = transactionRepository;
         this.coreService = coreService;
+        this.assetService = assetService;
     }
 
     public Flux<Long> sync(long targetTick) {
@@ -45,13 +48,15 @@ public class TickSyncJob {
     }
 
     private Mono<Long> processTick(Long tickNumber) {
-        return coreService.getQxTransactions(tickNumber)
+        Mono<Long> processTickTransactionsMono = coreService.getQxTransactions(tickNumber)
                 .doFirst(() -> log.debug("Query node for tick [{}].", tickNumber))
                 .flatMap(this::processTransaction)
                 .collectList()
                 .flatMap(list -> processTickTransactions(tickNumber, list)) // TODO move transaction processing into here
                 .map(x -> tickNumber)
                 .doOnNext(tno -> log.debug("Synced tick [{}].", tno));
+        return assetService.updateOrderBooks(tickNumber)
+                .then(processTickTransactionsMono);
     }
 
     private Mono<Boolean> processTickTransactions(Long tickNumber, List<Transaction> txs) {

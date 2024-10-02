@@ -2,6 +2,7 @@ package org.qubic.qx.sync;
 
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.adapter.CoreApiService;
+import org.qubic.qx.assets.AssetService;
 import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
@@ -18,7 +19,9 @@ class TickSyncJobTest {
     private final TickRepository tickRepository = mock();
     private final TransactionRepository transactionRepository = mock();
     private final CoreApiService coreService = mock();
-    private final TickSyncJob tickSync = new TickSyncJob(tickRepository, transactionRepository, coreService);
+    private final AssetService assetService = mock();
+
+    private final TickSyncJob tickSync = new TickSyncJob(tickRepository, transactionRepository, coreService, assetService);
 
     @Test
     void sync() {
@@ -36,6 +39,8 @@ class TickSyncJobTest {
         when(transactionRepository.putTransaction(any())).thenReturn(Mono.just(tx));
         when(tickRepository.setTickTransactions(anyLong(), anyList())).thenReturn(Mono.just(true));
         when(tickRepository.addToQxTicks(anyLong())).thenReturn(Mono.just(1L));
+
+        when(assetService.updateOrderBooks(anyLong())).thenReturn(Flux.just(1L, 2L, 3L));
 
         StepVerifier.create(tickSync.sync(3459L).log())
                 .expectNextCount(3)

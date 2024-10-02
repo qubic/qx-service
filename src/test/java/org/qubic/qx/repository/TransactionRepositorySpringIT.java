@@ -5,13 +5,11 @@ import org.qubic.qx.AbstractRedisTest;
 import org.qubic.qx.domain.QxAssetOrderData;
 import org.qubic.qx.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-@SpringBootTest(properties = {"spring.data.redis.port=16379"})
 public class TransactionRepositorySpringIT extends AbstractRedisTest {
 
     private static final String SERIALIZED_TX = """

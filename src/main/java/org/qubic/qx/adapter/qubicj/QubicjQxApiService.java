@@ -28,7 +28,7 @@ public class QubicjQxApiService implements QxApiService {
 
     @Override
     public Mono<List<AssetOrder>> getAssetAskOrders(String issuer, String asset) {
-        return computorService.getQxAskAssetOrders(asset, issuer, 0)
+        return computorService.getQxAskAssetOrders(issuer, asset, 0)
                 .map(qxMapper::mapAssetOrders);
     }
 

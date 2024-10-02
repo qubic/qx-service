@@ -3,10 +3,12 @@ package org.qubic.qx;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.springframework.boot.test.context.SpringBootTest;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
 
+@SpringBootTest(properties = {"spring.data.redis.port=16379"})
 public class AbstractRedisTest {
 
     protected static final RedisServer REDIS_SERVER = createRedis();

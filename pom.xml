@@ -31,7 +31,7 @@
         <java.version>21</java.version>
         <embedded-redis.version>1.4.3</embedded-redis.version>
         <mapstruct.version>1.6.0</mapstruct.version>
-        <qubicj.version>1.1.1</qubicj.version>
+        <qubicj.version>1.1.2-SNAPSHOT</qubicj.version>
         <resilience4j.version>2.2.0</resilience4j.version>
     </properties>
 

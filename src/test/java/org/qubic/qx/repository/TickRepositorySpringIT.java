@@ -3,14 +3,12 @@ package org.qubic.qx.repository;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.AbstractRedisTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.List;
 
-@SpringBootTest(properties = {"spring.data.redis.port=16379"})
 class TickRepositorySpringIT extends AbstractRedisTest {
 
     @Autowired
