@@ -3,6 +3,7 @@ package org.qubic.qx.config;
 import at.qubic.api.crypto.IdentityUtil;
 import at.qubic.api.crypto.NoCrypto;
 import org.qubic.qx.adapter.ExtraDataMapper;
+import org.qubic.qx.adapter.QxApiService;
 import org.qubic.qx.adapter.il.IntegrationQxApiService;
 import org.qubic.qx.adapter.il.mapping.QxIntegrationMapper;
 import org.qubic.qx.api.service.QxService;
@@ -50,12 +51,12 @@ public class QxServiceConfiguration {
     }
 
     @Bean
-    IntegrationQxApiService integrationQxApiService(WebClient integrationApiWebClient, QxIntegrationMapper qxIntegrationMapper) {
+    QxApiService integrationQxApiService(WebClient integrationApiWebClient, QxIntegrationMapper qxIntegrationMapper) {
         return new IntegrationQxApiService(integrationApiWebClient, qxIntegrationMapper);
     }
 
     @Bean
-    QxService qxService(IntegrationQxApiService integrationApiService) {
+    QxService qxService(QxApiService integrationApiService) {
         return new QxService(integrationApiService);
     }
 

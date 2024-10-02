@@ -1,5 +1,6 @@
 package org.qubic.qx.adapter.il;
 
+import org.qubic.qx.adapter.QxApiService;
 import org.qubic.qx.adapter.il.domain.IlEntityOrders;
 import org.qubic.qx.adapter.il.domain.IlAssetOrders;
 import org.qubic.qx.adapter.il.domain.IlFees;
@@ -15,7 +16,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.function.Function;
 
-public class IntegrationQxApiService {
+public class IntegrationQxApiService implements QxApiService {
 
     private static final String QX_BASE_PATH_V1 = "/v1/qx";
     private final WebClient webClient;
@@ -26,7 +27,7 @@ public class IntegrationQxApiService {
         this.qxMapper = qxMapper;
     }
 
-    public Mono<Fees> getFees() {
+    @Override public Mono<Fees> getFees() {
         return webClient.get()
                 .uri(QX_BASE_PATH_V1 + "/getFees")
                 .retrieve()
@@ -34,7 +35,7 @@ public class IntegrationQxApiService {
                 .map(qxMapper::mapFees);
     }
 
-    public Mono<List<AssetOrder>> getAssetAskOrders(String issuer, String asset) {
+    @Override public Mono<List<AssetOrder>> getAssetAskOrders(String issuer, String asset) {
         return webClient.get()
                 .uri(assetOrderUri(QX_BASE_PATH_V1 + "/getAssetAskOrders", issuer, asset))
                 .retrieve()
@@ -43,7 +44,7 @@ public class IntegrationQxApiService {
                 .map(qxMapper::mapAssetOrderList);
     }
 
-    public Mono<List<AssetOrder>> getAssetBidOrders(String issuer, String asset) {
+    @Override public Mono<List<AssetOrder>> getAssetBidOrders(String issuer, String asset) {
         return webClient.get()
                 .uri(assetOrderUri(QX_BASE_PATH_V1 + "/getAssetBidOrders", issuer, asset))
                 .retrieve()
@@ -52,7 +53,7 @@ public class IntegrationQxApiService {
                 .map(qxMapper::mapAssetOrderList);
     }
 
-    public Mono<List<EntityOrder>> getEntityAskOrders(String identity) {
+    @Override public Mono<List<EntityOrder>> getEntityAskOrders(String identity) {
         return webClient.get()
                 .uri(entityOrderUri(QX_BASE_PATH_V1 + "/getEntityAskOrders", identity))
                 .retrieve()
@@ -61,7 +62,7 @@ public class IntegrationQxApiService {
                 .map(qxMapper::mapEntityOrderList);
     }
 
-    public Mono<List<EntityOrder>> getEntityBidOrders(String identity) {
+    @Override public Mono<List<EntityOrder>> getEntityBidOrders(String identity) {
         return webClient.get()
                 .uri(entityOrderUri(QX_BASE_PATH_V1 + "/getEntityBidOrders", identity))
                 .retrieve()

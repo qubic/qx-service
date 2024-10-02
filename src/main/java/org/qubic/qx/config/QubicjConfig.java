@@ -9,8 +9,8 @@ import at.qubic.api.service.ComputorService;
 import at.qubic.api.service.TransactionService;
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.adapter.ExtraDataMapper;
-import org.qubic.qx.adapter.NodeService;
-import org.qubic.qx.adapter.qubicj.QubicjNodeService;
+import org.qubic.qx.adapter.CoreApiService;
+import org.qubic.qx.adapter.qubicj.QubicjCoreApiService;
 import org.qubic.qx.adapter.qubicj.TransactionMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -79,8 +79,8 @@ public class QubicjConfig {
     }
 
     @Bean
-    NodeService nodeService(ComputorService computorService, TransactionMapper transactionMapper) {
-        return new QubicjNodeService(computorService, transactionMapper);
+    CoreApiService nodeService(ComputorService computorService, TransactionMapper transactionMapper) {
+        return new QubicjCoreApiService(computorService, transactionMapper);
     }
 
 }

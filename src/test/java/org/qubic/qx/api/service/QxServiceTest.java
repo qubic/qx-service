@@ -1,7 +1,7 @@
 package org.qubic.qx.api.service;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.adapter.il.IntegrationQxApiService;
+import org.qubic.qx.adapter.QxApiService;
 import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
@@ -14,7 +14,7 @@ import static org.mockito.Mockito.*;
 
 class QxServiceTest {
 
-    private final IntegrationQxApiService integrationApi = mock();
+    private final QxApiService integrationApi = mock();
     private final QxService qxService = new QxService(integrationApi);
 
     @Test

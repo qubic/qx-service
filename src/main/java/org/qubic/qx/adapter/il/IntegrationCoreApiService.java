@@ -2,7 +2,7 @@ package org.qubic.qx.adapter.il;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.qubic.qx.adapter.NodeService;
+import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.adapter.QxSpecs;
 import org.qubic.qx.adapter.exception.EmptyResultException;
 import org.qubic.qx.adapter.il.domain.IlTransaction;
@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Slf4j
-public class IntegrationCoreApiService implements NodeService {
+public class IntegrationCoreApiService implements CoreApiService {
 
     private static final String CORE_BASE_PATH_V1 = "/v1/core";
     private final WebClient webClient;

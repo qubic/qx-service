@@ -7,7 +7,7 @@ import io.github.resilience4j.reactor.bulkhead.operator.BulkheadOperator;
 import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import at.qubic.api.service.ComputorService;
-import org.qubic.qx.adapter.NodeService;
+import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.adapter.QxSpecs;
 import org.qubic.qx.adapter.exception.EmptyResultException;
 import org.qubic.qx.domain.Transaction;
@@ -19,7 +19,7 @@ import java.time.Duration;
 import java.util.Objects;
 
 @Slf4j
-public class QubicjNodeService implements NodeService {
+public class QubicjCoreApiService implements CoreApiService {
 
     private final ComputorService computorService;
     private final TransactionMapper transactionMapper;
@@ -30,7 +30,7 @@ public class QubicjNodeService implements NodeService {
             .build();
     private final Bulkhead bulkhead = Bulkhead.of("getTickTransactionsBulkhead", bulkheadConfig);
 
-    public QubicjNodeService(ComputorService computorService, TransactionMapper transactionMapper) {
+    public QubicjCoreApiService(ComputorService computorService, TransactionMapper transactionMapper) {
         this.computorService = computorService;
         this.transactionMapper = transactionMapper;
     }

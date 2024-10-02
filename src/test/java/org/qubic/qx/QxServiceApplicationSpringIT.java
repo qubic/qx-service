@@ -5,7 +5,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 //@Import(TestcontainersConfiguration.class)
 @SpringBootTest
-class QxServiceApplicationTests {
+class QxServiceApplicationSpringIT {
 
     @SuppressWarnings("EmptyMethod")
     @Test

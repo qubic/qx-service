@@ -3,6 +3,7 @@ package org.qubic.qx.adapter.il;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import org.qubic.qx.adapter.QxApiService;
 import org.qubic.qx.adapter.il.mapping.QxIntegrationMapper;
 import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.api.domain.EntityOrder;
@@ -23,7 +24,7 @@ class IntegrationQxApiServiceIT extends AbstractIntegrationApiTest {
 
     private final WebClient webClient = createWebClient("http://localhost:1234");
     private final QxIntegrationMapper qxMapper = Mappers.getMapper(QxIntegrationMapper.class);
-    private final IntegrationQxApiService apiClient = new IntegrationQxApiService(webClient, qxMapper);
+    private final QxApiService apiClient = new IntegrationQxApiService(webClient, qxMapper);
 
     @Test
     void getFees() {

@@ -1,6 +1,6 @@
 package org.qubic.qx.config;
 
-import org.qubic.qx.adapter.NodeService;
+import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.adapter.il.IntegrationCoreApiService;
 import org.qubic.qx.adapter.il.mapping.IlTransactionMapper;
 import org.qubic.qx.domain.Transaction;
@@ -46,13 +46,13 @@ public class SyncJobConfiguration {
 
     @ConditionalOnProperty(value = "backend", havingValue = "integration", matchIfMissing = true)
     @Bean
-    NodeService integrationCoreApiService(WebClient integrationApiWebClient, IlTransactionMapper transactionMapper) {
+    CoreApiService integrationCoreApiService(WebClient integrationApiWebClient, IlTransactionMapper transactionMapper) {
         return new IntegrationCoreApiService(integrationApiWebClient, transactionMapper);
     }
 
     @Bean
-    TickSyncJob tickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository, NodeService nodeService) {
-        return new TickSyncJob(tickRepository, transactionRepository, nodeService);
+    TickSyncJob tickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository, CoreApiService coreService) {
+        return new TickSyncJob(tickRepository, transactionRepository, coreService);
     }
 
     @Bean

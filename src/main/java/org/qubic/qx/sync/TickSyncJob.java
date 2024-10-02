@@ -2,7 +2,7 @@ package org.qubic.qx.sync;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.qubic.qx.adapter.NodeService;
+import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
@@ -18,12 +18,12 @@ public class TickSyncJob {
 
     private final TickRepository tickRepository;
     private final TransactionRepository transactionRepository;
-    private final NodeService nodeService;
+    private final CoreApiService coreService;
 
-    public TickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository, NodeService nodeService) {
+    public TickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository, CoreApiService coreService) {
         this.tickRepository = tickRepository;
         this.transactionRepository = transactionRepository;
-        this.nodeService = nodeService;
+        this.coreService = coreService;
     }
 
     public Flux<Long> sync(long targetTick) {
@@ -45,7 +45,7 @@ public class TickSyncJob {
     }
 
     private Mono<Long> processTick(Long tickNumber) {
-        return nodeService.getQxTransactions(tickNumber)
+        return coreService.getQxTransactions(tickNumber)
                 .doFirst(() -> log.debug("Query node for tick [{}].", tickNumber))
                 .flatMap(this::processTransaction)
                 .collectList()
@@ -101,11 +101,11 @@ public class TickSyncJob {
     }
 
     private Mono<Long> getLowestAvailableTick() {
-        return nodeService.getInitialTick();
+        return coreService.getInitialTick();
     }
 
     public Mono<Long> getCurrentTick() {
-        return nodeService.getCurrentTick();
+        return coreService.getCurrentTick();
     }
 
 }
