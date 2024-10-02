@@ -11,7 +11,7 @@ import org.qubic.qx.api.domain.Fees;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public interface QxIntegrationMapper {
+public interface IlQxMapper {
 
     Fees mapFees(IlFees fees);
     AssetOrder mapAssetOrder(IlAssetOrder assetOrder);

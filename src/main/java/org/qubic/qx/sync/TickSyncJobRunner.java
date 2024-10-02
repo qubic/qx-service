@@ -29,9 +29,9 @@ public class TickSyncJobRunner {
         Mono<Boolean> updateSyncedTick = Mono.defer(() -> syncJob.updateLatestSyncedTick(targetTick));
 
         Flux.concat(syncTicks, updateSyncedTick)
-                .retryWhen(Retry.indefinitely())
                 .doOnComplete(() -> log.info("Sync to [{}] completed.", targetTick))
                 .doOnError(t -> log.error("Error syncing to tick [{}].", targetTick, t))
+                .retryWhen(Retry.indefinitely())
                 .doOnTerminate(() -> log.info("Sync run finished. Next run at [{}].", Instant.now().plus(sleepDuration)))
                 .repeatWhen(repeat -> repeat.delayElements(sleepDuration))
                 .subscribe();

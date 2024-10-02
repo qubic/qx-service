@@ -10,6 +10,7 @@ import at.qubic.api.service.ComputorService;
 import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.adapter.QxSpecs;
 import org.qubic.qx.adapter.exception.EmptyResultException;
+import org.qubic.qx.adapter.qubicj.mapping.QubicjTransactionMapper;
 import org.qubic.qx.domain.Transaction;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,7 +23,7 @@ import java.util.Objects;
 public class QubicjCoreApiService implements CoreApiService {
 
     private final ComputorService computorService;
-    private final TransactionMapper transactionMapper;
+    private final QubicjTransactionMapper transactionMapper;
 
 
     private final BulkheadConfig bulkheadConfig = BulkheadConfig.custom()
@@ -30,7 +31,7 @@ public class QubicjCoreApiService implements CoreApiService {
             .build();
     private final Bulkhead bulkhead = Bulkhead.of("getTickTransactionsBulkhead", bulkheadConfig);
 
-    public QubicjCoreApiService(ComputorService computorService, TransactionMapper transactionMapper) {
+    public QubicjCoreApiService(ComputorService computorService, QubicjTransactionMapper transactionMapper) {
         this.computorService = computorService;
         this.transactionMapper = transactionMapper;
     }

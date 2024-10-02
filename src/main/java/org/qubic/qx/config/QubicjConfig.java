@@ -8,10 +8,12 @@ import at.qubic.api.properties.NetworkProperties;
 import at.qubic.api.service.ComputorService;
 import at.qubic.api.service.TransactionService;
 import lombok.extern.slf4j.Slf4j;
-import org.qubic.qx.adapter.ExtraDataMapper;
 import org.qubic.qx.adapter.CoreApiService;
+import org.qubic.qx.adapter.QxApiService;
 import org.qubic.qx.adapter.qubicj.QubicjCoreApiService;
-import org.qubic.qx.adapter.qubicj.TransactionMapper;
+import org.qubic.qx.adapter.qubicj.QubicjQxApiService;
+import org.qubic.qx.adapter.qubicj.mapping.QubicjOxMapper;
+import org.qubic.qx.adapter.qubicj.mapping.QubicjTransactionMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -67,20 +69,19 @@ public class QubicjConfig {
         return new TransactionService(identityUtil, new NoCrypto());
     }
 
-    // create bean without shared lib crypto dependency
     @Bean
     ComputorService computorService(Nodes nodes, IdentityUtil identityUtil, TransactionService transactionService) {
         return new ComputorService(nodes, identityUtil, transactionService);
     }
 
     @Bean
-    TransactionMapper transactionMapper(ExtraDataMapper extraDataMapper, IdentityUtil identityUtil) {
-        return new TransactionMapper(extraDataMapper, identityUtil);
+    CoreApiService qubicjCoreApiService(ComputorService computorService, QubicjTransactionMapper transactionMapper) {
+        return new QubicjCoreApiService(computorService, transactionMapper);
     }
 
     @Bean
-    CoreApiService nodeService(ComputorService computorService, TransactionMapper transactionMapper) {
-        return new QubicjCoreApiService(computorService, transactionMapper);
+    QxApiService qubicjQxApiService(ComputorService computorService, QubicjOxMapper qxMapper) {
+        return new QubicjQxApiService(computorService, qxMapper);
     }
 
 }

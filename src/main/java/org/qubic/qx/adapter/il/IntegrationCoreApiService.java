@@ -42,8 +42,9 @@ public class IntegrationCoreApiService implements CoreApiService {
 
     @Override
     public Flux<Transaction> getQxTransactions(long tick) {
-        return webClient.get()
+        return webClient.post()
                 .uri(CORE_BASE_PATH_V1 + "/getTickTransactions")
+                .bodyValue(String.format("{\"tick\":%d }", tick))
                 .retrieve()
                 .bodyToMono(IlTransactions.class)
                 .flatMapIterable(IlTransactions::transactions)

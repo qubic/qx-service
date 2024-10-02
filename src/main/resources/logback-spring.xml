@@ -9,7 +9,7 @@
 
   <logger name="at.qubic" level="INFO"/>
   <logger name="at.qubic.api.network" level="WARN"/>
-  <logger name="org.qubic" level="INFO"/>
+  <logger name="org.qubic" level="DEBUG"/>
 
   <root level="WARN" >
     <appender-ref ref="CONSOLE"/>

@@ -2,16 +2,14 @@ package org.qubic.qx.adapter.il;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
 import org.qubic.qx.adapter.QxApiService;
-import org.qubic.qx.adapter.il.mapping.QxIntegrationMapper;
 import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
 
 import java.util.List;
@@ -22,9 +20,8 @@ class IntegrationQxApiServiceIT extends AbstractIntegrationApiTest {
     private static final String TEST_ID = "TESTRAIJSNPOJAKARTQNQVRROKWBKLHXIBEYMYKVIGTWYXLDKFMEAFMDRJIC";
     private static final String CFB_ISSUER = "CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL";
 
-    private final WebClient webClient = createWebClient("http://localhost:1234");
-    private final QxIntegrationMapper qxMapper = Mappers.getMapper(QxIntegrationMapper.class);
-    private final QxApiService apiClient = new IntegrationQxApiService(webClient, qxMapper);
+    @Autowired
+    private QxApiService apiClient;
 
     @Test
     void getFees() {

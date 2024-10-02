@@ -7,13 +7,20 @@ import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.adapter.ExtraDataMapper;
+import org.qubic.qx.adapter.qubicj.mapping.QubicjTransactionMapper;
 import org.qubic.qx.domain.ExtraData;
 import org.qubic.qx.domain.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-class TransactionMapperTest {
+@SpringBootTest(properties = """
+backend=qubicj
+""")
+class QubicjTransactionMapperSpringIT {
 
     private static final byte[] SOURCE_PUBLIC_KEY = {1, 2, 3};
     private static final byte[] DESTINATION_PUBLIC_KEY = {4, 5, 6};
@@ -22,9 +29,15 @@ class TransactionMapperTest {
     private static final int TICK = -1;
     private static final ExtraData EXTRA_DATA = mock();
     private static final String TRANSACTION_HASH = "transaction-hash";
-    private final IdentityUtil identityUtil = mock();
-    private final ExtraDataMapper extraDataMapper = mock();
-    private final TransactionMapper mapper = new TransactionMapper(extraDataMapper, identityUtil);
+
+    @MockBean
+    private IdentityUtil identityUtil;
+
+    @MockBean
+    private ExtraDataMapper extraDataMapper;
+
+    @Autowired
+    private QubicjTransactionMapper mapper;
 
     @BeforeEach
     void initMocks() {

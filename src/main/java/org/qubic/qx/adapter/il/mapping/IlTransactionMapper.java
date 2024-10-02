@@ -19,13 +19,11 @@ public abstract class IlTransactionMapper {
     @Autowired // needed for mapstruct
     private ExtraDataMapper extraDataMapper;
 
-    // TODO extra data
     @Mapping(target = "transactionHash", source = "txId")
     @Mapping(target = "sourcePublicId", source = "sourceId")
     @Mapping(target = "destinationPublicId", source = "destId")
     @Mapping(target = "extraData", source = "source")
     public abstract Transaction mapTransaction(IlTransaction source);
-
 
     public ExtraData mapInput(IlTransaction source) {
         int inputType = source.inputType();

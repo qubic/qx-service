@@ -15,10 +15,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
-class QxIntegrationMapperSpringIT {
+class IlQxMapperSpringIT {
 
     @Autowired
-    private QxIntegrationMapper qxMapper;
+    private IlQxMapper qxMapper;
 
     @Test
     void mapFees() {

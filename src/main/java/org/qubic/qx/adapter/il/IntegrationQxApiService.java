@@ -4,7 +4,7 @@ import org.qubic.qx.adapter.QxApiService;
 import org.qubic.qx.adapter.il.domain.IlEntityOrders;
 import org.qubic.qx.adapter.il.domain.IlAssetOrders;
 import org.qubic.qx.adapter.il.domain.IlFees;
-import org.qubic.qx.adapter.il.mapping.QxIntegrationMapper;
+import org.qubic.qx.adapter.il.mapping.IlQxMapper;
 import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
@@ -20,9 +20,9 @@ public class IntegrationQxApiService implements QxApiService {
 
     private static final String QX_BASE_PATH_V1 = "/v1/qx";
     private final WebClient webClient;
-    private final QxIntegrationMapper qxMapper;
+    private final IlQxMapper qxMapper;
 
-    public IntegrationQxApiService(WebClient webClient, QxIntegrationMapper qxMapper) {
+    public IntegrationQxApiService(WebClient webClient, IlQxMapper qxMapper) {
         this.webClient = webClient;
         this.qxMapper = qxMapper;
     }

@@ -1,19 +1,14 @@
 package org.qubic.qx.adapter.il;
 
-import at.qubic.api.crypto.IdentityUtil;
-import at.qubic.api.crypto.NoCrypto;
 import io.micrometer.core.instrument.util.IOUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
-import org.qubic.qx.adapter.ExtraDataMapper;
-import org.qubic.qx.adapter.il.mapping.IlTransactionMapper;
+import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.domain.QxAssetOrderData;
 import org.qubic.qx.domain.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
@@ -21,9 +16,6 @@ import java.util.Objects;
 
 class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
 
-    private final WebClient webClient = createWebClient("http://localhost:1234");
-    private final IlTransactionMapper transactionMapper = Mappers.getMapper(IlTransactionMapper.class);
-    private final IntegrationCoreApiService apiService = new IntegrationCoreApiService(webClient, transactionMapper);
     private static final String TICK_INFO_RESPONSE = """
             {
               "tick": 123,
@@ -34,12 +26,8 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
               "initialTickOfEpoch": 99
             }""";
 
-    @BeforeEach
-    void initMapper() {
-        IdentityUtil identityUtil = new IdentityUtil(true, new NoCrypto());
-        ExtraDataMapper extraDataMapper = new ExtraDataMapper(identityUtil);
-        transactionMapper.setExtraDataMapper(extraDataMapper);
-    }
+    @Autowired
+    private CoreApiService apiService;
 
     @Test
     void getCurrentTick() {

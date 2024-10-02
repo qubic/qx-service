@@ -81,7 +81,7 @@ public class TickSyncJob {
         return fromTick -> {
             long syncToTick = Math.max(targetTick, fromTick);
             int numberOfTicks = (int) (syncToTick - fromTick);
-            log.info("Syncing from tick [{}] to [{}].", fromTick, syncToTick);
+            log.info("Syncing from tick [{}] to [{}]. Number of ticks: [{}].", fromTick, syncToTick, numberOfTicks);
             return Flux.range(0, numberOfTicks).map(counter -> fromTick + counter);
         };
     }
