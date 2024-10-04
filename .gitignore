@@ -4,7 +4,13 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# local property files
 application-*.properties
+
+# log files
+
+*.log
+*.log.*.gz
 
 ### STS ###
 .apt_generated

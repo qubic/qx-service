@@ -3,12 +3,15 @@ package org.qubic.qx.sync;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.assets.AssetService;
+import org.qubic.qx.domain.OrderBook;
 import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
@@ -40,7 +43,7 @@ class TickSyncJobTest {
         when(tickRepository.setTickTransactions(anyLong(), anyList())).thenReturn(Mono.just(true));
         when(tickRepository.addToQxTicks(anyLong())).thenReturn(Mono.just(1L));
 
-        when(assetService.updateOrderBooks(anyLong())).thenReturn(Flux.just(1L, 2L, 3L));
+        when(assetService.retrieveAllCurrentOrderBooks(anyLong())).thenReturn(Flux.just(new OrderBook(0, "FOO", "BAR", List.of(), List.of())));
 
         StepVerifier.create(tickSync.sync(3459L).log())
                 .expectNextCount(3)

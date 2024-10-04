@@ -109,4 +109,40 @@ class OrderBookRepositorySpringIT extends AbstractRedisTest {
 
     }
 
+    @Test
+    void getLatestOrderBookBefore() {
+        List<AssetOrder> bids = List.of(new AssetOrder("identity", 1, 2));
+        List<AssetOrder> asks = List.of(new AssetOrder("identity", 3, 4));
+        OrderBook orderBook1 = new OrderBook(123L, "issuer", "asset", asks, bids);
+        OrderBook orderBook2 = new OrderBook(124L, "issuer", "asset", asks, bids);
+        OrderBook orderBook3 = new OrderBook(125L, "issuer", "asset", asks, bids);
+
+        Mono<Long> storeOrderBook1 = orderBookRepository.storeOrderBook(orderBook1);
+        Mono<Long> storeOrderBook2 = orderBookRepository.storeOrderBook(orderBook2);
+        Mono<Long> storeOrderBook3 = orderBookRepository.storeOrderBook(orderBook3);
+
+        Mono<OrderBook> previousOrderBook1 = orderBookRepository.getPreviousOrderBookBefore("issuer", "asset", 124);
+
+        StepVerifier.create(Mono.zip(storeOrderBook1, storeOrderBook2, storeOrderBook3).then(previousOrderBook1))
+                .expectNext(orderBook1)
+                .verifyComplete();
+
+        Mono<OrderBook> previousOrderBook2 = orderBookRepository.getPreviousOrderBookBefore("issuer", "asset", 125);
+        StepVerifier.create(previousOrderBook2)
+                .expectNext(orderBook2)
+                .verifyComplete();
+
+        Mono<OrderBook> previousOrderBook3 = orderBookRepository.getPreviousOrderBookBefore("issuer", "asset", 999);
+        StepVerifier.create(previousOrderBook3)
+                .expectNext(orderBook3)
+                .verifyComplete();
+
+        Mono<OrderBook> noPreviousOrderBook = orderBookRepository.getPreviousOrderBookBefore("issuer", "asset", 42);
+        StepVerifier.create(noPreviousOrderBook)
+                .verifyComplete();
+    }
+
+
+
+
 }

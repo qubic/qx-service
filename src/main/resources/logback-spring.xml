@@ -2,17 +2,32 @@
 <configuration>
 
   <include resource="org/springframework/boot/logging/logback/defaults.xml" />
-   <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+  <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+  <include resource="org/springframework/boot/logging/logback/file-appender.xml" />
+
+  <property name="FILE_LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd'T'HH:mm:ss.SSSXXX,UTC}} ${LOG_LEVEL_PATTERN:-%5p} ${PID:- } - %applicationName[%10.10t] ${LOG_CORRELATION_PATTERN:-}%-30.30logger{29} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+
+  <appender name="asyncConsole" class="ch.qos.logback.classic.AsyncAppender">
+    <neverBlock>true</neverBlock>
+    <appender-ref ref="CONSOLE"/>
+  </appender>
+
+  <appender name="asyncFile" class="ch.qos.logback.classic.AsyncAppender">
+    <neverBlock>true</neverBlock>
+    <appender-ref ref="FILE"/>
+  </appender>
 
   <logger name="ch.qos.logback" level="WARN"/>
   <logger name="org.springframework" level="WARN"/>
 
   <logger name="at.qubic" level="INFO"/>
   <logger name="at.qubic.api.network" level="WARN"/>
+<!--  <logger name="at.qubic.api.service.ComputorService" level="DEBUG"/>-->
   <logger name="org.qubic" level="INFO"/>
 
   <root level="WARN" >
-    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="asyncConsole"/>
+    <appender-ref ref="asyncFile"/>
   </root>
 
 </configuration>

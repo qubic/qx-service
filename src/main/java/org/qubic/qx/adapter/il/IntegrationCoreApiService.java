@@ -3,7 +3,7 @@ package org.qubic.qx.adapter.il;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.adapter.CoreApiService;
-import org.qubic.qx.adapter.QxSpecs;
+import org.qubic.qx.adapter.Qx;
 import org.qubic.qx.adapter.exception.EmptyResultException;
 import org.qubic.qx.adapter.il.domain.IlTransaction;
 import org.qubic.qx.adapter.il.domain.IlTransactions;
@@ -61,14 +61,20 @@ public class IntegrationCoreApiService implements CoreApiService {
     }
 
     private boolean isRelevantTransaction(IlTransaction transaction) {
-        String relevantQxOperation = QxSpecs.INPUT_TYPES.get(transaction.inputType());
-        if (StringUtils.equals(transaction.destId(), QxSpecs.QX_PUBLIC_ID)
-                && StringUtils.isNotBlank(relevantQxOperation)) {
-            log.debug("[{}]: [{}].", relevantQxOperation, transaction.txId());
+        if (isRelevantInputType(transaction) && isSentToQxAddress(transaction)) {
+            log.debug("[{}]: [{}].", Qx.Order.fromCode(transaction.inputType()), transaction.txId());
             return true;
         } else {
             return false;
         }
+    }
+
+    private static boolean isSentToQxAddress(IlTransaction transaction) {
+        return StringUtils.equals(transaction.destId(), Qx.QX_PUBLIC_ID);
+    }
+
+    private static boolean isRelevantInputType(IlTransaction transaction) {
+        return Qx.ALL_INPUT_TYPES.contains(transaction.inputType());
     }
 
 }
