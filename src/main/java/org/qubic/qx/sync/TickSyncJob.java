@@ -3,15 +3,18 @@ package org.qubic.qx.sync;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.qubic.qx.adapter.CoreApiService;
+import org.qubic.qx.adapter.Qx;
+import org.qubic.qx.domain.TickData;
+import org.qubic.qx.domain.TickInfo;
 import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.util.List;
-import java.util.function.Function;
 
 @Slf4j
 public class TickSyncJob {
@@ -21,6 +24,8 @@ public class TickSyncJob {
     private final CoreApiService coreService;
     private final TransactionProcessor transactionProcessor;
 
+    private TickInfo currentTickInfo;
+
     public TickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository, CoreApiService coreService, TransactionProcessor transactionProcessor) {
         this.tickRepository = tickRepository;
         this.transactionRepository = transactionRepository;
@@ -28,13 +33,15 @@ public class TickSyncJob {
         this.transactionProcessor = transactionProcessor;
     }
 
-    public Flux<Long> sync(long currentTick) {
+    public Mono<TickInfo> sync() {
         // get highes available start block (start from scratch or last db state)
-        return getLowestAvailableTick()
+        return coreService.getTickInfo()
+                .doOnNext(ti -> this.currentTickInfo = ti)
                 .flatMap(this::calculateStartTick)
-                .flatMapMany(calculateSyncRange(currentTick))
+                .flatMapMany(this::calculateSyncRange)
                 .doOnNext(tickNumber -> log.debug("Preparing to sync tick [{}].", tickNumber))
-                .concatMap(this::processTick) // sequential processing for order book calculations
+                .concatMap(this::processTick)
+                .then(Mono.defer(() -> Mono.just(currentTickInfo))) // sequential processing for order book calculations
                 ;
     }
 
@@ -48,6 +55,7 @@ public class TickSyncJob {
     private Mono<Long> processNewTick(Long tickNumber) {
         return coreService.getQxTransactions(tickNumber)
                 .doFirst(() -> log.debug("Query node for tick [{}].", tickNumber))
+                .doOnNext(tx -> log.info("[{}] Received [{}] transaction.", tx.transactionHash(), Qx.Order.fromCode(tx.inputType())))
                 .collectList()
                 .flatMap(list -> processTransactions(tickNumber, list))
                 .map(x -> tickNumber)
@@ -61,20 +69,16 @@ public class TickSyncJob {
     private Mono<Boolean> processTransactions(Long tickNumber, List<Transaction> txs) {
         Mono<Long> storeTickNumberMono = tickRepository.addToProcessedTicks(tickNumber);
         if (CollectionUtils.isEmpty(txs)) {
-            return storeTickNumberMono.
-                    then(Mono.just(false));
+            return storeTickNumberMono.then(Mono.just(false));
         } else {
 
-
-            // TODO store qx tick information if there are transactions, like time for displaying order data later
-
-            return transactionProcessor.processQxOrders(tickNumber, txs)
+            return coreService.getTickData(tickNumber)
                     .doFirst(() -> log.info("Tick [{}]: processing [{}] qx orders.", tickNumber, txs.size()))
+                    .map(TickData::timestamp)
+                    .flatMap(instant -> transactionProcessor.processQxOrders(tickNumber, instant, txs))
                     .thenMany(storeTransactions(txs))
                     .then(storeTickNumberMono)
                     .then(tickRepository.addToQxTicks(tickNumber))
-
-                    // TODO .then(tickRepository.storeTick) - at least we need the timestamp
                     .then(tickRepository.setTickTransactions(tickNumber, txs.stream().map(Transaction::transactionHash).toList()));
         }
     }
@@ -86,35 +90,31 @@ public class TickSyncJob {
 
     // minor helper methods
 
-    private static Function<Long, Publisher<? extends Long>> calculateSyncRange(long targetTick) {
-        return fromTick -> {
-            long syncToTick = Math.max(targetTick, fromTick);
-            int numberOfTicks = (int) (syncToTick - fromTick);
-            log.info("Syncing from tick [{}] to [{}]. Number of ticks: [{}].", fromTick, syncToTick, numberOfTicks);
-            return Flux.range(0, numberOfTicks).map(counter -> fromTick + counter);
-        };
+    private Flux<Long> calculateSyncRange(Tuple2<TickInfo, Long> endAndStartTick) {
+        long startTick = endAndStartTick.getT2();
+        long endTick = Math.max(startTick, endAndStartTick.getT1().tick());
+        int numberOfTicks = (int) (endTick - startTick);
+        if (numberOfTicks > 1) {
+            log.info("Syncing from tick [{}] to [{}]. Number of ticks: [{}].", startTick, endTick, numberOfTicks);
+        }
+        return Flux.range(0, numberOfTicks)
+                .map(counter -> startTick + counter);
     }
 
-    public Mono<Boolean> updateLatestSyncedTick(long syncedTick) {
+    public Mono<Long> updateLatestSyncedTick(long syncedTick) {
        return tickRepository.getLatestSyncedTick()
                .flatMap(latest -> latest >= syncedTick
                        ? Mono.just(false)
-                       : tickRepository.setLatestSyncedTick(syncedTick));
+                       : tickRepository.setLatestSyncedTick(syncedTick))
+               .then(Mono.just(syncedTick));
     }
 
-    private Mono<Long> calculateStartTick(Long lowestTick) {
+    private Mono<Tuple2<TickInfo, Long>> calculateStartTick(TickInfo tickInfo) {
         return tickRepository.getLatestSyncedTick()
-                .map(latestStoredTick -> lowestTick > latestStoredTick
-                        ? lowestTick
-                        : latestStoredTick);
-    }
-
-    private Mono<Long> getLowestAvailableTick() {
-        return coreService.getInitialTick();
-    }
-
-    public Mono<Long> getCurrentTick() {
-        return coreService.getCurrentTick();
+                .map(latestStoredTick -> tickInfo.initialTick() > latestStoredTick
+                        ? tickInfo.initialTick()
+                        : latestStoredTick)
+                .map(startTick -> Tuples.of(tickInfo, startTick));
     }
 
 }

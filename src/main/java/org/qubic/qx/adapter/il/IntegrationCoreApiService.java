@@ -6,6 +6,7 @@ import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.adapter.Qx;
 import org.qubic.qx.adapter.exception.EmptyResultException;
 import org.qubic.qx.adapter.il.domain.IlTickData;
+import org.qubic.qx.adapter.il.domain.IlTickInfo;
 import org.qubic.qx.adapter.il.domain.IlTransaction;
 import org.qubic.qx.adapter.il.domain.IlTransactions;
 import org.qubic.qx.adapter.il.mapping.IlCoreMapper;
@@ -21,11 +22,11 @@ public class IntegrationCoreApiService implements CoreApiService {
 
     private static final String CORE_BASE_PATH_V1 = "/v1/core";
     private final WebClient webClient;
-    private final IlCoreMapper transactionMapper;
+    private final IlCoreMapper mapper;
 
-    public IntegrationCoreApiService(WebClient webClient, IlCoreMapper transactionMapper) {
+    public IntegrationCoreApiService(WebClient webClient, IlCoreMapper mapper) {
         this.webClient = webClient;
-        this.transactionMapper = transactionMapper;
+        this.mapper = mapper;
     }
 
     @Override
@@ -38,7 +39,7 @@ public class IntegrationCoreApiService implements CoreApiService {
     @Override
     public Mono<Long> getInitialTick() {
         return getTickInfo()
-                .map(TickInfo::initialTickOfEpoch)
+                .map(TickInfo::initialTick)
                 .doOnNext(tick -> log.debug("Initial epoch tick: [{}]", tick));
     }
 
@@ -49,7 +50,7 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .bodyValue(String.format("{\"tick\":%d }", tick))
                 .retrieve()
                 .bodyToMono(IlTickData.class)
-                .map(transactionMapper::map);
+                .map(mapper::map);
     }
 
     @Override
@@ -61,14 +62,16 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .bodyToMono(IlTransactions.class)
                 .flatMapIterable(IlTransactions::transactions)
                 .filter(this::isRelevantTransaction)
-                .map(transactionMapper::mapTransaction);
+                .map(mapper::mapTransaction);
     }
 
-    private Mono<TickInfo> getTickInfo() {
+    @Override
+    public Mono<TickInfo> getTickInfo() {
         return webClient.get()
                 .uri(CORE_BASE_PATH_V1 + "/getTickInfo")
                 .retrieve()
-                .bodyToMono(TickInfo.class)
+                .bodyToMono(IlTickInfo.class)
+                .map(mapper::map)
                 .switchIfEmpty(Mono.error(new EmptyResultException("Could not get tick info.")));
     }
 

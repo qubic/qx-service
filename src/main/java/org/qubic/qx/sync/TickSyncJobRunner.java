@@ -7,14 +7,12 @@ import reactor.util.retry.Retry;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.time.Instant;
 
 @Slf4j
 public class TickSyncJobRunner {
 
     private final TickSyncJob syncJob;
     private final Duration sleepDuration;
-    private long targetTick;
 
     public TickSyncJobRunner(TickSyncJob syncJob, Duration sleepDuration) {
         this.syncJob = syncJob;
@@ -25,17 +23,13 @@ public class TickSyncJobRunner {
 
         Mono<?> updateAllOrderBooks = syncJob.updateAllOrderBooks();
 
-        Flux<Long> syncTicks = Flux.defer(() -> syncJob.getCurrentTick()
-                        .doOnNext(tick -> targetTick = tick)
-                        .flatMapMany(syncJob::sync));
 
-        Mono<Boolean> updateSyncedTick = Mono.defer(() -> syncJob.updateLatestSyncedTick(targetTick));
-
-        Flux<? extends Serializable> syncLoop = Flux.concat(syncTicks, updateSyncedTick)
-                .doOnComplete(() -> log.debug("Sync to [{}] completed.", targetTick))
-                .doOnError(t -> log.error("Error syncing to tick [{}].", targetTick, t))
+        Flux<? extends Serializable> syncLoop = syncJob.sync()
+                .flatMap(ti -> syncJob.updateLatestSyncedTick(ti.tick()))
+                .doOnNext(tick -> log.debug("Sync to [{}] completed.", tick))
+                .doOnError(t -> log.error("Error running sync job.", t))
                 .retryWhen(Retry.indefinitely())
-                .doOnTerminate(() -> log.info("Sync run finished. Next run at [{}].", Instant.now().plus(sleepDuration)))
+                .doOnTerminate(() -> log.debug("Sync run finished. Next run in [{}].", sleepDuration))
                 .repeatWhen(repeat -> repeat.delayElements(sleepDuration));
 
         updateAllOrderBooks

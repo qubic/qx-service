@@ -23,6 +23,7 @@ public class Qx {
         REMOVE_BID(8);
 
         public final int code;
+
         Order(int code) {
             this.code = code;
         }

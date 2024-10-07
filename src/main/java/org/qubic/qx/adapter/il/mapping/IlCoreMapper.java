@@ -5,9 +5,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.qubic.qx.adapter.ExtraDataMapper;
 import org.qubic.qx.adapter.il.domain.IlTickData;
+import org.qubic.qx.adapter.il.domain.IlTickInfo;
 import org.qubic.qx.adapter.il.domain.IlTransaction;
 import org.qubic.qx.domain.ExtraData;
 import org.qubic.qx.domain.TickData;
+import org.qubic.qx.domain.TickInfo;
 import org.qubic.qx.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,6 +28,9 @@ public abstract class IlCoreMapper {
     @Mapping(target = "destinationPublicId", source = "destId")
     @Mapping(target = "extraData", source = "source")
     public abstract Transaction mapTransaction(IlTransaction source);
+
+    @Mapping(target = "initialTick", source= "initialTickOfEpoch")
+    public abstract TickInfo map(IlTickInfo source);
 
     public ExtraData mapInput(IlTransaction source) {
         int inputType = source.inputType();

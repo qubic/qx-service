@@ -8,6 +8,7 @@ import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
 import org.qubic.qx.domain.TickData;
+import org.qubic.qx.domain.TickInfo;
 import org.qubic.qx.domain.Transaction;
 
 import java.util.List;
@@ -43,5 +44,10 @@ public interface QubicjMapper {
     @Mapping(target = "tick", qualifiedBy = UnsignedIntMapping.class)
     @Mapping(target = "timestamp", source = "source.timestamp")
     TickData map(at.qubic.api.domain.std.response.TickData source);
+
+    @Mapping(target = "epoch", qualifiedBy = UnsignedShortMapping.class)
+    @Mapping(target = "tick", qualifiedBy = UnsignedIntMapping.class)
+    @Mapping(target = "initialTick", qualifiedBy = UnsignedIntMapping.class)
+    TickInfo map(at.qubic.api.domain.std.response.TickInfo source);
 
 }

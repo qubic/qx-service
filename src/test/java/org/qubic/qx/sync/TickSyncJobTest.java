@@ -2,12 +2,15 @@ package org.qubic.qx.sync;
 
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.adapter.CoreApiService;
+import org.qubic.qx.domain.TickData;
 import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
@@ -34,14 +37,15 @@ class TickSyncJobTest {
         when(coreService.getQxTransactions(3456L)).thenReturn(Flux.just(tx));
         when(coreService.getQxTransactions(3457L)).thenReturn(Flux.just(tx, tx));
         when(coreService.getQxTransactions(3458L)).thenReturn(Flux.just(tx, tx, tx));
+        when(coreService.getTickData(anyLong())).thenReturn(Mono.just(new TickData(1, 1L, Instant.now())));
 
         when(transactionRepository.putTransaction(any())).thenReturn(Mono.just(tx));
         when(tickRepository.setTickTransactions(anyLong(), anyList())).thenReturn(Mono.just(true));
         when(tickRepository.addToQxTicks(anyLong())).thenReturn(Mono.just(1L));
-        when(transactionProcessor.processQxOrders(anyLong(), anyList())).thenReturn(Mono.empty());
+        when(transactionProcessor.processQxOrders(anyLong(), any(Instant.class), anyList())).thenReturn(Mono.empty());
         when(transactionProcessor.updateAllOrderBooks()).thenReturn(Mono.empty());
 
-        StepVerifier.create(tickSync.sync(3459L).log())
+        StepVerifier.create(tickSync.sync().log())
                 .expectNextCount(3)
                 .verifyComplete();
     }
@@ -52,7 +56,7 @@ class TickSyncJobTest {
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(0L));
         when(coreService.getInitialTick()).thenReturn(Mono.just(100L));
 
-        StepVerifier.create(tickSync.sync(1000L))
+        StepVerifier.create(tickSync.sync())
                 .expectNextCount(900)
                 .verifyComplete();
     }

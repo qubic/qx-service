@@ -11,6 +11,7 @@ import org.qubic.qx.adapter.Qx;
 import org.qubic.qx.adapter.exception.EmptyResultException;
 import org.qubic.qx.adapter.qubicj.mapping.QubicjMapper;
 import org.qubic.qx.domain.TickData;
+import org.qubic.qx.domain.TickInfo;
 import org.qubic.qx.domain.Transaction;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -38,28 +39,30 @@ public class QubicjCoreApiService implements CoreApiService {
     }
 
     @Override
-    public Mono<Long> getCurrentTick() {
+    public Mono<TickInfo> getTickInfo() {
         return computorService.getCurrentTickInfo()
-                .filter(ti -> ti.getTick() > 0) // TODO remove me after empty response handling is fixed in qubic
-                .map(ti -> Integer.toUnsignedLong(ti.getTick()))
+                .filter(ti -> ti.getTick() > 0)
+                .map(mapper::map)
                 .repeatWhenEmpty(RETRIES, repeat -> repeat.doOnNext(count -> log.info("Repeat [{}] getting current tick.", count)))
                 .retryWhen(Retry.max(RETRIES).doBeforeRetry(rs -> log.info("Retry [{}] getting current tick.", rs.totalRetries())))
                 .switchIfEmpty(Mono.error(new EmptyResultException("Could not get current tick.")));
     }
 
     @Override
+    public Mono<Long> getCurrentTick() {
+        return getTickInfo().map(TickInfo::tick);
+    }
+
+    @Override
     public Mono<Long> getInitialTick() {
-        return computorService.getCurrentTickInfo()
-                .map(ti -> Integer.toUnsignedLong(ti.getInitialTick()))
-                .doOnNext(tickNumber -> log.debug("Initial tick number: {}", tickNumber))
-                .repeatWhenEmpty(RETRIES, repeat -> repeat.doOnNext(count -> log.info("Repeat [{}] getting initial tick.", count)))
-                .retryWhen(Retry.max(RETRIES).doBeforeRetry(rs -> log.info("Retry [{}] getting initial tick.", rs.totalRetries())))
-                .switchIfEmpty(Mono.error(new EmptyResultException("Could not get initial tick.")));
+        return getTickInfo().map(TickInfo::initialTick);
     }
 
     @Override
     public Mono<TickData> getTickData(long tickNumber) {
         return computorService.getTickData((int) tickNumber)
+                .repeatWhenEmpty(RETRIES, repeat -> repeat.doOnNext(count -> log.info("Repeat [{}] getting tick data [{}].", count, tickNumber)))
+                .retryWhen(Retry.max(RETRIES).doBeforeRetry(rs -> log.info("Retry [{}] getting tick data [{}].", rs.totalRetries(), tickNumber)))
                 .map(mapper::map);
     }
 

@@ -47,12 +47,12 @@ public class TransactionRepositorySpringIT extends AbstractRedisTest {
                 .expectNext(TX)
                 .verifyComplete();
 
-        StepVerifier.create(redisTransactionOperations.<String, Transaction>opsForHash()
-                .get("tx:transaction-hash", "tx"))
+        StepVerifier.create(redisTransactionOperations.opsForValue()
+                .get("tx:transaction-hash"))
                 .expectNext(TX)
                 .verifyComplete();
 
-        StepVerifier.create(redisStringTemplate.opsForHash().get("tx:transaction-hash", "tx"))
+        StepVerifier.create(redisStringTemplate.opsForValue().get("tx:transaction-hash"))
                 .expectNext(SERIALIZED_TX)
                 .verifyComplete();
 
@@ -61,8 +61,8 @@ public class TransactionRepositorySpringIT extends AbstractRedisTest {
     @Test
     void getTransaction() {
 
-        Mono<Transaction> storeAndGetTransaction = redisStringTemplate.opsForHash()
-                .put("tx:foo", "tx", SERIALIZED_TX)
+        Mono<Transaction> storeAndGetTransaction = redisStringTemplate.opsForValue()
+                .set("tx:foo", SERIALIZED_TX)
                 .then(transactionRepository.getTransaction("foo"));
 
         StepVerifier.create(storeAndGetTransaction)

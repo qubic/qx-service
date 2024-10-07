@@ -11,11 +11,12 @@ import org.qubic.qx.domain.OrderBook;
 import org.qubic.qx.domain.QxAssetOrderData;
 import org.qubic.qx.domain.Trade;
 import org.qubic.qx.domain.Transaction;
+import org.qubic.qx.repository.TradeRepository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
-import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +29,12 @@ public class TransactionProcessor {
 
     private final CoreApiService coreService;
     private final AssetService assetService;
+    private final TradeRepository tradeRepository;
 
-    public TransactionProcessor(CoreApiService coreService, AssetService assetService) {
+    public TransactionProcessor(CoreApiService coreService, AssetService assetService, TradeRepository tradeRepository) {
         this.coreService = coreService;
         this.assetService = assetService;
+        this.tradeRepository = tradeRepository;
     }
 
     public Mono<Void> updateAllOrderBooks() {
@@ -41,7 +44,7 @@ public class TransactionProcessor {
                         .then());
     }
 
-    public Mono<Void> processQxOrders(Long tickNumber, List<Transaction> txs) {
+    public Mono<Void> processQxOrders(Long tickNumber, Instant tickTime, List<Transaction> txs) {
 
         List<Transaction> orderTransactions = txs.stream()
                 .filter(tx -> tx.extraData() instanceof QxAssetOrderData)
@@ -58,13 +61,21 @@ public class TransactionProcessor {
                 .flatMap(currentOrderBooks -> assetService.loadLatestOrderBooksBeforeTick(tickNumber, assetInformation)
                         .collect(Collectors.toSet())
                         .map(previous -> Tuples.of(currentOrderBooks, previous)))
-                .map(tuple -> handleQxOrderTransactions(tuple, orderTransactions))
+                .map(tuple -> handleQxOrderTransactions(tuple.getT1(), tuple.getT1(), orderTransactions))
+                .flatMapMany(list -> storeTrades(list, tickTime))
                 .then();
     }
 
-    private static Serializable handleQxOrderTransactions(Tuple2<Set<OrderBook>, Set<OrderBook>> tuple, List<Transaction> orderTransactions) {
-        Map<String, OrderBook> currentOrderBooks = tuple.getT1().stream().collect(Collectors.toMap(TransactionProcessor::orderBookKey, x -> x));
-        Map<String, OrderBook> previousOrderBooks = tuple.getT2().stream().collect(Collectors.toMap(TransactionProcessor::orderBookKey, x -> x));
+    private Flux<Trade> storeTrades(List<Trade> list, Instant tickTime) {
+        return Flux.fromIterable(list)
+                .flatMap(trade -> tradeRepository.storeTrade(trade, tickTime));
+    }
+
+    private static List<Trade> handleQxOrderTransactions(Set<OrderBook> currentObs, Set<OrderBook> previousObs, List<Transaction> orderTransactions) {
+        Map<String, OrderBook> currentOrderBooks = currentObs.stream().collect(Collectors.toMap(TransactionProcessor::orderBookKey, x -> x));
+        Map<String, OrderBook> previousOrderBooks = previousObs.stream().collect(Collectors.toMap(TransactionProcessor::orderBookKey, x -> x));
+
+        List<Trade> detectedTrades = new ArrayList<>();
 
         // interpret orders
         for (Transaction tx : orderTransactions) {
@@ -82,75 +93,53 @@ public class TransactionProcessor {
                 // TODO we need to use money flew flag and/or logs
 
             } else {
-                if (orderType == Qx.Order.REMOVE_BID) {
 
-                    List<AssetOrder> newBidOrders = adaptAssetOrders(previousOrderBook.bids(), tx, orderType, orderData, false);
-                    OrderBook calculatedOrderBook = calculateOrderBook(currentOrderBook, previousOrderBook.asks(), newBidOrders);
+                if (isRemoveOrder(orderType)) {
+
+                    // cannot trigger trades but might change order book
+                    List<AssetOrder> askOrders = isAskOrder(orderType) ? adaptAssetOrders(previousOrderBook.asks(), tx, orderType, orderData, false) : previousOrderBook.asks();
+                    List<AssetOrder> bidOrders = isBidOrder(orderType) ? adaptAssetOrders(previousOrderBook.bids(), tx, orderType, orderData, false) : previousOrderBook.bids();
+                    OrderBook calculatedOrderBook = calculateOrderBook(currentOrderBook, askOrders, bidOrders);
                     compareOrderBooks(previousOrderBook, calculatedOrderBook, currentOrderBook, previousOrderBooks, orderData);
 
-                } else if (orderType == Qx.Order.REMOVE_ASK) {
+                } else if (isAddOrder(orderType)) {
 
-                    List<AssetOrder> newAskOrders = adaptAssetOrders(previousOrderBook.asks(), tx, orderType, orderData, false);
-                    OrderBook calculatedOrderBook = calculateOrderBook(currentOrderBook, newAskOrders, previousOrderBook.bids());
-                    compareOrderBooks(previousOrderBook, calculatedOrderBook, currentOrderBook, previousOrderBooks, orderData);
-
-                } else if (orderType == Qx.Order.ADD_BID) {
-
-                    List<AssetOrder> matchedOrders = previousOrderBook.asks().stream() // sorted from low to high
-                            .takeWhile(new AssetOrderPredicate(orderData, true))
+                    // trigger trades in case orders from the order book are matched
+                    List<AssetOrder> potentialMatches = isBidOrder(orderType) ? previousOrderBook.asks() : previousOrderBook.bids();
+                    List<AssetOrder> matchedOrders = potentialMatches.stream() // sorted from low to high
+                            .takeWhile(new AssetOrderPredicate(orderData, isBidOrder(orderType)))
                             .toList();
 
                     if (matchedOrders.isEmpty()) { // add ask or unsuccessful order
                         // no trade
                         log.info("Add bid order to book: {}", orderData);
-                        List<AssetOrder> newBidOrders = adaptAssetOrders(previousOrderBook.bids(), tx, orderType, orderData, true);
-                        OrderBook calculatedOrderBook = calculateOrderBook(currentOrderBook, previousOrderBook.asks(), newBidOrders);
+                        List<AssetOrder> askOrders = isAskOrder(orderType) ? adaptAssetOrders(previousOrderBook.asks(), tx, orderType, orderData, true) : previousOrderBook.asks();
+                        List<AssetOrder> bidOrders = isBidOrder(orderType) ? adaptAssetOrders(previousOrderBook.bids(), tx, orderType, orderData, true) : previousOrderBook.bids();
+                        OrderBook calculatedOrderBook = calculateOrderBook(currentOrderBook, askOrders, bidOrders);
                         compareOrderBooks(previousOrderBook, calculatedOrderBook, currentOrderBook, previousOrderBooks, orderData);
-
                     } else { // trade(s)
-
-                        handleTrades(tx, matchedOrders, orderData, true);
-
-                    }
-
-                } else if (orderType == Qx.Order.ADD_ASK) {
-
-                    List<AssetOrder> matchedOrders = previousOrderBook.bids().stream() // sorted from high to low
-                            .takeWhile(new AssetOrderPredicate(orderData, false))
-                            .toList();
-
-                    if (matchedOrders.isEmpty()) { // add ask or unsuccessful order
-                        // no trade
-                        log.info("Add ask order to book: {}", orderData);
-                        List<AssetOrder> newAskOrders = adaptAssetOrders(previousOrderBook.asks(), tx, orderType, orderData, true);
-                        OrderBook calculatedOrderBook = calculateOrderBook(currentOrderBook, newAskOrders, previousOrderBook.bids());
-                        compareOrderBooks(previousOrderBook, calculatedOrderBook, currentOrderBook, previousOrderBooks, orderData);
-
-                    } else { // trade(s)
-
-                        handleTrades(tx, matchedOrders, orderData, false);
-
+                        detectedTrades.addAll(handleTrades(tx, matchedOrders, orderData, isBidOrder(orderType)));
                     }
 
                 } else { // unhandled case shouldn't happen
 
                     String message = String.format("Unexpected order type: [%s].", tx.inputType());
                     log.error(message);
-                    return new IllegalStateException(message); // TODO does this work this way?
+                    throw new IllegalStateException(message);
 
                 }
             }
 
         }
 
-        return tuple;
+        return detectedTrades;
     }
 
     private static OrderBook calculateOrderBook(OrderBook currentOrderBook, List<AssetOrder> askOrders, List<AssetOrder> bidOrders) {
         return new OrderBook(currentOrderBook.tickNumber(), currentOrderBook.issuer(), currentOrderBook.assetName(), askOrders, bidOrders);
     }
 
-    private static void handleTrades(Transaction tx, List<AssetOrder> matchedOrders, QxAssetOrderData orderData, boolean bid) {
+    private static List<Trade> handleTrades(Transaction tx, List<AssetOrder> matchedOrders, QxAssetOrderData orderData, boolean bid) {
         // trade should happen
         List<Trade> trades = new ArrayList<>();
         long tradedShares = 0;
@@ -167,6 +156,7 @@ public class TransactionProcessor {
             }
         }
         log.info("Trade(s) detected: {}", trades);
+        return trades;
     }
 
     private static void compareOrderBooks(OrderBook previousOrderBook, OrderBook calculatedOrderBook, OrderBook currentOrderBook, Map<String, OrderBook> previousOrderBooks, QxAssetOrderData orderData) {
@@ -239,14 +229,30 @@ public class TransactionProcessor {
         return String.format("%s/%s", issuer, assetName);
     }
 
+    private static boolean isAskOrder(Qx.Order orderType) {
+        return orderType == Qx.Order.REMOVE_ASK || orderType == Qx.Order.ADD_ASK;
+    }
+
+    private static boolean isBidOrder(Qx.Order orderType) {
+        return orderType == Qx.Order.REMOVE_BID || orderType == Qx.Order.ADD_BID;
+    }
+
+    private static boolean isAddOrder(Qx.Order orderType) {
+        return orderType == Qx.Order.ADD_BID || orderType == Qx.Order.ADD_ASK;
+    }
+
+    private static boolean isRemoveOrder(Qx.Order orderType) {
+        return orderType == Qx.Order.REMOVE_BID || orderType == Qx.Order.REMOVE_ASK;
+    }
+
     private static class AssetOrderPredicate implements Predicate<AssetOrder> {
         private final QxAssetOrderData orderData;
         private final boolean buy;
         long shares;
 
-        public AssetOrderPredicate(QxAssetOrderData orderData, boolean buy) {
+        public AssetOrderPredicate(QxAssetOrderData orderData, boolean bid) {
             this.orderData = orderData;
-            this.buy = buy;
+            this.buy = bid; // bid == buy, ask == sell
             shares = orderData.numberOfShares();
         }
 

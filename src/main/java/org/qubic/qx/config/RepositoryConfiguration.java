@@ -1,10 +1,13 @@
 package org.qubic.qx.config;
 
 import org.qubic.qx.api.domain.AssetOrder;
+import org.qubic.qx.domain.Trade;
 import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.OrderBookRepository;
 import org.qubic.qx.repository.TickRepository;
+import org.qubic.qx.repository.TradeRepository;
 import org.qubic.qx.repository.TransactionRepository;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
@@ -22,7 +25,10 @@ public class RepositoryConfiguration {
         Jackson2JsonRedisSerializer<Transaction> serializer = new Jackson2JsonRedisSerializer<>(Transaction.class);
         RedisSerializationContext.RedisSerializationContextBuilder<String, Transaction> builder =
                 RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
-        RedisSerializationContext<String, Transaction> context = builder.hashValue(serializer).build();
+        RedisSerializationContext<String, Transaction> context = builder
+                .value(serializer)
+                .hashValue(serializer)
+                .build();
         return new ReactiveRedisTemplate<>(connectionFactory, context);
     }
 
@@ -31,7 +37,20 @@ public class RepositoryConfiguration {
         Jackson2JsonRedisSerializer<AssetOrder[]> serializer = new Jackson2JsonRedisSerializer<>(AssetOrder[].class);
         RedisSerializationContext.RedisSerializationContextBuilder<String, AssetOrder[]> builder =
                 RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
-        RedisSerializationContext<String, AssetOrder[]> context = builder.hashValue(serializer).build();
+        RedisSerializationContext<String, AssetOrder[]> context = builder
+                .hashValue(serializer)
+                .build();
+        return new ReactiveRedisTemplate<>(connectionFactory, context);
+    }
+
+    @Bean
+    public ReactiveRedisTemplate<String, Trade> tradeRedisTemplate(ReactiveRedisConnectionFactory connectionFactory) {
+        Jackson2JsonRedisSerializer<Trade> serializer = new Jackson2JsonRedisSerializer<>(Trade.class);
+        RedisSerializationContext.RedisSerializationContextBuilder<String, Trade> builder =
+                RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
+        RedisSerializationContext<String, Trade> context = builder
+                .value(serializer)
+                .hashValue(serializer).build();
         return new ReactiveRedisTemplate<>(connectionFactory, context);
     }
 
@@ -43,6 +62,11 @@ public class RepositoryConfiguration {
     @Bean
     TickRepository tickRepository(ReactiveStringRedisTemplate redisStringTemplate) {
         return new TickRepository(redisStringTemplate);
+    }
+
+    @Bean
+    TradeRepository tradeRepository(@Qualifier("tradeRedisTemplate") ReactiveRedisTemplate<String, Trade> redisTradeTemplate) {
+        return new TradeRepository(redisTradeTemplate);
     }
 
     @Bean
