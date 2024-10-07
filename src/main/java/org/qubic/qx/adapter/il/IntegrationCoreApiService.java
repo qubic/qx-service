@@ -5,9 +5,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.adapter.Qx;
 import org.qubic.qx.adapter.exception.EmptyResultException;
+import org.qubic.qx.adapter.il.domain.IlTickData;
 import org.qubic.qx.adapter.il.domain.IlTransaction;
 import org.qubic.qx.adapter.il.domain.IlTransactions;
-import org.qubic.qx.adapter.il.mapping.IlTransactionMapper;
+import org.qubic.qx.adapter.il.mapping.IlCoreMapper;
+import org.qubic.qx.domain.TickData;
 import org.qubic.qx.domain.TickInfo;
 import org.qubic.qx.domain.Transaction;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,9 +21,9 @@ public class IntegrationCoreApiService implements CoreApiService {
 
     private static final String CORE_BASE_PATH_V1 = "/v1/core";
     private final WebClient webClient;
-    private final IlTransactionMapper transactionMapper;
+    private final IlCoreMapper transactionMapper;
 
-    public IntegrationCoreApiService(WebClient webClient, IlTransactionMapper transactionMapper) {
+    public IntegrationCoreApiService(WebClient webClient, IlCoreMapper transactionMapper) {
         this.webClient = webClient;
         this.transactionMapper = transactionMapper;
     }
@@ -38,6 +40,16 @@ public class IntegrationCoreApiService implements CoreApiService {
         return getTickInfo()
                 .map(TickInfo::initialTickOfEpoch)
                 .doOnNext(tick -> log.debug("Initial epoch tick: [{}]", tick));
+    }
+
+    @Override
+    public Mono<TickData> getTickData(long tick) {
+        return webClient.post()
+                .uri(CORE_BASE_PATH_V1 + "/getTickData")
+                .bodyValue(String.format("{\"tick\":%d }", tick))
+                .retrieve()
+                .bodyToMono(IlTickData.class)
+                .map(transactionMapper::map);
     }
 
     @Override

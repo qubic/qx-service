@@ -4,8 +4,8 @@ import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.adapter.QxApiService;
 import org.qubic.qx.adapter.il.IntegrationCoreApiService;
 import org.qubic.qx.adapter.il.IntegrationQxApiService;
+import org.qubic.qx.adapter.il.mapping.IlCoreMapper;
 import org.qubic.qx.adapter.il.mapping.IlQxMapper;
-import org.qubic.qx.adapter.il.mapping.IlTransactionMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -38,7 +38,7 @@ public class IntegrationLayerConfig {
     }
 
     @Bean
-    CoreApiService integrationCoreApiService(WebClient integrationApiWebClient, IlTransactionMapper transactionMapper) {
+    CoreApiService integrationCoreApiService(WebClient integrationApiWebClient, IlCoreMapper transactionMapper) {
         return new IntegrationCoreApiService(integrationApiWebClient, transactionMapper);
     }
 

@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.util.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.domain.QxAssetOrderData;
+import org.qubic.qx.domain.TickData;
 import org.qubic.qx.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +13,7 @@ import org.springframework.http.MediaType;
 import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Objects;
 
 class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
@@ -56,6 +58,30 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
                 .verifyComplete();
 
         assertRequest("/v1/core/getTickInfo");
+
+    }
+
+    @Test
+    void getTickData() {
+        String responseJson = """
+                {"computorIndex":598,
+                "epoch":129,
+                "tick":16394274,
+                "timestamp":"2024-10-07T11:38:33Z",
+                "timeLock":"OX8cA6pGRid4/cQlOvW4bgwm9zwSnPwgxYDwwEbTQHk=",
+                "transactionIds":["mmuyrzbufplgvgffxmvelkngezggcliszqlfhulqvclvzlwvfxrpnipdmeee"],
+                "contractFees":[],
+                "signature":"vRWNCuql1CVDu03euFY+I5/U4v3Kk5UdgXqWD1yd7wlsxRdQAj9UX9bR6lOE9BDS3PR6r1tuXmtrHFAhsR0eAA=="}""";
+
+        prepareResponse(response -> response.setResponseCode(HttpStatus.OK.value())
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setBody(responseJson));
+
+        StepVerifier.create(apiService.getTickData(16394274))
+                .expectNext(new TickData(129, 16394274, Instant.parse("2024-10-07T11:38:33Z")))
+                .verifyComplete();
+
+        assertRequest("/v1/core/getTickData");
 
     }
 

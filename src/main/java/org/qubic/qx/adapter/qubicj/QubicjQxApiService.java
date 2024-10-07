@@ -2,7 +2,7 @@ package org.qubic.qx.adapter.qubicj;
 
 import at.qubic.api.service.ComputorService;
 import org.qubic.qx.adapter.QxApiService;
-import org.qubic.qx.adapter.qubicj.mapping.QubicjOxMapper;
+import org.qubic.qx.adapter.qubicj.mapping.QubicjMapper;
 import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.api.domain.EntityOrder;
 import org.qubic.qx.api.domain.Fees;
@@ -13,9 +13,9 @@ import java.util.List;
 public class QubicjQxApiService implements QxApiService {
 
     private final ComputorService computorService;
-    private final QubicjOxMapper qxMapper;
+    private final QubicjMapper qxMapper;
 
-    public QubicjQxApiService(ComputorService computorService, QubicjOxMapper qxMapper) {
+    public QubicjQxApiService(ComputorService computorService, QubicjMapper qxMapper) {
         this.computorService = computorService;
         this.qxMapper = qxMapper;
     }
@@ -23,7 +23,7 @@ public class QubicjQxApiService implements QxApiService {
     @Override
     public Mono<Fees> getFees() {
         return computorService.getQxFees()
-                .map(qxMapper::mapFees);
+                .map(qxMapper::map);
     }
 
     @Override

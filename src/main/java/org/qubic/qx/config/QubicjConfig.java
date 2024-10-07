@@ -12,8 +12,7 @@ import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.adapter.QxApiService;
 import org.qubic.qx.adapter.qubicj.QubicjCoreApiService;
 import org.qubic.qx.adapter.qubicj.QubicjQxApiService;
-import org.qubic.qx.adapter.qubicj.mapping.QubicjOxMapper;
-import org.qubic.qx.adapter.qubicj.mapping.QubicjTransactionMapper;
+import org.qubic.qx.adapter.qubicj.mapping.QubicjMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -75,13 +74,13 @@ public class QubicjConfig {
     }
 
     @Bean
-    CoreApiService qubicjCoreApiService(ComputorService computorService, QubicjTransactionMapper transactionMapper) {
-        return new QubicjCoreApiService(computorService, transactionMapper);
+    CoreApiService qubicjCoreApiService(ComputorService computorService, QubicjMapper mapper) {
+        return new QubicjCoreApiService(computorService, mapper);
     }
 
     @Bean
-    QxApiService qubicjQxApiService(ComputorService computorService, QubicjOxMapper qxMapper) {
-        return new QubicjQxApiService(computorService, qxMapper);
+    QxApiService qubicjQxApiService(ComputorService computorService, QubicjMapper mapper) {
+        return new QubicjQxApiService(computorService, mapper);
     }
 
 }

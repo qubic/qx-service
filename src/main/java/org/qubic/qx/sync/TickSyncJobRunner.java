@@ -41,7 +41,7 @@ public class TickSyncJobRunner {
         updateAllOrderBooks
                 .thenMany(syncLoop)
                 .subscribe(
-                        x -> log.debug("Sync loop emitted value: {}", x),
+                        x -> {},
                         err -> log.error("Finished with error.", err),
                         () -> log.debug("Completed sync loop.")
                 );

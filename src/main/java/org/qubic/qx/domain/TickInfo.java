@@ -1,4 +1,4 @@
 package org.qubic.qx.domain;
 
-public record TickInfo(long tick, int epoch, long initialTickOfEpoch) {
+public record TickInfo(int epoch, long tick, long initialTickOfEpoch) {
 }

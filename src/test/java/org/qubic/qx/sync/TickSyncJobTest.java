@@ -2,16 +2,12 @@ package org.qubic.qx.sync;
 
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.adapter.CoreApiService;
-import org.qubic.qx.assets.AssetService;
-import org.qubic.qx.domain.OrderBook;
 import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
@@ -22,9 +18,9 @@ class TickSyncJobTest {
     private final TickRepository tickRepository = mock();
     private final TransactionRepository transactionRepository = mock();
     private final CoreApiService coreService = mock();
-    private final AssetService assetService = mock();
+    private final TransactionProcessor transactionProcessor = mock();
 
-    private final TickSyncJob tickSync = new TickSyncJob(tickRepository, transactionRepository, coreService, assetService);
+    private final TickSyncJob tickSync = new TickSyncJob(tickRepository, transactionRepository, coreService, transactionProcessor);
 
     @Test
     void sync() {
@@ -42,8 +38,8 @@ class TickSyncJobTest {
         when(transactionRepository.putTransaction(any())).thenReturn(Mono.just(tx));
         when(tickRepository.setTickTransactions(anyLong(), anyList())).thenReturn(Mono.just(true));
         when(tickRepository.addToQxTicks(anyLong())).thenReturn(Mono.just(1L));
-
-        when(assetService.retrieveAllCurrentOrderBooks(anyLong())).thenReturn(Flux.just(new OrderBook(0, "FOO", "BAR", List.of(), List.of())));
+        when(transactionProcessor.processQxOrders(anyLong(), anyList())).thenReturn(Mono.empty());
+        when(transactionProcessor.updateAllOrderBooks()).thenReturn(Mono.empty());
 
         StepVerifier.create(tickSync.sync(3459L).log())
                 .expectNextCount(3)

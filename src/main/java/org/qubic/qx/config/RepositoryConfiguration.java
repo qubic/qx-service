@@ -14,8 +14,6 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import java.util.List;
-
 @Configuration
 public class RepositoryConfiguration {
 
@@ -29,8 +27,7 @@ public class RepositoryConfiguration {
     }
 
     @Bean
-    public ReactiveRedisTemplate<String, AssetOrder[]> assetOrderRedisTemplate(ReactiveRedisConnectionFactory connectionFactory) {
-        new Jackson2JsonRedisSerializer<>(List.class);
+    public ReactiveRedisTemplate<String, AssetOrder[]> assetOrderTemplate(ReactiveRedisConnectionFactory connectionFactory) {
         Jackson2JsonRedisSerializer<AssetOrder[]> serializer = new Jackson2JsonRedisSerializer<>(AssetOrder[].class);
         RedisSerializationContext.RedisSerializationContextBuilder<String, AssetOrder[]> builder =
                 RedisSerializationContext.newSerializationContext(new StringRedisSerializer());

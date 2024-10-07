@@ -15,6 +15,7 @@ import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
 import org.qubic.qx.sync.TickSyncJob;
 import org.qubic.qx.sync.TickSyncJobRunner;
+import org.qubic.qx.sync.TransactionProcessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -65,9 +66,14 @@ public class QxServiceConfiguration {
     }
 
     @Bean
+    TransactionProcessor transactionProcessor(CoreApiService coreApiService, AssetService assetService) {
+        return new TransactionProcessor(coreApiService, assetService);
+    }
+
+    @Bean
     TickSyncJob tickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository,
-                            CoreApiService coreService, AssetService assetService) {
-        return new TickSyncJob(tickRepository, transactionRepository, coreService, assetService);
+                            CoreApiService coreService, TransactionProcessor transactionProcessor) {
+        return new TickSyncJob(tickRepository, transactionRepository, coreService, transactionProcessor);
     }
 
     @Bean

@@ -1,19 +1,23 @@
 package org.qubic.qx.adapter.il.mapping;
 
 import org.junit.jupiter.api.Test;
+import org.qubic.qx.adapter.il.domain.IlTickData;
 import org.qubic.qx.adapter.il.domain.IlTransaction;
 import org.qubic.qx.domain.QxAssetOrderData;
+import org.qubic.qx.domain.TickData;
 import org.qubic.qx.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-class IlTransactionMapperIT {
+class IlCoreMapperIT {
 
     @Autowired
-    private IlTransactionMapper transactionMapper;
+    private IlCoreMapper mapper;
 
     @Test
     void mapTransaction() {
@@ -28,7 +32,7 @@ class IlTransactionMapperIT {
                 "CDC7Y799XhZKyMvThoBjD/dnCh6/OfchC0C83KJT0F9DRkIAAAAAAAMAAAAAAAAACQAAAAAAAAA=",
                 "transaction-id"
         );
-        Transaction transaction = transactionMapper.mapTransaction(ilTransaction);
+        Transaction transaction = mapper.mapTransaction(ilTransaction);
 
         assertThat(transaction).isNotNull();
         assertThat(transaction.transactionHash()).isEqualTo("transaction-id");
@@ -45,6 +49,13 @@ class IlTransactionMapperIT {
         assertThat(extraData.issuer()).isEqualTo("CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL");
         assertThat(extraData.price()).isEqualTo(3);
         assertThat(extraData.numberOfShares()).isEqualTo(9);
+    }
+
+    @Test
+    void mapTickData() {
+        IlTickData source = new IlTickData(129, 16394274, Instant.parse("2024-10-07T11:38:33Z"));
+        TickData target = mapper.map(source);
+        assertThat(target).isEqualTo(new TickData(129, 16394274, Instant.parse("2024-10-07T11:38:33Z")));
     }
 
 }

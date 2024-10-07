@@ -4,15 +4,17 @@ import lombok.Setter;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.qubic.qx.adapter.ExtraDataMapper;
+import org.qubic.qx.adapter.il.domain.IlTickData;
 import org.qubic.qx.adapter.il.domain.IlTransaction;
 import org.qubic.qx.domain.ExtraData;
+import org.qubic.qx.domain.TickData;
 import org.qubic.qx.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Base64;
 
 @Mapper(componentModel = "spring")
-public abstract class IlTransactionMapper {
+public abstract class IlCoreMapper {
 
     @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
     @Setter // needed for test
@@ -31,5 +33,7 @@ public abstract class IlTransactionMapper {
         assert input != null && input.length == source.inputSize();
         return extraDataMapper.map(inputType, input);
     }
+
+    public abstract TickData map(IlTickData tickData);
 
 }
