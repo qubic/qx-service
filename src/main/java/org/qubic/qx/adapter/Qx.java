@@ -3,7 +3,7 @@ package org.qubic.qx.adapter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.qubic.qx.adapter.Qx.Order.*;
+import static org.qubic.qx.adapter.Qx.OrderType.*;
 
 public class Qx {
 
@@ -14,7 +14,7 @@ public class Qx {
 
     public static final String QX_PUBLIC_ID = "BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARMID";
 
-    public enum Order {
+    public enum OrderType {
         ISSUE_ASSET(1),
         TRANSFER_SHARE(2),
         ADD_ASK(5),
@@ -24,14 +24,14 @@ public class Qx {
 
         public final int code;
 
-        Order(int code) {
+        OrderType(int code) {
             this.code = code;
         }
 
-        public static Order fromCode(int code) {
-            for (Order order : values()) {
-                if (order.code == code) {
-                    return order;
+        public static OrderType fromCode(int code) {
+            for (OrderType orderType : values()) {
+                if (orderType.code == code) {
+                    return orderType;
                 }
             }
             throw new IllegalArgumentException("Invalid order code: " + code);

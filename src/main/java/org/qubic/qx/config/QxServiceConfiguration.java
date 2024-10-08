@@ -14,6 +14,7 @@ import org.qubic.qx.repository.OrderBookRepository;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TradeRepository;
 import org.qubic.qx.repository.TransactionRepository;
+import org.qubic.qx.sync.OrderBookCalculator;
 import org.qubic.qx.sync.TickSyncJob;
 import org.qubic.qx.sync.TickSyncJobRunner;
 import org.qubic.qx.sync.TransactionProcessor;
@@ -67,8 +68,13 @@ public class QxServiceConfiguration {
     }
 
     @Bean
-    TransactionProcessor transactionProcessor(CoreApiService coreApiService, AssetService assetService, TradeRepository tradeRepository) {
-        return new TransactionProcessor(coreApiService, assetService, tradeRepository);
+    OrderBookCalculator orderBookCalculator() {
+        return new OrderBookCalculator();
+    }
+
+    @Bean
+    TransactionProcessor transactionProcessor(CoreApiService coreApiService, AssetService assetService, OrderBookCalculator orderBookCalculator, TradeRepository tradeRepository) {
+        return new TransactionProcessor(coreApiService, assetService, orderBookCalculator, tradeRepository);
     }
 
     @Bean

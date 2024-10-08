@@ -55,7 +55,7 @@ public class TickSyncJob {
     private Mono<Long> processNewTick(Long tickNumber) {
         return coreService.getQxTransactions(tickNumber)
                 .doFirst(() -> log.debug("Query node for tick [{}].", tickNumber))
-                .doOnNext(tx -> log.info("[{}] Received [{}] transaction.", tx.transactionHash(), Qx.Order.fromCode(tx.inputType())))
+                .doOnNext(tx -> log.info("[{}] Received [{}] transaction.", tx.transactionHash(), Qx.OrderType.fromCode(tx.inputType())))
                 .collectList()
                 .flatMap(list -> processTransactions(tickNumber, list))
                 .map(x -> tickNumber)

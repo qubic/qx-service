@@ -87,7 +87,7 @@ public class QubicjCoreApiService implements CoreApiService {
     private boolean isRelevantTransaction(SignedTransaction stx) {
         at.qubic.api.domain.std.Transaction transaction = stx.getTransaction();
         if (isRelevantInputType(transaction) && isSentToQxAddress(transaction)) {
-            log.debug("[{}]: [{}].", Qx.Order.fromCode(transaction.getInputType()), stx.getTransactionHash());
+            log.debug("[{}]: [{}].", Qx.OrderType.fromCode(transaction.getInputType()), stx.getTransactionHash());
             return true;
         } else {
             return false;

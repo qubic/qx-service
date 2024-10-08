@@ -77,7 +77,7 @@ public class IntegrationCoreApiService implements CoreApiService {
 
     private boolean isRelevantTransaction(IlTransaction transaction) {
         if (isRelevantInputType(transaction) && isSentToQxAddress(transaction)) {
-            log.debug("[{}]: [{}].", Qx.Order.fromCode(transaction.inputType()), transaction.txId());
+            log.debug("[{}]: [{}].", Qx.OrderType.fromCode(transaction.inputType()), transaction.txId());
             return true;
         } else {
             return false;
