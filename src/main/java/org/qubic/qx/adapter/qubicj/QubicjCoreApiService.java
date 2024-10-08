@@ -29,7 +29,7 @@ public class QubicjCoreApiService implements CoreApiService {
 
 
     private final BulkheadConfig bulkheadConfig = BulkheadConfig.custom()
-            .maxConcurrentCalls(5)
+            .maxConcurrentCalls(2)
             .build();
     private final Bulkhead bulkhead = Bulkhead.of("getTickTransactionsBulkhead", bulkheadConfig);
 

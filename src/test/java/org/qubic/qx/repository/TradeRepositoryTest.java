@@ -25,15 +25,13 @@ class TradeRepositoryTest extends AbstractRedisTest {
 
     @Test
     void storeTrade() {
-        Instant now = Instant.now();
+        Instant epoch = Instant.EPOCH;
         Trade trade = trade(1);
 
-        StepVerifier.create(tradeRepository.storeTrade(trade, now)
-                        .then(redisTradeTemplate.opsForZSet().rangeByScore(KEY_TRADES, Range.just((double) now.getEpochSecond())).last()))
+        StepVerifier.create(tradeRepository.storeTrade(trade, epoch)
+                        .then(redisTradeTemplate.opsForZSet().rangeByScore(KEY_TRADES, Range.just((double) epoch.getEpochSecond())).last()))
                 .expectNext(trade)
                 .verifyComplete();
-
-
     }
 
     @Test
@@ -56,7 +54,7 @@ class TradeRepositoryTest extends AbstractRedisTest {
     }
 
     private static Trade trade(long tick) {
-        return new Trade(tick, "hash", "maker", true, "issuer", "asset", 2, 3);
+        return new Trade(tick, "hash",  "taker", "maker", true, "issuer", "asset", 2, 3);
     }
 
 }

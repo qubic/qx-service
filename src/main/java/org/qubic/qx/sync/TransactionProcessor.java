@@ -148,7 +148,7 @@ public class TransactionProcessor {
                 long price = matchedOrder.price();
                 long matchedShares = Math.min(matchedOrder.numberOfShares(), orderData.numberOfShares() - tradedShares);
                 tradedShares += matchedShares;
-                Trade trade = new Trade(tx.tick(), tx.transactionHash(), matchedOrder.entityId(), bid, orderData.issuer(), orderData.name(), matchedShares, price);
+                Trade trade = new Trade(tx.tick(), tx.transactionHash(), tx.sourcePublicId(), matchedOrder.entityId(), bid, orderData.issuer(), orderData.name(), matchedShares, price);
                 log.info("Matched trade: {}. Offer: {}.", trade, matchedOrder);
                 trades.add(trade);
             } else {

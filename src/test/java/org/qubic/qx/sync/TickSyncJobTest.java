@@ -3,6 +3,7 @@ package org.qubic.qx.sync;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.domain.TickData;
+import org.qubic.qx.domain.TickInfo;
 import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TickRepository;
 import org.qubic.qx.repository.TransactionRepository;
@@ -13,8 +14,7 @@ import reactor.test.StepVerifier;
 import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class TickSyncJobTest {
 
@@ -27,12 +27,13 @@ class TickSyncJobTest {
 
     @Test
     void sync() {
-        Transaction tx = new Transaction("a", "b", "c", 0, 0, 0, 0, null);
+        Transaction tx = new Transaction("a", "b", "c", 0, 0, 6, 0, null);
 
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(false));
         when(tickRepository.addToProcessedTicks(anyLong())).thenReturn(Mono.just(1L));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(2345L));
-        when(coreService.getInitialTick()).thenReturn(Mono.just(3456L));
+        TickInfo currentTickInfo = new TickInfo(1, 3459, 3456);
+        when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
 
         when(coreService.getQxTransactions(3456L)).thenReturn(Flux.just(tx));
         when(coreService.getQxTransactions(3457L)).thenReturn(Flux.just(tx, tx));
@@ -46,7 +47,7 @@ class TickSyncJobTest {
         when(transactionProcessor.updateAllOrderBooks()).thenReturn(Mono.empty());
 
         StepVerifier.create(tickSync.sync().log())
-                .expectNextCount(3)
+                .expectNext(currentTickInfo)
                 .verifyComplete();
     }
 
@@ -54,10 +55,17 @@ class TickSyncJobTest {
     void sync_givenAlreadyProcessed_thenDoNotProcess() {
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(true));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(0L));
-        when(coreService.getInitialTick()).thenReturn(Mono.just(100L));
+
+        TickInfo currentTickInfo = new TickInfo(1, 1000, 100);
+        when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
 
         StepVerifier.create(tickSync.sync())
-                .expectNextCount(900)
+                .expectNext(currentTickInfo)
                 .verifyComplete();
+
+        verify(tickRepository, times(900)).isProcessedTick(anyLong());
+        verify(coreService, never()).getQxTransactions(anyLong());
+        verifyNoInteractions(transactionProcessor);
+        verifyNoInteractions(transactionRepository);
     }
 }
