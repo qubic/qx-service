@@ -10,7 +10,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 
 @Slf4j
 @SpringBootTest
-class QxAssetsControllerSpringIT {
+class AssetsControllerSpringIT {
 
     private WebTestClient client;
 

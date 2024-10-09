@@ -11,11 +11,11 @@ import reactor.core.publisher.Flux;
 @Slf4j
 @RestController
 @RequestMapping("/v1/qx")
-public class QxAssetsController {
+public class AssetsController {
 
     private final Assets assets;
 
-    public QxAssetsController(Assets assets) {
+    public AssetsController(Assets assets) {
         this.assets = assets;
     }
 

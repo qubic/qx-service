@@ -5,10 +5,10 @@ import org.qubic.qx.assets.Asset;
 import org.qubic.qx.assets.Assets;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-class QxAssetsControllerTest {
+class AssetsControllerTest {
 
     private final Assets assets = new Assets();
-    private final QxAssetsController controller = new QxAssetsController(assets);
+    private final AssetsController controller = new AssetsController(assets);
 
     private final WebTestClient client = WebTestClient
             .bindToController(controller)
