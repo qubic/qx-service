@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 @Slf4j
 public class OrderBookCalculator {
@@ -39,27 +40,6 @@ public class OrderBookCalculator {
         }
     }
 
-    /**
-     * Recalculate previous order book for order that did not trigger trade.
-     * @param tx Transaction triggering the trade (for source public identity).
-     * @param orderType The type of the order.
-     * @param previousOrderBook The previous order book that might get changed.
-     * @param orderData The new order.
-     * @param currentOrderBook The current order book. To compare if the change matches the current book. This is for debugging mainly. Not very accurate as there can be several orders in between.
-     * @return The updated order book in case the previous book changed.
-     */
-    public Optional<Tuple2<String, OrderBook>> updateOrderBooks(Transaction tx, Qx.OrderType orderType, OrderBook previousOrderBook, QxAssetOrderData orderData, OrderBook currentOrderBook) {
-        List<AssetOrder> askOrders = isAskOrder(orderType) ? OrderBookCalculator.updateOffersWithOrder(previousOrderBook.asks(), tx, orderType, orderData) : previousOrderBook.asks();
-        List<AssetOrder> bidOrders = isBidOrder(orderType) ? OrderBookCalculator.updateOffersWithOrder(previousOrderBook.bids(), tx, orderType, orderData) : previousOrderBook.bids();
-        OrderBook calculatedOrderBook = new OrderBook(previousOrderBook.tickNumber(), previousOrderBook.issuer(), previousOrderBook.assetName(), askOrders, bidOrders);
-        if (calculatedOrderBook.equals(previousOrderBook)) {
-            return Optional.empty(); // no update needed
-        } else {
-            compareOrderBooksForDebugLogging(previousOrderBook, calculatedOrderBook, currentOrderBook, orderData);
-            return Optional.of(Tuples.of(orderBookKey(orderData), calculatedOrderBook));
-        }
-    }
-
     public List<Trade> handleTrades(Transaction tx, List<AssetOrder> matchedOrders, QxAssetOrderData orderData, Qx.OrderType orderType) {
         // trade should happen
         List<Trade> trades = new ArrayList<>();
@@ -69,19 +49,85 @@ public class OrderBookCalculator {
                 long price = matchedOrder.price();
                 long matchedShares = Math.min(matchedOrder.numberOfShares(), orderData.numberOfShares() - tradedShares);
                 tradedShares += matchedShares;
-                Trade trade = new Trade(tx.tick(), tx.transactionHash(), tx.sourcePublicId(), matchedOrder.entityId(), isBidOrder(orderType), orderData.issuer(), orderData.name(), matchedShares, price);
+                Trade trade = new Trade(tx.tick(), tx.transactionHash(), isBidOrder(orderType), tx.sourcePublicId(), matchedOrder.entityId(), orderData.issuer(), orderData.name(), price, matchedShares);
                 log.info("Matched trade: {}. Offer: {}.", trade, matchedOrder);
                 trades.add(trade);
             } else {
                 log.debug("Skipping potential offer {} because order is already fulfilled.", matchedOrder);
             }
         }
-        log.info("Trade(s) detected: {}", trades);
         return trades;
     }
 
     /**
-     * Update the offers with a new order.
+     * Recalculate previous order book for order that did not trigger trade.
+     *
+     * @param previousOrderBook The previous order book that might get changed.
+     * @param tx                Transaction triggering the trade (for source public identity).
+     * @param orderType         The type of the order.
+     * @param orderData         The new order.
+     * @return The updated order book in case the previous book changed.
+     */
+    public Optional<Tuple2<String, OrderBook>> addOrdersToOrderBooks(OrderBook previousOrderBook, Transaction tx, Qx.OrderType orderType, QxAssetOrderData orderData) {
+        List<AssetOrder> askOrders = isAskOrder(orderType) ? updateOffersWithOrder(previousOrderBook.asks(), tx, orderType, orderData) : previousOrderBook.asks();
+        List<AssetOrder> bidOrders = isBidOrder(orderType) ? updateOffersWithOrder(previousOrderBook.bids(), tx, orderType, orderData) : previousOrderBook.bids();
+        OrderBook calculatedOrderBook = new OrderBook(previousOrderBook.tickNumber(), previousOrderBook.issuer(), previousOrderBook.assetName(), askOrders, bidOrders);
+        return calculatedOrderBook.equals(previousOrderBook)
+                ? Optional.empty()
+                : Optional.of(Tuples.of(orderBookKey(orderData), calculatedOrderBook)); // no update needed
+    }
+
+    public void compareCalculatedAndCurrentOrderBook(OrderBook calculatedOrderBook, OrderBook currentOrderBook) {
+        // order book changed
+        OrderBook forCompareOnly = new OrderBook(currentOrderBook.tickNumber(), calculatedOrderBook.issuer(),
+                calculatedOrderBook.assetName(), calculatedOrderBook.asks(), calculatedOrderBook.bids());
+        if (forCompareOnly.equals(currentOrderBook)) { // OK! equal to current order book. Should match at end of tick.
+            log.debug("Current order book matches calculated order book.");
+        } else { // can happen if there are multiple orders or if calculation failed or if transaction did not
+            // execute successfully
+            log.warn("Calculated new order book differs from current order book.");
+            log.info("Calculated order book: {}.", calculatedOrderBook);
+        }
+    }
+
+    public Tuple2<String, OrderBook> updateOrderBooksWithTrades(OrderBook previousOrderBook, Transaction tx, Qx.OrderType orderType, QxAssetOrderData orderData, List<AssetOrder> matchedOrders, List<Trade> trades) {
+
+        long requestedShares = orderData.numberOfShares();
+        long tradedShares = trades.stream().mapToLong(Trade::numberOfShares).sum();
+        long availableShares = matchedOrders.stream().mapToLong(AssetOrder::numberOfShares).sum();
+        log.debug("Requested shares [{}], traded shares [{}], available shares [{}].", requestedShares, tradedShares, availableShares);
+
+        boolean isBid = isBidOrder(orderType);
+        List<AssetOrder> offers = isBid ? previousOrderBook.asks() : previousOrderBook.bids();
+        List<AssetOrder> newOffers = IntStream.range(0, offers.size())
+                .filter(i -> i >= trades.size() - 1) // remove certain matches
+                .mapToObj(i -> {
+                    if (availableShares >= tradedShares && i == trades.size() - 1) { // modify last offer
+                        AssetOrder offer = offers.get(i);
+                        AssetOrder newOffer = new AssetOrder(offer.entityId(), offer.price(), offer.numberOfShares() - trades.get(i).numberOfShares());
+                        log.debug("Modify offer {} because of trade {}: {}", offer, trades.get(i), newOffer);
+                        return newOffer;
+                    } else {
+                        log.debug("Unchanged offer at index [{}]: {}", i, offers.get(i));
+                        return offers.get(i);
+                    }
+                })
+                .filter(offer -> offer.numberOfShares() > 0) // eliminate last offer in case all shares were traded
+                .toList();
+
+
+        OrderBook newOrderBook = new OrderBook(previousOrderBook.tickNumber(), previousOrderBook.issuer(), previousOrderBook.assetName(), isBid ? newOffers : previousOrderBook.asks(), isBid ? previousOrderBook.bids() : newOffers);
+        if (requestedShares > tradedShares) { // add new order
+            return addOrdersToOrderBooks(newOrderBook, tx, orderType, new QxAssetOrderData(orderData.issuer(), orderData.name(), orderData.price(), orderData.numberOfShares() - tradedShares))
+                    .orElseThrow(); // should never happen as we need to modify the order book
+        } else { // no orders to add
+            return Tuples.of(orderBookKey(orderData), newOrderBook);
+        }
+
+    }
+
+    /**
+     * Update the offers with a new order (add or remove shares to/from it).
      * @param previousOrders The previous offers.
      * @param tx The transaction with the new order.
      * @param orderType The type of the new order.
@@ -95,7 +141,7 @@ public class OrderBookCalculator {
                 .toList();
 
         if (previousOrders.equals(updatedOrders)) {
-            log.info("No previous orders were updated.");
+            log.debug("No previous orders were updated when inserting.");
             if (isAddOrder(orderType)) {
                 List<AssetOrder> withAddedOrder = new ArrayList<>(previousOrders);
                 int index = findIndexForInsert(previousOrders, orderType, orderData);
@@ -118,35 +164,19 @@ public class OrderBookCalculator {
 
     private static AssetOrder createNewOrder(AssetOrder old, QxAssetOrderData orderData, boolean increaseShares) {
         AssetOrder assetOrder = new AssetOrder(old.entityId(), old.price(), old.numberOfShares() + (orderData.numberOfShares() * (increaseShares ? 1 : -1)));
-        log.debug("Calculated new order {}. Old: {}, order data: {}.", assetOrder, old, orderData);
+        log.debug("Update order. New {}, old {}, input {}.", assetOrder, old, orderData);
         return assetOrder;
     }
 
     private static int findIndexForInsert(List<AssetOrder> previousOrders, Qx.OrderType orderType, QxAssetOrderData orderData) {
         for (int i = 0; i < previousOrders.size(); i++) {
-            if (orderType == Qx.OrderType.ADD_BID && previousOrders.get(i).price() >= orderData.price()) {
+            if (orderType == Qx.OrderType.ADD_BID && previousOrders.get(i).price() < orderData.price()) {
                 return i;
             } else if (orderType == Qx.OrderType.ADD_ASK && previousOrders.get(i).price() > orderData.price()) {
                 return i;
             }
         }
         return previousOrders.size();
-    }
-
-    private static void compareOrderBooksForDebugLogging(OrderBook previousOrderBook, OrderBook calculatedOrderBook, OrderBook currentOrderBook, QxAssetOrderData orderData) {
-        if (calculatedOrderBook.equals(previousOrderBook)) {
-            log.info("Order book did not change. Order data {}}.", orderData);
-        } else { // order book changed
-            OrderBook forCompareOnly = new OrderBook(currentOrderBook.tickNumber(), previousOrderBook.issuer(),
-                    previousOrderBook.assetName(), previousOrderBook.asks(), previousOrderBook.bids());
-            if (forCompareOnly.equals(currentOrderBook)) { // OK! equal to current order book. Should match at end of tick.
-                log.debug("Current order book matches calculated order book.");
-            } else { // can happen if there are multiple orders or if calculation failed or if transaction did not
-                     // execute successfully
-                log.warn("Calculated new order book differs from current order book.");
-                log.info("Calculated order book: {}.", calculatedOrderBook);
-            }
-        }
     }
 
     private static String orderBookKey(QxAssetOrderData orderData) {

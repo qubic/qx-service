@@ -52,7 +52,7 @@ public class AssetService {
         return Mono.zip(asks, bids).map(t2 -> new OrderBook(tickNumber, asset.issuer(), asset.name(), t2.getT1(), t2.getT2()));
     }
 
-    public Flux<OrderBook> loadLatestOrderBooksBeforeTick(Long tickNumber, Set<Asset> assetSet) {
+    public Flux<OrderBook> loadLatestOrderBooksBeforeTick(long tickNumber, Set<Asset> assetSet) {
         return Flux.fromIterable(assetSet)
                 .flatMap(asset -> orderBookRepository.getPreviousOrderBookBefore(asset.issuer(), asset.name(), tickNumber));
     }

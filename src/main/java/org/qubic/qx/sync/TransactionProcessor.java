@@ -13,6 +13,7 @@ import org.qubic.qx.domain.Transaction;
 import org.qubic.qx.repository.TradeRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.time.Instant;
@@ -44,7 +45,7 @@ public class TransactionProcessor {
                         .then());
     }
 
-    public Mono<Void> processQxOrders(Long tickNumber, Instant tickTime, List<Transaction> txs) {
+    public Mono<List<Trade>> processQxOrders(long tickNumber, Instant tickTime, List<Transaction> txs) {
 
         List<Transaction> orderTransactions = txs.stream()
                 .filter(tx -> tx.extraData() instanceof QxAssetOrderData)
@@ -63,7 +64,7 @@ public class TransactionProcessor {
                         .map(previous -> Tuples.of(currentOrderBooks, previous)))
                 .map(tuple -> handleQxOrderTransactions(tuple.getT1(), tuple.getT2(), orderTransactions))
                 .flatMapMany(list -> storeTrades(list, tickTime))
-                .then();
+                .collectList();
 
     }
 
@@ -102,16 +103,26 @@ public class TransactionProcessor {
 
                 if (matchedOrders.isEmpty()) { // not trade triggered
 
+                    log.info("No trade detected for order {}", orderData);
                     // not 100% accurate and not really necessary but good for debugging and if replaying older orders.
                     orderBookCalculator
-                            .updateOrderBooks(tx, orderType, previousOrderBook, orderData, currentOrderBook)
-                            .ifPresent(update -> previousOrderBooks.put(update.getT1(), update.getT2()));
+                            .addOrdersToOrderBooks(previousOrderBook, tx, orderType, orderData)
+                            .ifPresent(update -> {
+                                OrderBook updatedOrderBook = update.getT2();
+                                previousOrderBooks.put(update.getT1(), updatedOrderBook);
+                                orderBookCalculator.compareCalculatedAndCurrentOrderBook(updatedOrderBook, currentOrderBook);
+                            });
 
                 } else {
 
                     List<Trade> trades = orderBookCalculator.handleTrades(tx, matchedOrders, orderData, orderType);
+                    log.info("Detected [{}] trade(s) for order {}", trades.size(), orderData);
                     detectedTrades.addAll(trades);
-                    // TODO update previous order book with trades
+
+                    Tuple2<String, OrderBook> update = orderBookCalculator.updateOrderBooksWithTrades(previousOrderBook, tx, orderType, orderData, matchedOrders, trades);
+                    OrderBook updatedOrderBook = update.getT2();
+                    previousOrderBooks.put(update.getT1(), updatedOrderBook);
+                    orderBookCalculator.compareCalculatedAndCurrentOrderBook(updatedOrderBook, currentOrderBook);
 
                 }
 

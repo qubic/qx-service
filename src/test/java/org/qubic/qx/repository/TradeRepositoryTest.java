@@ -54,7 +54,7 @@ class TradeRepositoryTest extends AbstractRedisTest {
     }
 
     private static Trade trade(long tick) {
-        return new Trade(tick, "hash",  "taker", "maker", true, "issuer", "asset", 2, 3);
+        return new Trade(tick, "hash", true, "taker", "maker", "issuer", "asset", 3, 2);
     }
 
 }
