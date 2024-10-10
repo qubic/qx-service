@@ -28,7 +28,7 @@ public class TickSyncJobRunner {
                 .flatMap(ti -> syncJob.updateLatestSyncedTick(ti.tick()))
                 .doOnNext(tick -> log.debug("Sync to [{}] completed.", tick))
                 .doOnError(t -> log.error("Error running sync job.", t))
-                .retryWhen(Retry.indefinitely())
+                .retryWhen(Retry.backoff(Long.MAX_VALUE, Duration.ofMillis(100)))
                 .doOnTerminate(() -> log.debug("Sync run finished. Next run in [{}].", sleepDuration))
                 .repeatWhen(repeat -> repeat.delayElements(sleepDuration));
 
