@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.domain.Trade;
 import org.qubic.qx.repository.TradeRepository;
 import reactor.core.publisher.Flux;
-import reactor.util.function.Tuple2;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -19,7 +18,6 @@ public class TradesService {
 
     public Flux<Trade> getTrades() {
         return tradeRepository.findTrades(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now())
-                .map(Tuple2::getT2)
                 .take(100);
     }
 

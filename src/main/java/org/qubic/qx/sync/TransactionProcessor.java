@@ -62,18 +62,18 @@ public class TransactionProcessor {
                 .flatMap(currentOrderBooks -> assetService.loadLatestOrderBooksBeforeTick(tickNumber, assetInformation)
                         .collect(Collectors.toSet())
                         .map(previous -> Tuples.of(currentOrderBooks, previous)))
-                .map(tuple -> handleQxOrderTransactions(tuple.getT1(), tuple.getT2(), orderTransactions))
-                .flatMapMany(list -> storeTrades(list, tickTime))
+                .map(tuple -> handleQxOrderTransactions(tuple.getT1(), tuple.getT2(), orderTransactions, tickTime))
+                .flatMapMany(this::storeTrades)
                 .collectList();
 
     }
 
-    private Flux<Trade> storeTrades(List<Trade> list, Instant tickTime) {
+    private Flux<Trade> storeTrades(List<Trade> list) {
         return Flux.fromIterable(list)
-                .flatMap(trade -> tradeRepository.storeTrade(trade, tickTime));
+                .flatMap(tradeRepository::storeTrade);
     }
 
-    private List<Trade> handleQxOrderTransactions(Set<OrderBook> currentObs, Set<OrderBook> previousObs, List<Transaction> orderTransactions) {
+    private List<Trade> handleQxOrderTransactions(Set<OrderBook> currentObs, Set<OrderBook> previousObs, List<Transaction> orderTransactions, Instant tickTime) {
 
         Map<String, OrderBook> currentOrderBooks = currentObs.stream().collect(Collectors.toMap(TransactionProcessor::orderBookKey, x -> x));
         Map<String, OrderBook> previousOrderBooks = previousObs.stream().collect(Collectors.toMap(TransactionProcessor::orderBookKey, x -> x));
@@ -115,7 +115,7 @@ public class TransactionProcessor {
 
                 } else {
 
-                    List<Trade> trades = orderBookCalculator.handleTrades(tx, matchedOrders, orderData, orderType);
+                    List<Trade> trades = orderBookCalculator.handleTrades(tx, tickTime, matchedOrders, orderData, orderType);
                     log.info("Detected [{}] trade(s) for order {}", trades.size(), orderData);
                     detectedTrades.addAll(trades);
 

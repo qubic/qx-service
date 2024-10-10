@@ -47,8 +47,8 @@ class TransactionProcessorTest {
         List<AssetOrder> matchedOrders = List.of(mock(), mock());
         when(orderBookCalculator.getMatchedOrders(previousOrderBook, orderData, orderType)).thenReturn(matchedOrders);
         List<Trade> trades = List.of(mock(), mock());
-        when(orderBookCalculator.handleTrades(transaction, matchedOrders, orderData, orderType)).thenReturn(trades);
-        when(tradeRepository.storeTrade(any(Trade.class), any(Instant.class))).then(args -> Mono.just(args.getArgument(0)));
+        when(orderBookCalculator.handleTrades(transaction, Instant.EPOCH, matchedOrders, orderData, orderType)).thenReturn(trades);
+        when(tradeRepository.storeTrade(any(Trade.class))).then(args -> Mono.just(args.getArgument(0)));
         when(orderBookCalculator.updateOrderBooksWithTrades(previousOrderBook, transaction, orderType, orderData, matchedOrders, trades)).thenReturn(Tuples.of("issuer/assetName", previousOrderBook));
 
         StepVerifier.create(transactionProcessor.processQxOrders(42, Instant.EPOCH, List.of(transaction)))

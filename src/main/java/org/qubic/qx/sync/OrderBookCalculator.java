@@ -11,6 +11,7 @@ import org.qubic.qx.domain.Transaction;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +41,7 @@ public class OrderBookCalculator {
         }
     }
 
-    public List<Trade> handleTrades(Transaction tx, List<AssetOrder> matchedOrders, QxAssetOrderData orderData, Qx.OrderType orderType) {
+    public List<Trade> handleTrades(Transaction tx, Instant tickTime, List<AssetOrder> matchedOrders, QxAssetOrderData orderData, Qx.OrderType orderType) {
         // trade should happen
         List<Trade> trades = new ArrayList<>();
         long tradedShares = 0;
@@ -49,7 +50,7 @@ public class OrderBookCalculator {
                 long price = matchedOrder.price();
                 long matchedShares = Math.min(matchedOrder.numberOfShares(), orderData.numberOfShares() - tradedShares);
                 tradedShares += matchedShares;
-                Trade trade = new Trade(tx.tick(), tx.transactionHash(), isBidOrder(orderType), tx.sourcePublicId(), matchedOrder.entityId(), orderData.issuer(), orderData.name(), price, matchedShares);
+                Trade trade = new Trade(tx.tick(), tickTime.getEpochSecond(), tx.transactionHash(), isBidOrder(orderType), tx.sourcePublicId(), matchedOrder.entityId(), orderData.issuer(), orderData.name(), price, matchedShares);
                 log.info("Matched trade: {}. Offer: {}.", trade, matchedOrder);
                 trades.add(trade);
             } else {

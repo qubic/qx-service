@@ -7,6 +7,8 @@ import org.qubic.qx.domain.Trade;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 
+import java.time.Instant;
+
 import static org.mockito.Mockito.*;
 
 class TradesControllerTest {
@@ -26,9 +28,9 @@ class TradesControllerTest {
 
     @BeforeEach
     void setUp() {
-        trade1 = new Trade(42, "hash1", true, "id1", "id2", "issuer1", "asset", 12, 34);
-        trade2 = new Trade(43, "hash2", true, "id2", "id1", "issuer2", "asset", 23, 45);
-        trade3 = new Trade(43, "hash3", true, "taker", "maker", "issuer2", "asset", 32, 56);
+        trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash1", true, "id1", "id2", "issuer1", "asset", 12, 34);
+        trade2 = new Trade(43, Instant.EPOCH.getEpochSecond(), "hash2", true, "id2", "id1", "issuer2", "asset", 23, 45);
+        trade3 = new Trade(43, Instant.EPOCH.getEpochSecond(), "hash3", true, "taker", "maker", "issuer2", "asset", 32, 56);
     }
 
     @Test

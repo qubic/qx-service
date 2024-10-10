@@ -9,6 +9,7 @@ import org.qubic.qx.domain.Trade;
 import org.qubic.qx.domain.Transaction;
 import reactor.util.function.Tuple2;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,11 +65,11 @@ class OrderBookCalculatorTest {
         AssetOrder ask1 = new AssetOrder("entity1",4,2);
         AssetOrder ask2 = new AssetOrder("entity2",5,5);
 
-        List<Trade> trades = calculator.handleTrades(transaction, List.of(ask1, ask2), orderData, orderType);
+        List<Trade> trades = calculator.handleTrades(transaction, Instant.EPOCH, List.of(ask1, ask2), orderData, orderType);
         assertThat(trades).hasSize(2);
         assertThat(trades).containsExactly(
-                new Trade(42, "hash", true, "sourceId", "entity1", "issuer", "asset", 4, 2),
-                new Trade(42, "hash", true, "sourceId", "entity2", "issuer", "asset", 5, 3)
+                new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 4, 2),
+                new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity2", "issuer", "asset", 5, 3)
         );
 
     }
@@ -83,11 +84,11 @@ class OrderBookCalculatorTest {
         AssetOrder bid1 = new AssetOrder("entity1",4,2);
         AssetOrder bid2 = new AssetOrder("entity2",5,4);
 
-        List<Trade> trades = calculator.handleTrades(transaction, List.of(bid2, bid1), orderData, orderType);
+        List<Trade> trades = calculator.handleTrades(transaction, Instant.EPOCH, List.of(bid2, bid1), orderData, orderType);
         assertThat(trades).hasSize(2);
         assertThat(trades).containsExactly(
-                new Trade(42, "hash", false, "sourceId", "entity2", "issuer", "asset", 5, 4),
-                new Trade(42, "hash", false, "sourceId", "entity1", "issuer", "asset", 4, 1)
+                new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", false, "sourceId", "entity2", "issuer", "asset", 5, 4),
+                new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", false, "sourceId", "entity1", "issuer", "asset", 4, 1)
         );
 
     }
@@ -191,8 +192,8 @@ class OrderBookCalculatorTest {
         Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
 
         List<AssetOrder> matchedOrders = List.of(prevAsk1, prevAsk2);
-        Trade trade1 = new Trade(42, "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 1);
-        Trade trade2 = new Trade(42, "hash", true, "sourceId", "entity2", "issuer", "asset", 5, 4);
+        Trade trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 1);
+        Trade trade2 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity2", "issuer", "asset", 5, 4);
         List<Trade> trades = List.of(trade1, trade2);
 
         Tuple2<String, OrderBook> updateOrderBooksWithTrades = calculator.updateOrderBooksWithTrades(orderBook, transaction, orderType, orderData, matchedOrders, trades);
@@ -210,7 +211,7 @@ class OrderBookCalculatorTest {
         Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
 
         List<AssetOrder> matchedOrders = List.of(prevBid);
-        Trade trade1 = new Trade(42, "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 2);
+        Trade trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 2);
         List<Trade> trades = List.of(trade1);
 
         Tuple2<String, OrderBook> updateOrderBooksWithTrades = calculator.updateOrderBooksWithTrades(orderBook, transaction, orderType, orderData, matchedOrders, trades);
@@ -232,8 +233,8 @@ class OrderBookCalculatorTest {
         Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
 
         List<AssetOrder> matchedOrders = List.of(prevAsk1, prevAsk2);
-        Trade trade1 = new Trade(42, "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 1);
-        Trade trade2 = new Trade(42, "hash", true, "sourceId", "entity2", "issuer", "asset", 5, 4);
+        Trade trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 1);
+        Trade trade2 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity2", "issuer", "asset", 5, 4);
         List<Trade> trades = List.of(trade1, trade2);
 
         Tuple2<String, OrderBook> updateOrderBooksWithTrades = calculator.updateOrderBooksWithTrades(orderBook, transaction, orderType, orderData, matchedOrders, trades);
@@ -254,8 +255,8 @@ class OrderBookCalculatorTest {
         Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
 
         List<AssetOrder> matchedOrders = List.of(prevBid1, prevBid2);
-        Trade trade1 = new Trade(42, "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 2);
-        Trade trade2 = new Trade(42, "hash", true, "sourceId", "entity2", "issuer", "asset", 5, 3);
+        Trade trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 2);
+        Trade trade2 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity2", "issuer", "asset", 5, 3);
         List<Trade> trades = List.of(trade1, trade2);
 
         Tuple2<String, OrderBook> updateOrderBooksWithTrades = calculator.updateOrderBooksWithTrades(orderBook, transaction, orderType, orderData, matchedOrders, trades);
@@ -275,8 +276,8 @@ class OrderBookCalculatorTest {
         Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
 
         List<AssetOrder> matchedOrders = List.of(prevAsk1, prevAsk2);
-        Trade trade1 = new Trade(42, "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 1);
-        Trade trade2 = new Trade(42, "hash", true, "sourceId", "entity2", "issuer", "asset", 5, 1);
+        Trade trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 1);
+        Trade trade2 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity2", "issuer", "asset", 5, 1);
         List<Trade> trades = List.of(trade1, trade2);
 
         Tuple2<String, OrderBook> updateOrderBooksWithTrades = calculator.updateOrderBooksWithTrades(orderBook, transaction, orderType, orderData, matchedOrders, trades);
@@ -297,8 +298,8 @@ class OrderBookCalculatorTest {
         Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
 
         List<AssetOrder> matchedOrders = List.of(prevBid1, prevBid2);
-        Trade trade1 = new Trade(42, "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 2);
-        Trade trade2 = new Trade(42, "hash", true, "sourceId", "entity2", "issuer", "asset", 5, 2);
+        Trade trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 2);
+        Trade trade2 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity2", "issuer", "asset", 5, 2);
         List<Trade> trades = List.of(trade1, trade2);
 
         Tuple2<String, OrderBook> updateOrderBooksWithTrades = calculator.updateOrderBooksWithTrades(orderBook, transaction, orderType, orderData, matchedOrders, trades);
