@@ -5,17 +5,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.adapter.Qx;
 import org.qubic.qx.adapter.exception.EmptyResultException;
-import org.qubic.qx.adapter.il.domain.IlTickData;
-import org.qubic.qx.adapter.il.domain.IlTickInfo;
-import org.qubic.qx.adapter.il.domain.IlTransaction;
-import org.qubic.qx.adapter.il.domain.IlTransactions;
+import org.qubic.qx.adapter.il.domain.*;
 import org.qubic.qx.adapter.il.mapping.IlCoreMapper;
 import org.qubic.qx.domain.TickData;
 import org.qubic.qx.domain.TickInfo;
+import org.qubic.qx.domain.TickTransactionsStatus;
 import org.qubic.qx.domain.Transaction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 @Slf4j
 public class IntegrationCoreApiService implements CoreApiService {
@@ -48,7 +47,7 @@ public class IntegrationCoreApiService implements CoreApiService {
     public Mono<TickData> getTickData(long tick) {
         return webClient.post()
                 .uri(CORE_BASE_PATH_V1 + "/getTickData")
-                .bodyValue(String.format("{\"tick\":%d }", tick))
+                .bodyValue(tickPayloadBody(tick))
                 .retrieve()
                 .bodyToMono(IlTickData.class)
                 .retry(NUM_RETRIES)
@@ -57,15 +56,36 @@ public class IntegrationCoreApiService implements CoreApiService {
 
     @Override
     public Flux<Transaction> getQxTransactions(long tick) {
+        return Mono.zip(getTransactionsMono(tick), getTickTransactionsStatus(tick))
+                .flatMapMany(t2 -> Flux.fromIterable(t2.getT1().transactions())
+                        .map(ilt -> Tuples.of(ilt, t2.getT2().statusPerTx().get(ilt.txId()))))
+                .filter(t2 -> isRelevantTransaction(t2.getT1()))
+                .map(t2 -> mapper.mapTransaction(t2.getT1(), t2.getT2()));
+    }
+
+    private Mono<IlTransactions> getTransactionsMono(long tick) {
         return webClient.post()
                 .uri(CORE_BASE_PATH_V1 + "/getTickTransactions")
-                .bodyValue(String.format("{\"tick\":%d }", tick))
+                .bodyValue(tickPayloadBody(tick))
                 .retrieve()
                 .bodyToMono(IlTransactions.class)
-                .retry(NUM_RETRIES)
-                .flatMapIterable(IlTransactions::transactions)
-                .filter(this::isRelevantTransaction)
-                .map(mapper::mapTransaction);
+                .switchIfEmpty(Mono.error(emptyResult("get tick transactions", tick)))
+                .retry(NUM_RETRIES);
+    }
+
+    @Override
+    public Mono<TickTransactionsStatus> getTickTransactionsStatus(long tick) {
+        return webClient.post()
+                .uri(CORE_BASE_PATH_V1 + "/getTickTransactionsStatus")
+                .bodyValue(tickPayloadBody(tick))
+                .retrieve()
+                .bodyToMono(TickTransactionsStatus.class)
+                .switchIfEmpty(Mono.error(emptyResult("get tick transactions status", tick)))
+                .retry(NUM_RETRIES);
+    }
+
+    private static EmptyResultException emptyResult(String action, long tick) {
+        return new EmptyResultException(String.format("Could not %s for tick [%d].", action, tick));
     }
 
     @Override
@@ -86,6 +106,10 @@ public class IntegrationCoreApiService implements CoreApiService {
         } else {
             return false;
         }
+    }
+
+    private static String tickPayloadBody(long tick) {
+        return String.format("{\"tick\":%d }", tick);
     }
 
     private static boolean isSentToQxAddress(IlTransaction transaction) {

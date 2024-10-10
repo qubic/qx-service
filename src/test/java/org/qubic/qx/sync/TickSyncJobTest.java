@@ -13,7 +13,6 @@ import reactor.test.StepVerifier;
 
 import java.time.Instant;
 
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class TickSyncJobTest {
@@ -27,7 +26,7 @@ class TickSyncJobTest {
 
     @Test
     void sync() {
-        Transaction tx = new Transaction("a", "b", "c", 0, 0, 6, 0, null);
+        Transaction tx = new Transaction("a", "b", "c", 0, 0, 6, 0, null, null);
 
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(false));
         when(tickRepository.addToProcessedTicks(anyLong())).thenReturn(Mono.just(1L));

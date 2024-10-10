@@ -32,7 +32,7 @@ class IlCoreMapperIT {
                 "CDC7Y799XhZKyMvThoBjD/dnCh6/OfchC0C83KJT0F9DRkIAAAAAAAMAAAAAAAAACQAAAAAAAAA=",
                 "transaction-id"
         );
-        Transaction transaction = mapper.mapTransaction(ilTransaction);
+        Transaction transaction = mapper.mapTransaction(ilTransaction, true);
 
         assertThat(transaction).isNotNull();
         assertThat(transaction.transactionHash()).isEqualTo("transaction-id");
@@ -42,6 +42,7 @@ class IlCoreMapperIT {
         assertThat(transaction.tick()).isEqualTo(12345);
         assertThat(transaction.inputType()).isEqualTo(5);
         assertThat(transaction.inputSize()).isEqualTo(56);
+        assertThat(transaction.moneyFlew()).isTrue();
         // QxAssetOrderData[issuer=CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL, name=CFB, price=3, numberOfShares=9]
         assertThat(transaction.extraData()).isInstanceOf(QxAssetOrderData.class);
         QxAssetOrderData extraData = (QxAssetOrderData) transaction.extraData();
@@ -49,6 +50,7 @@ class IlCoreMapperIT {
         assertThat(extraData.issuer()).isEqualTo("CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL");
         assertThat(extraData.price()).isEqualTo(3);
         assertThat(extraData.numberOfShares()).isEqualTo(9);
+
     }
 
     @Test

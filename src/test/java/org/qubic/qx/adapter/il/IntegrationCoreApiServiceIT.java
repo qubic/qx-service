@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.domain.QxAssetOrderData;
 import org.qubic.qx.domain.TickData;
+import org.qubic.qx.domain.TickTransactionsStatus;
 import org.qubic.qx.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +15,7 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Objects;
 
 class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
@@ -86,7 +88,7 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
     }
 
     @Test
-    void getQxTransactions() {
+    void getTickTransactions() {
         String body = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
                 "/testdata/il/get-tick-transactions-response.json")), StandardCharsets.UTF_8);
         prepareResponse(response -> response
@@ -105,11 +107,37 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
                         "CFB",
                         3,
                         9)
-                );
+                ,null);
 
         StepVerifier.create(apiService.getQxTransactions(123L))
                 .expectNext(expected)
                 .verifyComplete();
+
+        assertRequest("/v1/core/getTickTransactions");
+    }
+
+    @Test
+    void getTickTransactionsStatus() {
+
+        String body = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
+                "/testdata/il/get-tick-transactions-status-response.json"
+        )), StandardCharsets.UTF_8);
+        prepareResponse(response -> response
+                .setResponseCode(HttpStatus.OK.value())
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setBody(body));
+
+        Map<String, Boolean> stringBooleanMap = new java.util.HashMap<>();
+        stringBooleanMap.put("dlooclqhsdwsidmawyfbjuebpmsddrfrozkrbpswicrjuahmtkbtbibfomva", false);
+        stringBooleanMap.put("obzmnvbtyjgnzanwjokywwgzofydfynnlqtoutzwaeacroctebcbkrobawwo", true);
+        stringBooleanMap.put("test", null);
+        TickTransactionsStatus expected = new TickTransactionsStatus(16510807, 2, stringBooleanMap);
+
+        StepVerifier.create(apiService.getTickTransactionsStatus(16510807))
+                .expectNext(expected)
+                .verifyComplete();
+
+        assertRequest("/v1/core/getTickTransactionsStatus");
     }
 
 }

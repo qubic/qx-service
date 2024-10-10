@@ -15,7 +15,7 @@ public class TransactionRepositorySpringIT extends AbstractRedisTest {
     private static final String SERIALIZED_TX = """
             {"transactionHash":"transaction-hash","sourcePublicId":"source-id","destinationPublicId":"target-id",\
             "amount":1,"tick":2,"inputType":3,"inputSize":4,"extraData":{"@class":".%s","issuer":"issuer","name":"name","price":42,\
-            "numberOfShares":123}}""".formatted(QxAssetOrderData.class.getSimpleName());
+            "numberOfShares":123},"moneyFlew":null}""".formatted(QxAssetOrderData.class.getSimpleName());
 
     private static final QxAssetOrderData EXTRA_DATA = new QxAssetOrderData(
             "issuer",
@@ -31,7 +31,8 @@ public class TransactionRepositorySpringIT extends AbstractRedisTest {
             2,
             3,
             4,
-             EXTRA_DATA);
+             EXTRA_DATA,
+            null);
 
     @Autowired
     private TransactionRepository transactionRepository;

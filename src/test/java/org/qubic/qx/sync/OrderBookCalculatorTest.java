@@ -60,7 +60,7 @@ class OrderBookCalculatorTest {
 
         Qx.OrderType orderType = Qx.OrderType.ADD_BID;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 5, 5);
-        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
 
         AssetOrder ask1 = new AssetOrder("entity1",4,2);
         AssetOrder ask2 = new AssetOrder("entity2",5,5);
@@ -79,7 +79,7 @@ class OrderBookCalculatorTest {
 
         Qx.OrderType orderType = Qx.OrderType.ADD_ASK;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 1, 5);
-        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
 
         AssetOrder bid1 = new AssetOrder("entity1",4,2);
         AssetOrder bid2 = new AssetOrder("entity2",5,4);
@@ -104,7 +104,7 @@ class OrderBookCalculatorTest {
 
         Qx.OrderType orderType = Qx.OrderType.ADD_BID;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 5, 5);
-        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
 
         AssetOrder newBid = new AssetOrder("sourceId", 5, 5);
         Optional<Tuple2<String, OrderBook>> changedOrderBook = calculator.addOrdersToOrderBooks(previousOrderBook, transaction, orderType, orderData);
@@ -126,7 +126,7 @@ class OrderBookCalculatorTest {
 
         Qx.OrderType orderType = Qx.OrderType.ADD_BID;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 5, 5);
-        Transaction transaction = new Transaction("hash", "entity2", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "entity2", "destinationId", 123, 42, orderType.code, 0, orderData, null);
 
         AssetOrder combinedNewBid = new AssetOrder("entity2", 5, 6);
         Optional<Tuple2<String, OrderBook>> changedOrderBook = calculator.addOrdersToOrderBooks(previousOrderBook, transaction, orderType, orderData);
@@ -148,7 +148,7 @@ class OrderBookCalculatorTest {
 
         Qx.OrderType orderType = Qx.OrderType.ADD_ASK;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 5, 5);
-        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
 
         AssetOrder newAsk = new AssetOrder("sourceId", 5, 5);
         Optional<Tuple2<String, OrderBook>> changedOrderBook = calculator.addOrdersToOrderBooks(previousOrderBook, transaction, orderType, orderData);
@@ -170,7 +170,7 @@ class OrderBookCalculatorTest {
 
         Qx.OrderType orderType = Qx.OrderType.ADD_ASK;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 5, 5);
-        Transaction transaction = new Transaction("hash", "entity2", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "entity2", "destinationId", 123, 42, orderType.code, 0, orderData, null);
 
         AssetOrder newAsk = new AssetOrder("entity2", 5, 6);
         Optional<Tuple2<String, OrderBook>> changedOrderBook = calculator.addOrdersToOrderBooks(previousOrderBook, transaction, orderType, orderData);
@@ -189,7 +189,7 @@ class OrderBookCalculatorTest {
 
         Qx.OrderType orderType = Qx.OrderType.ADD_BID;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 5, 5);
-        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
 
         List<AssetOrder> matchedOrders = List.of(prevAsk1, prevAsk2);
         Trade trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 1);
@@ -208,7 +208,7 @@ class OrderBookCalculatorTest {
 
         Qx.OrderType orderType = Qx.OrderType.ADD_ASK;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 5, 2);
-        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
 
         List<AssetOrder> matchedOrders = List.of(prevBid);
         Trade trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 2);
@@ -230,7 +230,7 @@ class OrderBookCalculatorTest {
 
         Qx.OrderType orderType = Qx.OrderType.ADD_BID;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 5, 5);
-        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
 
         List<AssetOrder> matchedOrders = List.of(prevAsk1, prevAsk2);
         Trade trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 1);
@@ -252,7 +252,7 @@ class OrderBookCalculatorTest {
 
         Qx.OrderType orderType = Qx.OrderType.ADD_ASK;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 5, 5);
-        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
 
         List<AssetOrder> matchedOrders = List.of(prevBid1, prevBid2);
         Trade trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 2);
@@ -273,7 +273,7 @@ class OrderBookCalculatorTest {
 
         Qx.OrderType orderType = Qx.OrderType.ADD_BID;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 5, 5);
-        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
 
         List<AssetOrder> matchedOrders = List.of(prevAsk1, prevAsk2);
         Trade trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 1);
@@ -295,7 +295,7 @@ class OrderBookCalculatorTest {
 
         Qx.OrderType orderType = Qx.OrderType.ADD_ASK;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 5, 5);
-        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
 
         List<AssetOrder> matchedOrders = List.of(prevBid1, prevBid2);
         Trade trade1 = new Trade(42, Instant.EPOCH.getEpochSecond(), "hash", true, "sourceId", "entity1", "issuer", "asset", 5, 2);

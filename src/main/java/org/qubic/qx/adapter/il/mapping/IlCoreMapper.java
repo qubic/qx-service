@@ -23,11 +23,11 @@ public abstract class IlCoreMapper {
     @Autowired // needed for mapstruct
     private ExtraDataMapper extraDataMapper;
 
-    @Mapping(target = "transactionHash", source = "txId")
-    @Mapping(target = "sourcePublicId", source = "sourceId")
-    @Mapping(target = "destinationPublicId", source = "destId")
+    @Mapping(target = "transactionHash", source = "source.txId")
+    @Mapping(target = "sourcePublicId", source = "source.sourceId")
+    @Mapping(target = "destinationPublicId", source = "source.destId")
     @Mapping(target = "extraData", source = "source")
-    public abstract Transaction mapTransaction(IlTransaction source);
+    public abstract Transaction mapTransaction(IlTransaction source, Boolean moneyFlew);
 
     @Mapping(target = "initialTick", source= "initialTickOfEpoch")
     public abstract TickInfo map(IlTickInfo source);

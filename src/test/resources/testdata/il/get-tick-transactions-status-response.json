@@ -1,0 +1,10 @@
+{
+  "tick": 16510807,
+  "currentTickOfNode": 16516561,
+  "txCount": 2,
+  "statusPerTx": {
+    "dlooclqhsdwsidmawyfbjuebpmsddrfrozkrbpswicrjuahmtkbtbibfomva": false,
+    "obzmnvbtyjgnzanwjokywwgzofydfynnlqtoutzwaeacroctebcbkrobawwo": true,
+    "test": null
+  }
+}

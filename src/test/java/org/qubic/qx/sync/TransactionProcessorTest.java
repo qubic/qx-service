@@ -36,7 +36,7 @@ class TransactionProcessorTest {
 
         OrderType orderType = OrderType.ADD_BID;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "assetName", 5, 5);
-        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData);
+        Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
         Asset asset = new Asset("issuer", "assetName");
         OrderBook previousOrderBook = new OrderBook(41, "issuer", "assetName", List.of(), List.of());
         OrderBook currentOrderBook = new OrderBook(43, "issuer", "assetName", List.of(), List.of());

@@ -1,15 +1,14 @@
 package org.qubic.qx.sync;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.qubic.qx.adapter.CoreApiService;
+import org.qubic.qx.adapter.Qx;
 import org.qubic.qx.adapter.Qx.OrderType;
 import org.qubic.qx.api.domain.AssetOrder;
 import org.qubic.qx.assets.Asset;
 import org.qubic.qx.assets.AssetService;
-import org.qubic.qx.domain.OrderBook;
-import org.qubic.qx.domain.QxAssetOrderData;
-import org.qubic.qx.domain.Trade;
-import org.qubic.qx.domain.Transaction;
+import org.qubic.qx.domain.*;
 import org.qubic.qx.repository.TradeRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -49,6 +48,7 @@ public class TransactionProcessor {
 
         List<Transaction> orderTransactions = txs.stream()
                 .filter(tx -> tx.extraData() instanceof QxAssetOrderData)
+                .filter(TransactionProcessor::mightBeSuccessful)
                 .toList();
 
         Set<Asset> assetInformation = orderTransactions.stream()
@@ -68,6 +68,28 @@ public class TransactionProcessor {
 
     }
 
+    private static boolean mightBeSuccessful(Transaction tx) {
+        //    money flew flag for successful transactions:
+        //
+        //    qx add bid -> true
+        //    qx remove bid -> true
+        //    qx add ask -> false - money flew does not help here
+        //    qx remove ask -> false - money flew does not help here
+        //    qx add ask with matching order  -> true
+
+        final boolean potentiallySuccessful;
+        if (tx.moneyFlew() == null) {
+            log.info("Money flew flag not available.");
+            potentiallySuccessful = true;
+        } else {
+            potentiallySuccessful = tx.moneyFlew() || isAskOrder(OrderType.fromCode(tx.inputType()));
+            if (!potentiallySuccessful) {
+                log.info("Ignoring transaction [{}] because of money flew flag.", tx.transactionHash());
+            }
+        }
+        return potentiallySuccessful;
+    }
+
     private Flux<Trade> storeTrades(List<Trade> list) {
         return Flux.fromIterable(list)
                 .flatMap(tradeRepository::storeTrade);
@@ -82,6 +104,7 @@ public class TransactionProcessor {
 
         // interpret orders
         for (Transaction tx : orderTransactions) {
+
             QxAssetOrderData orderData = (QxAssetOrderData) tx.extraData();
             OrderBook previousOrderBook = previousOrderBooks.get(orderBookKey(orderData));
             OrderBook currentOrderBook = currentOrderBooks.get(orderBookKey(orderData));
@@ -94,24 +117,31 @@ public class TransactionProcessor {
 
             if (previousOrderBook == null || currentOrderBook == null) {
 
-                log.warn("Missing order book. Cannot calculate success.");
-                // TODO we need to use money flew flag and/or logs
+                // this should never happen. Only if synced without starting order book.
+                log.warn("Missing order book. Cannot calculate success/trade.");
 
             } else {
 
-                List<AssetOrder> matchedOrders = orderBookCalculator.getMatchedOrders(previousOrderBook, orderData, orderType);
+                List<AssetOrder> matchedOrders = BooleanUtils.isFalse(tx.moneyFlew())
+                        ? List.of() // no trade
+                        : orderBookCalculator.getMatchedOrders(previousOrderBook, orderData, orderType);
 
                 if (matchedOrders.isEmpty()) { // not trade triggered
 
-                    log.info("No trade detected for order {}", orderData);
-                    // not 100% accurate and not really necessary but good for debugging and if replaying older orders.
-                    orderBookCalculator
-                            .addOrdersToOrderBooks(previousOrderBook, tx, orderType, orderData)
-                            .ifPresent(update -> {
-                                OrderBook updatedOrderBook = update.getT2();
-                                previousOrderBooks.put(update.getT1(), updatedOrderBook);
-                                orderBookCalculator.compareCalculatedAndCurrentOrderBook(updatedOrderBook, currentOrderBook);
-                            });
+                    if (orderType == OrderType.ADD_ASK && BooleanUtils.isTrue(tx.moneyFlew())) {
+
+                        // this should not happen
+                        log.error("Money flew but no trade detected for transaction [{}] with order data {}", tx.transactionHash(), orderData);
+
+                    } else {
+
+                        log.info("No trade detected for order {}", orderData);
+                        // not 100% accurate and not really necessary but good for debugging and if replaying older orders.
+                        orderBookCalculator
+                                .addOrdersToOrderBooks(previousOrderBook, tx, orderType, orderData)
+                                .ifPresent(update -> replacePreviousOrderBook(update, currentOrderBook, previousOrderBooks));
+
+                    }
 
                 } else {
 
@@ -120,9 +150,7 @@ public class TransactionProcessor {
                     detectedTrades.addAll(trades);
 
                     Tuple2<String, OrderBook> update = orderBookCalculator.updateOrderBooksWithTrades(previousOrderBook, tx, orderType, orderData, matchedOrders, trades);
-                    OrderBook updatedOrderBook = update.getT2();
-                    previousOrderBooks.put(update.getT1(), updatedOrderBook);
-                    orderBookCalculator.compareCalculatedAndCurrentOrderBook(updatedOrderBook, currentOrderBook);
+                    replacePreviousOrderBook(update, currentOrderBook, previousOrderBooks);
 
                 }
 
@@ -131,6 +159,13 @@ public class TransactionProcessor {
         }
 
         return detectedTrades;
+    }
+
+    private void replacePreviousOrderBook(Tuple2<String, OrderBook> update, OrderBook currentOrderBook, Map<String, OrderBook> previousOrderBooks) {
+        OrderBook updatedOrderBook = update.getT2();
+        if (orderBookCalculator.compareCalculatedAndCurrentOrderBook(updatedOrderBook, currentOrderBook)) {
+            previousOrderBooks.put(update.getT1(), updatedOrderBook);
+        }
     }
 
     private static OrderType getOrderType(Transaction tx) {
@@ -149,6 +184,10 @@ public class TransactionProcessor {
 
     private static String orderBookKey(String issuer, String assetName) {
         return String.format("%s/%s", issuer, assetName);
+    }
+
+    private static boolean isAskOrder(Qx.OrderType orderType) {
+        return orderType == Qx.OrderType.REMOVE_ASK || orderType == Qx.OrderType.ADD_ASK;
     }
 
 }

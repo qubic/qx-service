@@ -38,6 +38,7 @@ public interface QubicjMapper {
     @Mapping(target = "inputType", source = "transaction.inputType", qualifiedBy = UnsignedShortMapping.class)
     @Mapping(target = "inputSize", source = "transaction.inputSize", qualifiedBy = UnsignedShortMapping.class)
     @Mapping(target = "extraData", source = "transaction", qualifiedBy = ExtraDataMapping.class)
+    @Mapping(target = "moneyFlew", ignore = true)
     Transaction map(SignedTransaction source);
 
     @Mapping(target = "epoch", qualifiedBy = UnsignedShortMapping.class)

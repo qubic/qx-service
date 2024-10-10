@@ -78,16 +78,18 @@ public class OrderBookCalculator {
                 : Optional.of(Tuples.of(orderBookKey(orderData), calculatedOrderBook)); // no update needed
     }
 
-    public void compareCalculatedAndCurrentOrderBook(OrderBook calculatedOrderBook, OrderBook currentOrderBook) {
+    public boolean compareCalculatedAndCurrentOrderBook(OrderBook calculatedOrderBook, OrderBook currentOrderBook) {
         // order book changed
         OrderBook forCompareOnly = new OrderBook(currentOrderBook.tickNumber(), calculatedOrderBook.issuer(),
                 calculatedOrderBook.assetName(), calculatedOrderBook.asks(), calculatedOrderBook.bids());
         if (forCompareOnly.equals(currentOrderBook)) { // OK! equal to current order book. Should match at end of tick.
             log.debug("Current order book matches calculated order book.");
-        } else { // can happen if there are multiple orders or if calculation failed or if transaction did not
-            // execute successfully
+            return true;
+        } else {
+            // can happen if there are multiple orders or if calculation failed or if transaction did not execute successfully
             log.warn("Calculated new order book differs from current order book.");
             log.info("Calculated order book: {}.", calculatedOrderBook);
+            return false;
         }
     }
 
