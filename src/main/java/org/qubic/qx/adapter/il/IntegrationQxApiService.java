@@ -18,6 +18,7 @@ import java.util.function.Function;
 
 public class IntegrationQxApiService implements QxApiService {
 
+    private static final int NUM_RETRIES = 1;
     private static final String QX_BASE_PATH_V1 = "/v1/qx";
     private final WebClient webClient;
     private final IlQxMapper qxMapper;
@@ -32,6 +33,7 @@ public class IntegrationQxApiService implements QxApiService {
                 .uri(QX_BASE_PATH_V1 + "/getFees")
                 .retrieve()
                 .bodyToMono(IlFees.class)
+                .retry(NUM_RETRIES)
                 .map(qxMapper::mapFees);
     }
 
@@ -40,6 +42,7 @@ public class IntegrationQxApiService implements QxApiService {
                 .uri(assetOrderUri(QX_BASE_PATH_V1 + "/getAssetAskOrders", issuer, asset))
                 .retrieve()
                 .bodyToMono(IlAssetOrders.class)
+                .retry(NUM_RETRIES)
                 .map(IlAssetOrders::orders)
                 .map(qxMapper::mapAssetOrderList);
     }
@@ -49,6 +52,7 @@ public class IntegrationQxApiService implements QxApiService {
                 .uri(assetOrderUri(QX_BASE_PATH_V1 + "/getAssetBidOrders", issuer, asset))
                 .retrieve()
                 .bodyToMono(IlAssetOrders.class)
+                .retry(NUM_RETRIES)
                 .map(IlAssetOrders::orders)
                 .map(qxMapper::mapAssetOrderList);
     }
@@ -58,6 +62,7 @@ public class IntegrationQxApiService implements QxApiService {
                 .uri(entityOrderUri(QX_BASE_PATH_V1 + "/getEntityAskOrders", identity))
                 .retrieve()
                 .bodyToMono(IlEntityOrders.class)
+                .retry(NUM_RETRIES)
                 .map(IlEntityOrders::orders)
                 .map(qxMapper::mapEntityOrderList);
     }
@@ -67,6 +72,7 @@ public class IntegrationQxApiService implements QxApiService {
                 .uri(entityOrderUri(QX_BASE_PATH_V1 + "/getEntityBidOrders", identity))
                 .retrieve()
                 .bodyToMono(IlEntityOrders.class)
+                .retry(NUM_RETRIES)
                 .map(IlEntityOrders::orders)
                 .map(qxMapper::mapEntityOrderList);
     }
