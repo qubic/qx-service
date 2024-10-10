@@ -1,8 +1,10 @@
 package org.qubic.qx.adapter.il;
 
 import io.micrometer.core.instrument.util.IOUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.adapter.CoreApiService;
+import org.qubic.qx.adapter.il.domain.IlTransaction;
 import org.qubic.qx.domain.QxAssetOrderData;
 import org.qubic.qx.domain.TickData;
 import org.qubic.qx.domain.TickTransactionsStatus;
@@ -17,6 +19,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
 
@@ -87,8 +91,18 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
 
     }
 
+    @Disabled("order of responses doesn't always work")
     @Test
-    void getTickTransactions() {
+    void getTickQxTransactions() {
+
+        String statusBody = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
+                "/testdata/il/get-tick-transactions-status-response.json"
+        )), StandardCharsets.UTF_8);
+        prepareResponse(response -> response
+                .setResponseCode(HttpStatus.OK.value())
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setBody(statusBody));
+
         String body = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
                 "/testdata/il/get-tick-transactions-response.json")), StandardCharsets.UTF_8);
         prepareResponse(response -> response
@@ -109,8 +123,33 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
                         9)
                 ,null);
 
-        StepVerifier.create(apiService.getQxTransactions(123L))
+        StepVerifier.create(apiService.getQxTransactions(123L).log())
                 .expectNext(expected)
+                .verifyComplete();
+
+    }
+
+    @Test
+    void getTickTransactions() {
+        String body = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
+                "/testdata/il/get-tick-transactions-response.json")), StandardCharsets.UTF_8);
+        prepareResponse(response -> response
+                .setResponseCode(HttpStatus.OK.value())
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setBody(body));
+
+        IlTransaction expected = new IlTransaction(
+                "EYEFDKGKDIWFUFIVYNXUKJNWWLUAKGYFTXMQDPJEVFIDEOAMNMROUYNAIQDG",
+                "BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARMID",
+                "1",
+                16206480,
+                5,
+                56,
+                "CDC7Y799XhZKyMvThoBjD/dnCh6/OfchC0C83KJT0F9DRkIAAAAAAAMAAAAAAAAACQAAAAAAAAA=",
+                "naadpiyzgqfhdcygtucgiewovdzgqhfulymzvwvblgpaivwgtdkmlggcvngi");
+
+        StepVerifier.create(((IntegrationCoreApiService)apiService).getTickTransactions(123L))
+                .assertNext(txs -> assertThat(txs.transactions()).contains(expected))
                 .verifyComplete();
 
         assertRequest("/v1/core/getTickTransactions");

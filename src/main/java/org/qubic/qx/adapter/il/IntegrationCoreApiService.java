@@ -14,7 +14,10 @@ import org.qubic.qx.domain.Transaction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
+
+import java.util.Optional;
 
 @Slf4j
 public class IntegrationCoreApiService implements CoreApiService {
@@ -56,14 +59,14 @@ public class IntegrationCoreApiService implements CoreApiService {
 
     @Override
     public Flux<Transaction> getQxTransactions(long tick) {
-        return Mono.zip(getTransactionsMono(tick), getTickTransactionsStatus(tick))
-                .flatMapMany(t2 -> Flux.fromIterable(t2.getT1().transactions())
-                        .map(ilt -> Tuples.of(ilt, t2.getT2().statusPerTx().get(ilt.txId()))))
-                .filter(t2 -> isRelevantTransaction(t2.getT1()))
-                .map(t2 -> mapper.mapTransaction(t2.getT1(), t2.getT2()));
+        return Mono.zip(getTickTransactions(tick), getTickTransactionsStatus(tick))
+                .flatMapMany(tuple -> Flux.fromIterable(tuple.getT1().transactions())
+                        .map(ilt -> Tuples.of(ilt, getMoneyFlewStatus(tuple, ilt))))
+                .filter(tuple -> isRelevantTransaction(tuple.getT1()))
+                .map(tuple -> mapper.mapTransaction(tuple.getT1(), tuple.getT2().orElse(null)));
     }
 
-    private Mono<IlTransactions> getTransactionsMono(long tick) {
+    Mono<IlTransactions> getTickTransactions(long tick) {
         return webClient.post()
                 .uri(CORE_BASE_PATH_V1 + "/getTickTransactions")
                 .bodyValue(tickPayloadBody(tick))
@@ -82,10 +85,6 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .bodyToMono(TickTransactionsStatus.class)
                 .switchIfEmpty(Mono.error(emptyResult("get tick transactions status", tick)))
                 .retry(NUM_RETRIES);
-    }
-
-    private static EmptyResultException emptyResult(String action, long tick) {
-        return new EmptyResultException(String.format("Could not %s for tick [%d].", action, tick));
     }
 
     @Override
@@ -108,8 +107,12 @@ public class IntegrationCoreApiService implements CoreApiService {
         }
     }
 
+    private static Optional<Boolean> getMoneyFlewStatus(Tuple2<IlTransactions, TickTransactionsStatus> t2, IlTransaction ilt) {
+        return t2.getT2().statusPerTx() == null ? Optional.empty() : Optional.ofNullable(t2.getT2().statusPerTx().get(ilt.txId()));
+    }
+
     private static String tickPayloadBody(long tick) {
-        return String.format("{\"tick\":%d }", tick);
+        return String.format("{\"tick\":%d}", tick);
     }
 
     private static boolean isSentToQxAddress(IlTransaction transaction) {
@@ -118,6 +121,10 @@ public class IntegrationCoreApiService implements CoreApiService {
 
     private static boolean isRelevantInputType(IlTransaction transaction) {
         return Qx.ALL_INPUT_TYPES.contains(transaction.inputType());
+    }
+
+    private static EmptyResultException emptyResult(String action, long tick) {
+        return new EmptyResultException(String.format("Could not %s for tick [%d].", action, tick));
     }
 
 }
