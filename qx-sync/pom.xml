@@ -6,11 +6,10 @@
     <parent>
         <groupId>org.qubic.qx</groupId>
         <artifactId>qx-parent</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>qx-sync</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Service for syncing qx tick data.</description>
     <packaging>jar</packaging>
