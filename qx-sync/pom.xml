@@ -9,7 +9,7 @@
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>qx-service</artifactId>
+    <artifactId>qx-sync</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Service for syncing qx tick data.</description>
