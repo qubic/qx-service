@@ -13,7 +13,7 @@ import java.time.Instant;
 
 import static org.qubic.qx.repository.TradeRepository.KEY_TRADES;
 
-class TradeRepositoryTest extends AbstractRedisTest {
+class TradeRepositorySpringIT extends AbstractRedisTest {
 
     @Autowired
     private TradeRepository tradeRepository;

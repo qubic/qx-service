@@ -9,7 +9,7 @@ import redis.embedded.RedisServer;
 import java.io.IOException;
 
 @SpringBootTest(properties = {"spring.data.redis.port=16379"})
-public class AbstractRedisTest {
+public abstract class AbstractRedisTest {
 
     protected static final RedisServer REDIS_SERVER = createRedis();
 
