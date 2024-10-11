@@ -21,7 +21,7 @@ public class OrderBookRepository {
     private static final String ORDER_BOOK_KEY = "ob:%s:%s:%d"; // hash, ob:issuer:assetName:tick
     private static final String ORDER_BOOKS_KEY = "obs:%s:%s"; // set, obs:issuer:assetName
     private static final long OBS_LOWEST_RANK = 0L;
-    public static final long OBS_MIN_RANK = -6L; // -1 is highest. -1 means keep none. -10 means keep 9.
+    public static final long OBS_MIN_RANK = -100L; // -1 is highest. -1 means keep none. -10 means keep 9.
     private static final Range<Long> OBS_DISPOSE_RANGE = Range.closed(OBS_LOWEST_RANK, OBS_MIN_RANK);
 
     private final ReactiveStringRedisTemplate redisStringTemplate;
