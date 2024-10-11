@@ -4,22 +4,15 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# maven
+*.versionsBackup
+
 # local property files
 application-*.properties
 
 # log files
-
 *.log
 *.log.*.gz
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
 
 ### IntelliJ IDEA ###
 .idea
@@ -27,15 +20,3 @@ application-*.properties
 *.iml
 *.ipr
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
