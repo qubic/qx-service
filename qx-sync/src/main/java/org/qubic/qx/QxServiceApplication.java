@@ -8,8 +8,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.Environment;
 
-import java.io.IOException;
-
 @Slf4j
 @SpringBootApplication
 public class QxServiceApplication implements ApplicationRunner {
