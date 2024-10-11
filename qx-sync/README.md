@@ -1,4 +1,4 @@
-# qx-service
+# qx-sync
 
 ## Installation
 

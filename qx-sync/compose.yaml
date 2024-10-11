@@ -1,11 +1,11 @@
 version: '2'
 services:
-  qx-service:
-    container_name: 'qx-service'
+  qx-sync:
+    container_name: 'qx-sync'
     build:
       context: .
       dockerfile: 'Dockerfile'
-    image: 'qx-service:latest'
+    image: 'qx-sync:latest'
 #    ports:
 #      - '8080:8080'
     network_mode: 'host'
