@@ -1,7 +1,9 @@
 package org.qubic.qx.adapter.il;
 
 import io.micrometer.core.instrument.util.IOUtils;
-import org.junit.jupiter.api.Disabled;
+import okhttp3.mockwebserver.Dispatcher;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.adapter.CoreApiService;
 import org.qubic.qx.adapter.il.domain.IlTransaction;
@@ -91,24 +93,9 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
 
     }
 
-    @Disabled("order of responses doesn't always work")
     @Test
     void getTickQxTransactions() {
-
-        String statusBody = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
-                "/testdata/il/get-tick-transactions-status-response.json"
-        )), StandardCharsets.UTF_8);
-        prepareResponse(response -> response
-                .setResponseCode(HttpStatus.OK.value())
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(statusBody));
-
-        String body = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
-                "/testdata/il/get-tick-transactions-response.json")), StandardCharsets.UTF_8);
-        prepareResponse(response -> response
-                .setResponseCode(HttpStatus.OK.value())
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(body));
+        mockQxTransactionResponses();
 
         Transaction expected = new Transaction("naadpiyzgqfhdcygtucgiewovdzgqhfulymzvwvblgpaivwgtdkmlggcvngi",
                 "EYEFDKGKDIWFUFIVYNXUKJNWWLUAKGYFTXMQDPJEVFIDEOAMNMROUYNAIQDG",
@@ -127,6 +114,34 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
                 .expectNext(expected)
                 .verifyComplete();
 
+    }
+
+    private void mockQxTransactionResponses() {
+        String statusBody = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
+                "/testdata/il/get-tick-transactions-status-response.json"
+        )), StandardCharsets.UTF_8);
+
+        String body = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
+                "/testdata/il/get-tick-transactions-response.json")), StandardCharsets.UTF_8);
+
+        // dispatch responses base on url as we call different urls asynchronously
+        final Dispatcher dispatcher = new Dispatcher() {
+            @Override
+            public MockResponse dispatch (RecordedRequest request) {
+                return switch (Objects.requireNonNull(request.getPath())) {
+                    case "/v1/core/getTickTransactions" -> new MockResponse()
+                            .setResponseCode(HttpStatus.OK.value())
+                            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .setBody(body);
+                    case "/v1/core/getTickTransactionsStatus"  -> new MockResponse()
+                            .setResponseCode(HttpStatus.OK.value())
+                            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .setBody(statusBody);
+                    default -> new MockResponse().setResponseCode(404);
+                };
+            }
+        };
+        integrationLayer.setDispatcher(dispatcher);
     }
 
     @Test
