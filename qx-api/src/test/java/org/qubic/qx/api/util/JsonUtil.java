@@ -18,13 +18,4 @@ public class JsonUtil {
         }
     }
 
-    public static <T> T fromJson(final String json, final Class<T> clazz) {
-        try {
-            return JSON.readValue(json, clazz);
-        } catch (JsonProcessingException e) {
-            log.error("Could not convert from json to {}: {}", clazz.getSimpleName(), json);
-            throw new RuntimeException("Could not convert from json.", e);
-        }
-    }
-
 }
