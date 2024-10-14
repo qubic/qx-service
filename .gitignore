@@ -8,7 +8,7 @@ target/
 *.versionsBackup
 
 # local property files
-application-*.properties
+application-local.properties
 
 # log files
 *.log
