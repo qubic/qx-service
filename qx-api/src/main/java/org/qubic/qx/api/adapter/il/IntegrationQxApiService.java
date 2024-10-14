@@ -21,9 +21,9 @@ public class IntegrationQxApiService implements QxApiService {
     private static final int NUM_RETRIES = 1;
     private static final String QX_BASE_PATH_V1 = "/v1/qx";
     private final WebClient webClient;
-    private final QxIntegrationMapper qxMapper;
+    private final QxMapper qxMapper;
 
-    public IntegrationQxApiService(WebClient webClient, QxIntegrationMapper qxMapper) {
+    public IntegrationQxApiService(WebClient webClient, QxMapper qxMapper) {
         this.webClient = webClient;
         this.qxMapper = qxMapper;
     }

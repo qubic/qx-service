@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.api.adapter.QxApiService;
 import org.qubic.qx.api.adapter.il.IntegrationQxApiService;
-import org.qubic.qx.api.adapter.il.QxIntegrationMapper;
+import org.qubic.qx.api.adapter.il.QxMapper;
 import org.qubic.qx.api.properties.IntegrationClientProperties;
 import org.qubic.qx.api.service.QxService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -63,7 +63,7 @@ public class IntegrationLayerConfig {
     }
 
     @Bean
-    QxApiService integrationQxApiService(WebClient integrationApiWebClient, QxIntegrationMapper qxIntegrationMapper) {
+    QxApiService integrationQxApiService(WebClient integrationApiWebClient, QxMapper qxIntegrationMapper) {
         return new IntegrationQxApiService(integrationApiWebClient, qxIntegrationMapper);
     }
 
