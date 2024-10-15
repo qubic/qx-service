@@ -9,19 +9,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AssetsRepositoryIT extends AbstractPostgresTest{
 
     @Autowired
-    private AssetsRepository assetsRepository;
+    private AssetsRepository repository;
 
     @Test
-    public void saveEntity() {
+    public void saveAndLoad() {
         Asset asset = Asset.builder()
                 .issuer("FOO")
                 .name("BAR")
+                .verified(true)
                 .build();
-        Asset saved = assetsRepository.save(asset);
 
+        Asset saved = repository.save(asset);
         assertThat(saved.getId()).isNotNull();
-        assertThat(saved.getIssuer()).isEqualTo("FOO");
-        assertThat(saved.getName()).isEqualTo("BAR");
+
+        Asset reloaded = repository.findById(saved.getId()).orElseThrow();
+        assertThat(reloaded).isEqualTo(saved);
     }
 
 }

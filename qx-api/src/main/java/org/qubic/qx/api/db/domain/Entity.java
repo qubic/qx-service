@@ -7,8 +7,8 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Builder
 @Data
-@Table("identities")
-public class Identity {
+@Table("entities")
+public class Entity {
 
     @Id
     private Long id;

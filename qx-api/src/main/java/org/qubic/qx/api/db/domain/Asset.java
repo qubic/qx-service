@@ -14,5 +14,6 @@ public class Asset {
     private Long id;
     private String issuer;
     private String name;
+    private boolean verified;
 
 }
