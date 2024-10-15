@@ -72,8 +72,8 @@ public class ExtraDataMapper {
 
         return new QxTransferAssetData(
                 issuerId,
-                newOwnerId,
                 assetName,
+                newOwnerId,
                 buffer.getLong()
         );
     }
