@@ -1,14 +1,16 @@
 package org.qubic.qx.api.controller.mapping;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.qubic.qx.api.controller.domain.Asset;
 
-@Mapper(componentModel = "spring")
-public interface AssetsMapper {
+import java.util.Objects;
 
-    @Mapping(target = "issuer", source = "issuer")
-    @Mapping(target = "name", source = "name")
-    Asset map(org.qubic.qx.api.db.domain.Asset source);
+public class AssetsMapper {
+
+    public Asset map(org.qubic.qx.api.db.domain.Asset source) {
+        Objects.requireNonNull(source);
+        assert source.getIssuer() != null : "Issuer is null";
+        assert source.getName() != null : "Name is null";
+        return new Asset(source.getIssuer(), source.getName());
+    }
 
 }

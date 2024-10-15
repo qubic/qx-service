@@ -61,6 +61,11 @@ public class IntegrationLayerConfig {
     }
 
     @Bean
+    AssetsMapper assetsMapper() {
+        return new AssetsMapper();
+    }
+
+    @Bean
     AssetsService assetsService(AssetsRepository assetsRepository, AssetsMapper assetsMapper) {
         return new AssetsService(assetsRepository, assetsMapper);
     }
