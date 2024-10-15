@@ -20,7 +20,7 @@ class AssetsControllerSpringIT {
         client = MockMvcWebTestClient
                 .bindToApplicationContext(context)
                 .configureClient()
-                .baseUrl("/v1/qx")
+                .baseUrl("/service/v1/qx")
                 .build();
     }
 

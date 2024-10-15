@@ -17,7 +17,7 @@ class AssetsControllerTest {
     private final WebTestClient client = WebTestClient
             .bindToController(controller)
             .configureClient()
-            .baseUrl("/v1/qx")
+            .baseUrl("/service/v1/qx")
             .build();
 
     @Test

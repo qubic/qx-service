@@ -14,7 +14,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/v1/qx")
+@RequestMapping("/service/v1/qx")
 public class QxFunctionsController {
 
     private final QxService qxService;

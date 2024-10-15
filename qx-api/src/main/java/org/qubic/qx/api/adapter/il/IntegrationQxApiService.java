@@ -34,7 +34,6 @@ public class IntegrationQxApiService implements QxApiService {
                 .uri(QX_BASE_PATH_V1 + "/getFees")
                 .retrieve()
                 .bodyToMono(IlFees.class)
-                .doOnNext(fees -> log.info("Fees: {}", fees))
                 .retry(NUM_RETRIES)
                 .map(qxMapper::mapFees)
                 .block();
