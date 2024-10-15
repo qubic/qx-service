@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.controller.domain.AssetOrder;
 import org.qubic.qx.api.controller.domain.EntityOrder;
 import org.qubic.qx.api.controller.domain.Fees;
-import org.qubic.qx.api.service.QxService;
+import org.qubic.qx.api.controller.service.QxService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

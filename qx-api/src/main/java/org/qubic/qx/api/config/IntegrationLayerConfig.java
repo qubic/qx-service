@@ -5,8 +5,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.api.adapter.QxApiService;
 import org.qubic.qx.api.adapter.il.IntegrationQxApiService;
 import org.qubic.qx.api.adapter.il.QxMapper;
+import org.qubic.qx.api.controller.mapping.AssetsMapper;
+import org.qubic.qx.api.controller.service.AssetsService;
+import org.qubic.qx.api.db.AssetsRepository;
 import org.qubic.qx.api.properties.IntegrationClientProperties;
-import org.qubic.qx.api.service.QxService;
+import org.qubic.qx.api.controller.service.QxService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -55,6 +58,11 @@ public class IntegrationLayerConfig {
                     httpHeaders.setContentType(MediaType.APPLICATION_JSON);
                 })
                 .build();
+    }
+
+    @Bean
+    AssetsService assetsService(AssetsRepository assetsRepository, AssetsMapper assetsMapper) {
+        return new AssetsService(assetsRepository, assetsMapper);
     }
 
     @Bean

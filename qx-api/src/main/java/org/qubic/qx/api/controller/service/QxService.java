@@ -1,4 +1,4 @@
-package org.qubic.qx.api.service;
+package org.qubic.qx.api.controller.service;
 
 import org.qubic.qx.api.adapter.QxApiService;
 import org.qubic.qx.api.controller.domain.AssetOrder;

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.controller.domain.AssetOrder;
 import org.qubic.qx.api.controller.domain.EntityOrder;
 import org.qubic.qx.api.controller.domain.Fees;
-import org.qubic.qx.api.service.QxService;
+import org.qubic.qx.api.controller.service.QxService;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.List;
