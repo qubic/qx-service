@@ -18,6 +18,6 @@ spring.data.redis.host=...
 #### Create database user and schema
 
 ```postgresql
-CREATE USER qx WITH PASSWORD 'vebmwjxfgcdqhmhtqhpeoe';
+CREATE USER qx WITH PASSWORD '<enter-your-password-here>';
 CREATE DATABASE qx OWNER qx;
 ```
