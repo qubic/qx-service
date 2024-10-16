@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+  <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+  <include resource="org/springframework/boot/logging/logback/file-appender.xml" />
+
+  <property name="FILE_LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd'T'HH:mm:ss.SSSXXX,UTC}} ${LOG_LEVEL_PATTERN:-%5p} ${PID:- } - %applicationName[%10.10t] ${LOG_CORRELATION_PATTERN:-}%-30.30logger{29} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+
+  <logger name="ch.qos.logback" level="WARN"/>
+  <logger name="org.springframework" level="WARN"/>
+
+  <logger name="at.qubic" level="INFO"/>
+  <logger name="org.qubic" level="INFO"/>
+
+  <root level="WARN" >
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="FILE"/>
+  </root>
+
+</configuration>
