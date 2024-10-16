@@ -11,6 +11,7 @@ import org.qubic.qx.sync.domain.QxAssetOrderData;
 import org.qubic.qx.sync.domain.Trade;
 import org.qubic.qx.sync.domain.Transaction;
 import org.qubic.qx.sync.repository.TradeRepository;
+import org.qubic.qx.sync.repository.TransactionRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -28,11 +29,12 @@ class TransactionProcessorTest {
     private final CoreApiService coreApiService = mock();
     private final AssetService assetService = mock();
     private final OrderBookCalculator orderBookCalculator = mock();
+    private final TransactionRepository transactionRepository = mock();
     private final TradeRepository tradeRepository = mock();
-    private final TransactionProcessor transactionProcessor = new TransactionProcessor(coreApiService, assetService, orderBookCalculator, tradeRepository);
+    private final TransactionProcessor transactionProcessor = new TransactionProcessor(coreApiService, assetService, orderBookCalculator, transactionRepository, tradeRepository);
 
     @Test
-    void processQxOrders_thenStoreTrades() {
+    void processQxOrders_thenStoreTradeInformation() {
 
         OrderType orderType = OrderType.ADD_BID;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "assetName", 5, 5);
@@ -48,6 +50,7 @@ class TransactionProcessorTest {
         when(orderBookCalculator.getMatchedOrders(previousOrderBook, orderData, orderType)).thenReturn(matchedOrders);
         List<Trade> trades = List.of(mock(), mock());
         when(orderBookCalculator.handleTrades(transaction, Instant.EPOCH, matchedOrders, orderData, orderType)).thenReturn(trades);
+        when(transactionRepository.putTransaction(transaction)).thenReturn(Mono.just(transaction));
         when(tradeRepository.storeTrade(any(Trade.class))).then(args -> Mono.just(args.getArgument(0)));
         when(orderBookCalculator.updateOrderBooksWithTrades(previousOrderBook, transaction, orderType, orderData, matchedOrders, trades)).thenReturn(Tuples.of("issuer/assetName", previousOrderBook));
 

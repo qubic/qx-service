@@ -8,7 +8,6 @@ import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
 import org.qubic.qx.sync.domain.Transaction;
 import org.qubic.qx.sync.repository.TickRepository;
-import org.qubic.qx.sync.repository.TransactionRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -20,15 +19,13 @@ import java.util.List;
 public class TickSyncJob {
 
     private final TickRepository tickRepository;
-    private final TransactionRepository transactionRepository;
     private final CoreApiService coreService;
     private final TransactionProcessor transactionProcessor;
 
     private TickInfo currentTickInfo;
 
-    public TickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository, CoreApiService coreService, TransactionProcessor transactionProcessor) {
+    public TickSyncJob(TickRepository tickRepository, CoreApiService coreService, TransactionProcessor transactionProcessor) {
         this.tickRepository = tickRepository;
-        this.transactionRepository = transactionRepository;
         this.coreService = coreService;
         this.transactionProcessor = transactionProcessor;
     }
@@ -76,16 +73,10 @@ public class TickSyncJob {
                     .doFirst(() -> log.info("Tick [{}]: processing [{}] qx orders.", tickNumber, txs.size()))
                     .map(TickData::timestamp)
                     .flatMap(instant -> transactionProcessor.processQxOrders(tickNumber, instant, txs))
-                    .thenMany(storeTransactions(txs))
                     .then(storeTickNumberMono)
                     .then(tickRepository.addToQxTicks(tickNumber))
                     .then(tickRepository.setTickTransactions(tickNumber, txs.stream().map(Transaction::transactionHash).toList()));
         }
-    }
-
-    private Flux<Transaction> storeTransactions(List<Transaction> txs) {
-        return Flux.fromIterable(txs)
-                .flatMap(transactionRepository::putTransaction);
     }
 
     // minor helper methods

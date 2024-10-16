@@ -9,6 +9,7 @@ import org.qubic.qx.sync.assets.Asset;
 import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.domain.*;
 import org.qubic.qx.sync.repository.TradeRepository;
+import org.qubic.qx.sync.repository.TransactionRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -27,12 +28,15 @@ public class TransactionProcessor {
     private final CoreApiService coreService;
     private final AssetService assetService;
     private final OrderBookCalculator orderBookCalculator;
+    private final TransactionRepository transactionRepository;
     private final TradeRepository tradeRepository;
 
-    public TransactionProcessor(CoreApiService coreService, AssetService assetService, OrderBookCalculator orderBookCalculator, TradeRepository tradeRepository) {
+
+    public TransactionProcessor(CoreApiService coreService, AssetService assetService, OrderBookCalculator orderBookCalculator, TransactionRepository transactionRepository, TradeRepository tradeRepository) {
         this.coreService = coreService;
         this.assetService = assetService;
         this.orderBookCalculator = orderBookCalculator;
+        this.transactionRepository = transactionRepository;
         this.tradeRepository = tradeRepository;
     }
 
@@ -62,7 +66,7 @@ public class TransactionProcessor {
                         .collect(Collectors.toSet())
                         .map(previous -> Tuples.of(currentOrderBooks, previous)))
                 .map(tuple -> handleQxOrderTransactions(tuple.getT1(), tuple.getT2(), orderTransactions, tickTime))
-                .flatMapMany(this::storeTrades)
+                .flatMapMany(trades -> this.storeTradeInformation(txs, trades))
                 .collectList();
 
     }
@@ -89,9 +93,15 @@ public class TransactionProcessor {
         return potentiallySuccessful;
     }
 
-    private Flux<Trade> storeTrades(List<Trade> list) {
-        return Flux.fromIterable(list)
-                .flatMap(tradeRepository::storeTrade);
+    private Flux<Transaction> storeTransactions(List<Transaction> txs) {
+        return Flux.fromIterable(txs)
+                .flatMap(transactionRepository::putTransaction);
+    }
+
+    private Flux<Trade> storeTradeInformation(List<Transaction> transactions, List<Trade> list) {
+        return storeTransactions(transactions)
+                .thenMany(Flux.fromIterable(list)
+                        .flatMap(tradeRepository::storeTrade));
     }
 
     private List<Trade> handleQxOrderTransactions(Set<OrderBook> currentObs, Set<OrderBook> previousObs, List<Transaction> orderTransactions, Instant tickTime) {

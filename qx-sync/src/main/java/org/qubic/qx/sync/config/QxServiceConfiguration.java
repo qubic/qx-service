@@ -79,14 +79,14 @@ public class QxServiceConfiguration {
     }
 
     @Bean
-    TransactionProcessor transactionProcessor(CoreApiService coreApiService, AssetService assetService, OrderBookCalculator orderBookCalculator, TradeRepository tradeRepository) {
-        return new TransactionProcessor(coreApiService, assetService, orderBookCalculator, tradeRepository);
+    TransactionProcessor transactionProcessor(CoreApiService coreApiService, AssetService assetService, OrderBookCalculator orderBookCalculator,
+                                              TransactionRepository transactionRepository, TradeRepository tradeRepository) {
+        return new TransactionProcessor(coreApiService, assetService, orderBookCalculator, transactionRepository, tradeRepository);
     }
 
     @Bean
-    TickSyncJob tickSyncJob(TickRepository tickRepository, TransactionRepository transactionRepository,
-                            CoreApiService coreService, TransactionProcessor transactionProcessor) {
-        return new TickSyncJob(tickRepository, transactionRepository, coreService, transactionProcessor);
+    TickSyncJob tickSyncJob(TickRepository tickRepository, CoreApiService coreService, TransactionProcessor transactionProcessor) {
+        return new TickSyncJob(tickRepository, coreService, transactionProcessor);
     }
 
     @Bean

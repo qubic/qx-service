@@ -6,7 +6,6 @@ import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
 import org.qubic.qx.sync.domain.Transaction;
 import org.qubic.qx.sync.repository.TickRepository;
-import org.qubic.qx.sync.repository.TransactionRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -18,11 +17,10 @@ import static org.mockito.Mockito.*;
 class TickSyncJobTest {
 
     private final TickRepository tickRepository = mock();
-    private final TransactionRepository transactionRepository = mock();
     private final CoreApiService coreService = mock();
     private final TransactionProcessor transactionProcessor = mock();
 
-    private final TickSyncJob tickSync = new TickSyncJob(tickRepository, transactionRepository, coreService, transactionProcessor);
+    private final TickSyncJob tickSync = new TickSyncJob(tickRepository, coreService, transactionProcessor);
 
     @Test
     void sync() {
@@ -39,7 +37,6 @@ class TickSyncJobTest {
         when(coreService.getQxTransactions(3458L)).thenReturn(Flux.just(tx, tx, tx));
         when(coreService.getTickData(anyLong())).thenReturn(Mono.just(new TickData(1, 1L, Instant.now())));
 
-        when(transactionRepository.putTransaction(any())).thenReturn(Mono.just(tx));
         when(tickRepository.setTickTransactions(anyLong(), anyList())).thenReturn(Mono.just(true));
         when(tickRepository.addToQxTicks(anyLong())).thenReturn(Mono.just(1L));
         when(transactionProcessor.processQxOrders(anyLong(), any(Instant.class), anyList())).thenReturn(Mono.empty());
@@ -65,6 +62,5 @@ class TickSyncJobTest {
         verify(tickRepository, times(900)).isProcessedTick(anyLong());
         verify(coreService, never()).getQxTransactions(anyLong());
         verifyNoInteractions(transactionProcessor);
-        verifyNoInteractions(transactionRepository);
     }
 }
