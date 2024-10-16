@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.api.adapter.QxApiService;
 import org.qubic.qx.api.adapter.il.IntegrationQxApiService;
 import org.qubic.qx.api.adapter.il.QxMapper;
-import org.qubic.qx.api.controller.mapping.AssetsMapper;
 import org.qubic.qx.api.controller.service.AssetsService;
 import org.qubic.qx.api.db.AssetsRepository;
 import org.qubic.qx.api.properties.IntegrationClientProperties;
@@ -61,13 +60,8 @@ public class IntegrationLayerConfig {
     }
 
     @Bean
-    AssetsMapper assetsMapper() {
-        return new AssetsMapper();
-    }
-
-    @Bean
-    AssetsService assetsService(AssetsRepository assetsRepository, AssetsMapper assetsMapper) {
-        return new AssetsService(assetsRepository, assetsMapper);
+    AssetsService assetsService(AssetsRepository assetsRepository) {
+        return new AssetsService(assetsRepository);
     }
 
     @Bean

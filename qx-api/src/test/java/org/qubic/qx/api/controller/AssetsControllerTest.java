@@ -1,8 +1,8 @@
 package org.qubic.qx.api.controller;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.api.controller.domain.Asset;
 import org.qubic.qx.api.controller.service.AssetsService;
+import org.qubic.qx.api.db.domain.Asset;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.List;
@@ -22,9 +22,9 @@ class AssetsControllerTest {
 
     @Test
     void getAssets() {
-        Asset a = new Asset("issuerA", "nameA");
-        Asset b = new Asset("issuerB", "nameA");
-        Asset c = new Asset("issuerB", "nameB");
+        Asset a = Asset.builder().issuer("issuerA").name("nameA").build();
+        Asset b = Asset.builder().issuer("issuerB").name("nameA").build();
+        Asset c = Asset.builder().issuer("issuerB").name("nameB").build();
 
         when(assetsService.getAssets()).thenReturn(List.of(a, b, c));
 
