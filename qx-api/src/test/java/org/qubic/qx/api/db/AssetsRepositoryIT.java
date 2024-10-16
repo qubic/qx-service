@@ -1,10 +1,8 @@
 package org.qubic.qx.api.db;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.api.AbstractPostgresTest;
 import org.qubic.qx.api.db.domain.Asset;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
@@ -12,8 +10,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJdbcTest
-public class AssetsRepositoryIT extends AbstractPostgresTest {
+public class AssetsRepositoryIT extends AbstractPostgresJdbcTest {
 
     @Autowired
     private AssetsRepository repository;

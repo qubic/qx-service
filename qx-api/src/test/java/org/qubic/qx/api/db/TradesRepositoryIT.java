@@ -1,20 +1,17 @@
 package org.qubic.qx.api.db;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.api.AbstractPostgresTest;
 import org.qubic.qx.api.db.domain.Asset;
 import org.qubic.qx.api.db.domain.Trade;
 import org.qubic.qx.api.db.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJdbcTest
-class TradesRepositoryIT extends AbstractPostgresTest {
+class TradesRepositoryIT extends AbstractPostgresJdbcTest {
 
     @Autowired
     private AssetsRepository assetsRepository;
