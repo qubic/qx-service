@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 public class TransactionRepository {
 
     public static final String KEY_TRANSACTION = "tx:%s";
+    public static final String KEY_QUEUE_TRANSACTIONS = "queue:transactions";
 
     private final ReactiveRedisTemplate<String, Transaction> redisTransactionOperations;
 
@@ -17,10 +18,12 @@ public class TransactionRepository {
     }
 
     public Mono<Transaction> putTransaction(Transaction transaction) {
-        return redisTransactionOperations.opsForValue()
+        return redisTransactionOperations.opsForList().leftPush(KEY_QUEUE_TRANSACTIONS, transaction)
+                .doOnNext(count -> log.info("Pushed transaction [{}] into transaction queue. Queue length: [{}].", transaction.transactionHash(), count))
+                .then(redisTransactionOperations.opsForValue()
                 .set(String.format(KEY_TRANSACTION, transaction.transactionHash()), transaction)
                 .doOnNext(added -> log.info("Set transaction [{}]: [{}].", transaction.transactionHash(), added))
-                .map(added -> transaction);
+                .map(added -> transaction));
     }
 
     public Mono<Transaction> getTransaction(String transactionHash) {

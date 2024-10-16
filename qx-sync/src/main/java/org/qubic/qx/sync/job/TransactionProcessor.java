@@ -100,8 +100,7 @@ public class TransactionProcessor {
 
     private Flux<Trade> storeTradeInformation(List<Transaction> transactions, List<Trade> list) {
         return storeTransactions(transactions)
-                .thenMany(Flux.fromIterable(list)
-                        .flatMap(tradeRepository::storeTrade));
+                .thenMany(Flux.fromIterable(list).flatMap(tradeRepository::storeTrade));
     }
 
     private List<Trade> handleQxOrderTransactions(Set<OrderBook> currentObs, Set<OrderBook> previousObs, List<Transaction> orderTransactions, Instant tickTime) {
