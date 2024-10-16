@@ -2,6 +2,7 @@ package org.qubic.qx.api.adapter.il;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.qubic.qx.api.AbstractSpringIntegrationTest;
 import org.qubic.qx.api.adapter.QxApiService;
 import org.qubic.qx.api.controller.domain.AssetOrder;
 import org.qubic.qx.api.controller.domain.EntityOrder;
@@ -16,7 +17,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
-class IntegrationQxApiServiceIT extends AbstractIntegrationApiTest {
+class IntegrationQxApiServiceIT extends AbstractSpringIntegrationTest {
 
     private static final String TEST_ID = "TESTRAIJSNPOJAKARTQNQVRROKWBKLHXIBEYMYKVIGTWYXLDKFMEAFMDRJIC";
     private static final String CFB_ISSUER = "CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL";

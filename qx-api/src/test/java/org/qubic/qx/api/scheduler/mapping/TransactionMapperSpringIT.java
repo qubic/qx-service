@@ -1,7 +1,7 @@
 package org.qubic.qx.api.scheduler.mapping;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.api.AbstractPostgresSpringTest;
+import org.qubic.qx.api.AbstractSpringIntegrationTest;
 import org.qubic.qx.api.db.domain.Transaction;
 import org.qubic.qx.api.redis.dto.TransactionRedisDto;
 import org.qubic.qx.api.util.JsonUtil;
@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TransactionMapperSpringIT extends AbstractPostgresSpringTest { // new identities are saved to the db
+class TransactionMapperSpringIT extends AbstractSpringIntegrationTest { // new identities are saved to the db
 
     private static final String TEST_TRANSACTION_DATA = """
             {"transactionHash":"kgmteqsciuhikcqrvqzfnlryywpgtnvtvaphbvgbucqgiqdkwfqtgfbezjto","sourcePublicId":"VFWIEWBYSIMPBDHBXYFJVMLGKCCABZKRYFLQJVZTRBUOYSUHOODPVAHHKXPJ","destinationPublicId":"BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARMID","amount":1000000,"tick":16519142,"inputType":2,"inputSize":80,"extraData":{"@class":".QxTransferAssetData","issuer":"CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL","assetName":"CFB","newOwner":"JEJDVYSXKRBJJEFTHXJBNDYBIKVABKLIYHWGOFXAPGJYBRUVXHCLUMBFTOFB","numberOfUnits":8239152},"moneyFlew":true}""";

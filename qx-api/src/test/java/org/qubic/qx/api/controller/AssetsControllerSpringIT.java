@@ -3,15 +3,14 @@ package org.qubic.qx.api.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.qubic.qx.api.AbstractSpringIntegrationTest;
 import org.qubic.qx.api.db.domain.Asset;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
 import org.springframework.web.context.WebApplicationContext;
 
 @Slf4j
-@SpringBootTest
-class AssetsControllerSpringIT {
+class AssetsControllerSpringIT extends AbstractSpringIntegrationTest {
 
     private WebTestClient client;
 

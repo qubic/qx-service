@@ -1,6 +1,7 @@
 package org.qubic.qx.api.adapter.il;
 
 import org.junit.jupiter.api.Test;
+import org.qubic.qx.api.AbstractSpringIntegrationTest;
 import org.qubic.qx.api.adapter.il.domain.IlAssetOrder;
 import org.qubic.qx.api.adapter.il.domain.IlEntityOrder;
 import org.qubic.qx.api.adapter.il.domain.IlFees;
@@ -15,7 +16,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-class QxMapperSpringIT {
+class QxMapperSpringIT extends AbstractSpringIntegrationTest {
 
     @Autowired
     private QxMapper qxMapper;

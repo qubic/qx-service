@@ -1,19 +1,17 @@
 package org.qubic.qx.api.redis.repository;
 
 import org.junit.jupiter.api.Test;
+import org.qubic.qx.api.AbstractSpringIntegrationTest;
 import org.qubic.qx.api.db.domain.QxTransferAssetData;
-import org.qubic.qx.api.redis.AbstractRedisTest;
 import org.qubic.qx.api.redis.dto.TransactionRedisDto;
 import org.qubic.qx.api.util.JsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.qubic.qx.api.redis.repository.TransactionsRedisRepository.KEY_QUEUE_ERRORS;
-import static org.qubic.qx.api.redis.repository.TransactionsRedisRepository.KEY_QUEUE_PROCESS;
-import static org.qubic.qx.api.redis.repository.TransactionsRedisRepository.KEY_QUEUE_RECEIVE;
+import static org.qubic.qx.api.redis.repository.TransactionsRedisRepository.*;
 
-class TransactionsRedisRepositorySpringIT extends AbstractRedisTest {
+class TransactionsRedisRepositorySpringIT extends AbstractSpringIntegrationTest {
 
     private static final String TEST_TRANSACTION_DATA = """
             {"transactionHash":"kgmteqsciuhikcqrvqzfnlryywpgtnvtvaphbvgbucqgiqdkwfqtgfbezjto","sourcePublicId":"VFWIEWBYSIMPBDHBXYFJVMLGKCCABZKRYFLQJVZTRBUOYSUHOODPVAHHKXPJ","destinationPublicId":"BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARMID","amount":1000000,"tick":16519142,"inputType":2,"inputSize":80,"extraData":{"@class":".QxTransferAssetData","issuer":"CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL","assetName":"CFB","newOwner":"JEJDVYSXKRBJJEFTHXJBNDYBIKVABKLIYHWGOFXAPGJYBRUVXHCLUMBFTOFB","numberOfUnits":8239152},"moneyFlew":true}""";

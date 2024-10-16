@@ -1,16 +1,13 @@
 package org.qubic.qx.api.controller;
 
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.qubic.qx.api.AbstractSpringIntegrationTest;
 import org.qubic.qx.api.adapter.il.domain.*;
 import org.qubic.qx.api.controller.domain.AssetOrder;
 import org.qubic.qx.api.controller.domain.EntityOrder;
 import org.qubic.qx.api.controller.domain.Fees;
 import org.qubic.qx.api.util.JsonUtil;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,33 +17,20 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(properties = """
-    il.client.scheme=http
-    il.client.host=localhost
-    il.client.port=1234
-    backend=integration
-""")
-class QxFunctionsControllerSpringIT {
+class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
 
-    private final MockWebServer integrationLayer = new MockWebServer();
     private WebTestClient client;
 
     @BeforeEach
-    public void setUpTestNode(WebApplicationContext context) throws IOException {
+    public void setUpTestNode(WebApplicationContext context) {
         client = MockMvcWebTestClient
                 .bindToApplicationContext(context)
                 .configureClient()
                 .baseUrl("/service/v1/qx")
                 .build();
-        integrationLayer.start(1234);
-    }
-    @AfterEach
-    public void shutdown() throws Exception {
-        this.integrationLayer.shutdown();
     }
 
     @Test
@@ -134,12 +118,6 @@ class QxFunctionsControllerSpringIT {
                 .isEqualTo(List.of(new EntityOrder("issuer", "asset", 1, 2)));
 
         assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getEntityBidOrders?entityId=identity");
-    }
-
-    private void prepareResponse(Consumer<MockResponse> consumer) {
-        MockResponse response = new MockResponse();
-        consumer.accept(response);
-        integrationLayer.enqueue(response);
     }
 
 }

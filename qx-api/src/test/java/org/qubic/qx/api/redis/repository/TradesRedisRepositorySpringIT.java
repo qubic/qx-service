@@ -1,7 +1,7 @@
 package org.qubic.qx.api.redis.repository;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.api.redis.AbstractRedisTest;
+import org.qubic.qx.api.AbstractSpringIntegrationTest;
 import org.qubic.qx.api.redis.dto.TradeRedisDto;
 import org.qubic.qx.api.util.JsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +10,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.qubic.qx.api.redis.repository.TradesRedisRepository.*;
 
-class TradesRedisRepositorySpringIT extends AbstractRedisTest {
+class TradesRedisRepositorySpringIT extends AbstractSpringIntegrationTest {
 
     private static final String TEST_TRADE_DATA = """
             {"tick":16570914,"timestamp":1728818707,"transactionHash":"wdbbfxqzqnovtbnktggdpgxdzijbyerhzbrnxmufudyqbeccfhgudpafmijo","bid":false,"taker":"ZYDKPPIJREOAPDQEVLQMLKRNMIXCOJKKXQBRVRBWECKTSBEJEFQDCXYDGHKJ","maker":"KUVGXNCUCJFYKAEHQRXAONPNRPZBFQGOOSFMHSCJVEEHTFZUEUDRNSGAQKLM","issuer":"CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL","assetName":"CFB","price":3,"numberOfShares":10000000}""";
