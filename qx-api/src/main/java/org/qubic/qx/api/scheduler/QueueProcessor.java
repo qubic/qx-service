@@ -30,7 +30,7 @@ public class QueueProcessor<T, S> {
             S dto = redisRepository.readFromQueue();
             if (dto == null) {
                 itemsAvailable = false;
-                log.info("Transaction queue is empty");
+                log.debug("Transaction queue is empty");
             } else {
                 log.info("Processing from queue: {}", dto);
                 process(dto).ifPresent(processed::add);
