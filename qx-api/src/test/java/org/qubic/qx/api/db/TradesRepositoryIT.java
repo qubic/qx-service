@@ -1,16 +1,21 @@
 package org.qubic.qx.api.db;
 
 import org.junit.jupiter.api.Test;
+import org.qubic.qx.api.controller.domain.TradeDto;
 import org.qubic.qx.api.db.domain.Asset;
+import org.qubic.qx.api.db.domain.Entity;
 import org.qubic.qx.api.db.domain.Trade;
 import org.qubic.qx.api.db.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Iterator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Sql(scripts = "/testdata/db/setup-trades-repository-test.sql")
 class TradesRepositoryIT extends AbstractPostgresJdbcTest {
 
     @Autowired
@@ -20,21 +25,24 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
     private TransactionsRepository transactionsRepository;
 
     @Autowired
+    private EntitiesRepository entitiesRepository;
+
+    @Autowired
     private TradesRepository repository;
 
-    @Sql(scripts = "/testdata/db/setup-trades-repository-test.sql")
     @Test
     void saveAndLoad() {
+
         Asset asset = assetsRepository.findAll().iterator().next();
-        Transaction transaction = transactionsRepository.findAll().iterator().next();
+        Transaction tx = transactionsRepository.findAll().iterator().next();
 
         Trade trade = Trade.builder()
-                .transactionId(transaction.getId())
+                .transactionId(tx.getId())
                 .bid(true)
                 .price(1)
                 .numberOfShares(2)
                 .tickTime(Instant.EPOCH)
-                .makerId(transaction.getSourceId()) // doesn't make sense but good enough for test
+                .makerId(tx.getSourceId()) // doesn't make sense but good enough for test
                 .assetId(asset.getId())
                 .build();
 
@@ -44,6 +52,109 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
         Trade reloaded = repository.findById(trade.getId()).orElseThrow();
         assertThat(reloaded).isEqualTo(saved);
 
+    }
+
+    @Test
+    void findOrderedByTickTIme() {
+        Iterator<Entity> entityIterator = entitiesRepository.findAll().iterator();
+        Entity taker = entityIterator.next();
+        Entity maker = entityIterator.next();
+        Asset asset = assetsRepository.findAll().iterator().next();
+        Transaction tx = transactionsRepository.findAll().iterator().next();
+        assertThat(tx.getSourceId()).isEqualTo(taker.getId());
+
+        Trade trade1 = repository.save(trade(tx, asset, maker, nowPlusSeconds(100)));
+        repository.save(trade(tx, asset, maker, nowPlusSeconds(-100))); // outside limit
+        Trade trade3 = repository.save(trade(tx, asset, maker, nowPlusSeconds(0)));
+
+        assertThat(repository.findOrderedByTickTimeDesc(2))
+                .containsExactly(tradeDto(asset, taker, maker, trade1), tradeDto(asset, taker, maker, trade3));
+    }
+
+    @Test
+    void findByAssetOrderedByTickTime() {
+        Entity entity = entitiesRepository.findAll().iterator().next();
+        Iterator<Asset> assetIterator = assetsRepository.findAll().iterator();
+        Asset asset1 = assetIterator.next();
+        Asset asset2 = assetIterator.next();
+        Transaction tx = transactionsRepository.findAll().iterator().next();
+
+        Trade trade1 = repository.save(trade(tx, asset1, entity, nowPlusSeconds(100)));
+        Trade trade2 = repository.save(trade(tx, asset1, entity, nowPlusSeconds(-100)));
+        repository.save(trade(tx, asset1, entity, nowPlusSeconds(-101))); // outside limit
+        repository.save(trade(tx, asset2, entity, nowPlusSeconds(0))); // another asset
+
+        assertThat(repository.findByAssetOrderedByTickTimeDesc(asset1.getIssuer(), asset1.getName(), 2))
+                .containsExactly(
+                        tradeDto(asset1, entity, entity, trade1),
+                        tradeDto(asset1, entity, entity, trade2)
+                );
+    }
+
+
+    @Test
+    void findByEntityOrderedByTickTimeDesc() {
+        Iterator<Entity> entityIterator = entitiesRepository.findAll().iterator();
+        Entity entity1 = entityIterator.next();
+        Entity entity2 = entityIterator.next();
+        Asset asset = assetsRepository.findAll().iterator().next();
+        Transaction tx1 = transactionsRepository.findAll().iterator().next();
+        Transaction tx2 = transactionsRepository.save(Transaction.builder()
+                        .hash("hash2")
+                        .sourceId(entity2.getId())
+                        .destinationId(entity1.getId()) // not relevant
+                        .extraData(tx1.getExtraData())
+                .build());
+        assertThat(tx1.getSourceId()).isEqualTo(entity1.getId());
+
+        Trade trade1 = repository.save(trade(tx1, asset, entity1, nowPlusSeconds(100))); // only entity 1
+        repository.save(trade(tx1, asset, entity1, nowPlusSeconds(-100))); // only entity 1 // out of limit
+        Trade trade3 = repository.save(trade(tx1, asset, entity2, nowPlusSeconds(0))); // entity 1 and 2
+        Trade trade4 = repository.save(trade(tx2, asset, entity1, nowPlusSeconds(-1000))); // only entity 2
+
+        assertThat(repository.findByEntityOrderedByTickTimeDesc(entity2.getIdentity(), 3))
+                .containsExactly(
+                        tradeDto(asset, entity1, entity2, trade3),
+                        tradeDto("hash2", asset, entity2, entity1, trade4));
+
+        assertThat(repository.findByEntityOrderedByTickTimeDesc(entity1.getIdentity(), 2))
+                .containsExactly(
+                        tradeDto(asset, entity1, entity1, trade1),
+                        tradeDto(asset, entity1, entity2, trade3));
+    }
+
+    private Instant nowPlusSeconds(long seconds) {
+        return Instant.now().plusSeconds(seconds).truncatedTo(ChronoUnit.MILLIS);
+    }
+
+    private static TradeDto tradeDto(Asset asset, Entity taker, Entity maker, Trade trade) {
+        return tradeDto("hash", asset, taker, maker, trade);
+    }
+
+    private static TradeDto tradeDto(String hash, Asset asset, Entity taker, Entity maker, Trade trade) {
+        return new TradeDto(
+                trade.getTickTime().truncatedTo(ChronoUnit.MILLIS),
+                hash,
+                taker.getIdentity(),
+                maker.getIdentity(),
+                asset.getIssuer(),
+                asset.getName(),
+                trade.isBid(),
+                trade.getPrice(),
+                trade.getNumberOfShares()
+        );
+    }
+
+    private static Trade trade(Transaction transaction, Asset asset, Entity maker, Instant tickTime) {
+        return Trade.builder()
+                .transactionId(transaction.getId())
+                .bid(true)
+                .price(1)
+                .numberOfShares(2)
+                .tickTime(tickTime)
+                .makerId(maker.getId()) // doesn't make sense but good enough for test
+                .assetId(asset.getId())
+                .build();
     }
 
 }

@@ -7,7 +7,9 @@ import org.qubic.qx.api.adapter.il.IntegrationQxApiService;
 import org.qubic.qx.api.adapter.il.QxMapper;
 import org.qubic.qx.api.controller.service.AssetsService;
 import org.qubic.qx.api.controller.service.QxService;
+import org.qubic.qx.api.controller.service.TradesService;
 import org.qubic.qx.api.db.AssetsRepository;
+import org.qubic.qx.api.db.TradesRepository;
 import org.qubic.qx.api.properties.IntegrationClientProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -67,6 +69,11 @@ public class IntegrationLayerConfig {
     @Bean
     QxService qxService(QxApiService qxApiService) {
         return new QxService(qxApiService);
+    }
+
+    @Bean
+    TradesService tradesService(TradesRepository tradesRepository) {
+        return new TradesService(tradesRepository);
     }
 
     @Bean
