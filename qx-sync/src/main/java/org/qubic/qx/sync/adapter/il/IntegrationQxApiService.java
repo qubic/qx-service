@@ -1,13 +1,9 @@
 package org.qubic.qx.sync.adapter.il;
 
 import org.qubic.qx.sync.adapter.QxApiService;
-import org.qubic.qx.sync.adapter.il.domain.IlEntityOrders;
 import org.qubic.qx.sync.adapter.il.domain.IlAssetOrders;
-import org.qubic.qx.sync.adapter.il.domain.IlFees;
 import org.qubic.qx.sync.adapter.il.mapping.IlQxMapper;
 import org.qubic.qx.sync.api.domain.AssetOrder;
-import org.qubic.qx.sync.api.domain.EntityOrder;
-import org.qubic.qx.sync.api.domain.Fees;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Mono;
@@ -28,15 +24,6 @@ public class IntegrationQxApiService implements QxApiService {
         this.qxMapper = qxMapper;
     }
 
-    @Override public Mono<Fees> getFees() {
-        return webClient.get()
-                .uri(QX_BASE_PATH_V1 + "/getFees")
-                .retrieve()
-                .bodyToMono(IlFees.class)
-                .retry(NUM_RETRIES)
-                .map(qxMapper::mapFees);
-    }
-
     @Override public Mono<List<AssetOrder>> getAssetAskOrders(String issuer, String asset) {
         return webClient.get()
                 .uri(assetOrderUri(QX_BASE_PATH_V1 + "/getAssetAskOrders", issuer, asset))
@@ -55,34 +42,6 @@ public class IntegrationQxApiService implements QxApiService {
                 .retry(NUM_RETRIES)
                 .map(IlAssetOrders::orders)
                 .map(qxMapper::mapAssetOrderList);
-    }
-
-    @Override public Mono<List<EntityOrder>> getEntityAskOrders(String identity) {
-        return webClient.get()
-                .uri(entityOrderUri(QX_BASE_PATH_V1 + "/getEntityAskOrders", identity))
-                .retrieve()
-                .bodyToMono(IlEntityOrders.class)
-                .retry(NUM_RETRIES)
-                .map(IlEntityOrders::orders)
-                .map(qxMapper::mapEntityOrderList);
-    }
-
-    @Override public Mono<List<EntityOrder>> getEntityBidOrders(String identity) {
-        return webClient.get()
-                .uri(entityOrderUri(QX_BASE_PATH_V1 + "/getEntityBidOrders", identity))
-                .retrieve()
-                .bodyToMono(IlEntityOrders.class)
-                .retry(NUM_RETRIES)
-                .map(IlEntityOrders::orders)
-                .map(qxMapper::mapEntityOrderList);
-    }
-
-    private static Function<UriBuilder, URI> entityOrderUri(String path, String identity) {
-        return uriBuilder -> uriBuilder
-                .path(path)
-                .queryParam("entityId", identity)
-                .queryParam("offset", 0)
-                .build();
     }
 
     private static Function<UriBuilder, URI> assetOrderUri(String path, String issuer, String asset) {

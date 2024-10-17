@@ -1,14 +1,11 @@
 package org.qubic.qx.sync.adapter.qubicj;
 
 import at.qubic.api.domain.qx.Qx;
-import at.qubic.api.domain.qx.response.QxFees;
 import at.qubic.api.domain.std.SignedTransaction;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.ExtraDataMapper;
 import org.qubic.qx.sync.adapter.qubicj.mapping.QubicjMapper;
 import org.qubic.qx.sync.api.domain.AssetOrder;
-import org.qubic.qx.sync.api.domain.EntityOrder;
-import org.qubic.qx.sync.api.domain.Fees;
 import org.qubic.qx.sync.domain.ExtraData;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.Transaction;
@@ -32,16 +29,6 @@ class QubicjMapperSpringIT {
     private QubicjMapper mapper;
 
     @Test
-    void mapFees() {
-        QxFees source = QxFees.builder().assetIssuanceFee(1).transferFee(2).tradeFee(3).build();
-        Fees target = mapper.map(source);
-        assertThat(target).isNotNull();
-        assertThat(target.assetIssuanceFee()).isEqualTo(1);
-        assertThat(target.transferFee()).isEqualTo(2);
-        assertThat(target.tradeFee()).isEqualTo(3);
-    }
-
-    @Test
     void mapAssetOrder() {
         at.qubic.api.domain.qx.response.AssetOrder source = at.qubic.api.domain.qx.response.AssetOrder.builder()
                 .entity(new byte[32])
@@ -53,22 +40,6 @@ class QubicjMapperSpringIT {
         assertThat(target.entityId()).isEqualTo("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB");
         assertThat(target.price()).isEqualTo(42);
         assertThat(target.numberOfShares()).isEqualTo(10);
-    }
-
-    @Test
-    void mapEntityOrder() {
-        at.qubic.api.domain.qx.response.EntityOrder source = at.qubic.api.domain.qx.response.EntityOrder.builder()
-                .issuer(new byte[32])
-                .assetName(new byte[] {'F', 'O', 'O', 0, 0, 0, 0, 0})
-                .price(1)
-                .numberOfShares(2)
-                .build();
-        EntityOrder target = mapper.map(source);
-        assertThat(target).isNotNull();
-        assertThat(target.issuerId()).isEqualTo("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB");
-        assertThat(target.assetName()).isEqualTo("FOO");
-        assertThat(target.price()).isEqualTo(1);
-        assertThat(target.numberOfShares()).isEqualTo(2);
     }
 
     @Test

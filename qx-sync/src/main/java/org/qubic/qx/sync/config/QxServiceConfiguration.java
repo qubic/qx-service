@@ -7,7 +7,6 @@ import org.qubic.qx.sync.adapter.ExtraDataMapper;
 import org.qubic.qx.sync.adapter.QxApiService;
 import org.qubic.qx.sync.adapter.qubicj.mapping.DataTypeTranslator;
 import org.qubic.qx.sync.api.service.QxService;
-import org.qubic.qx.sync.api.service.TradesService;
 import org.qubic.qx.sync.assets.Asset;
 import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.assets.Assets;
@@ -48,11 +47,6 @@ public class QxServiceConfiguration {
     @Bean
     QxService qxService(QxApiService qxApiService) {
         return new QxService(qxApiService);
-    }
-
-    @Bean
-    TradesService tradesService(TradeRepository tradeRepository) {
-        return new TradesService(tradeRepository);
     }
 
     @Bean

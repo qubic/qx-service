@@ -4,8 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.QxApiService;
 import org.qubic.qx.sync.api.domain.AssetOrder;
-import org.qubic.qx.sync.api.domain.EntityOrder;
-import org.qubic.qx.sync.api.domain.Fees;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,21 +20,6 @@ class IntegrationQxApiServiceIT extends AbstractIntegrationApiTest {
 
     @Autowired
     private QxApiService apiClient;
-
-    @Test
-    void getFees() {
-        prepareResponse(response -> response
-                .setResponseCode(HttpStatus.OK.value())
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody("""
-                        { "assetIssuanceFee": 1000000000, "transferFee": 1000000, "tradeFee": 5000000 }"""));
-
-        StepVerifier.create(apiClient.getFees())
-                .expectNext(new Fees(1_000_000_000, 1_000_000, 5_000_000))
-                .verifyComplete();
-
-        assertRequest("/v1/qx/getFees");
-    }
 
     @Test
     void getAssetAskOrders() {
@@ -68,42 +51,6 @@ class IntegrationQxApiServiceIT extends AbstractIntegrationApiTest {
                 .verifyComplete();
 
         assertRequest(String.format("/v1/qx/getAssetBidOrders?issuerId=%s&assetName=CFB&offset=0", CFB_ISSUER));
-    }
-
-    @Test
-    void getEntityAskOrders() {
-        prepareResponse(response -> response
-                .setResponseCode(HttpStatus.OK.value())
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody("""
-                         {"orders":[
-                           {"issuerId":"issuer","assetName":"asset","price":"42","numberOfShares": "666"}
-                         ]}"""));
-
-        StepVerifier.create(apiClient.getEntityAskOrders(TEST_ID)
-                .doOnNext(l -> log.info("{}", l)))
-                .expectNext(List.of(new EntityOrder("issuer", "asset", 42, 666)))
-                .verifyComplete();
-
-        assertRequest(String.format("/v1/qx/getEntityAskOrders?entityId=%s&offset=0", TEST_ID));
-    }
-
-    @Test
-    void getEntityBidOrders() {
-        prepareResponse(response -> response
-                .setResponseCode(HttpStatus.OK.value())
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody("""
-                         {"orders":[
-                           {"issuerId":"issuer","assetName":"asset","price":"42","numberOfShares": "666"}
-                         ]}"""));
-
-        StepVerifier.create(apiClient.getEntityBidOrders(TEST_ID)
-                        .doOnNext(l -> log.info("{}", l)))
-                .expectNext(List.of(new EntityOrder("issuer", "asset", 42, 666)))
-                .verifyComplete();
-
-        assertRequest(String.format("/v1/qx/getEntityBidOrders?entityId=%s&offset=0", TEST_ID));
     }
 
 }
