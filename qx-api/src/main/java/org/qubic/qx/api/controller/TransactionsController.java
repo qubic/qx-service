@@ -1,19 +1,15 @@
 package org.qubic.qx.api.controller;
 
 import jakarta.validation.constraints.Size;
-import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.controller.domain.TradeDto;
 import org.qubic.qx.api.validation.OneOf;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin
 @Validated
-@Slf4j
 @RestController
 @RequestMapping("/service/v1/qx")
 public class TransactionsController {

@@ -6,13 +6,11 @@ import org.qubic.qx.api.controller.domain.EntityOrder;
 import org.qubic.qx.api.controller.domain.Fees;
 import org.qubic.qx.api.controller.service.QxService;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin
 @Validated
 @RestController
 @RequestMapping("/service/v1/qx")
