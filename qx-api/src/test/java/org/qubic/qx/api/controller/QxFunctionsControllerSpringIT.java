@@ -21,6 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
 
+    private static final String ISSUER = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGH";
+    private static final String ID = ISSUER;
+
     private WebTestClient client;
 
     @BeforeEach
@@ -56,7 +59,7 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(JsonUtil.toJson(assetOrders)));
 
-        client.get().uri("/issuer/issuerId/asset/assetName/orders/ask")
+        client.get().uri("/issuer/"+ISSUER+"/asset/TEST/orders/ask")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(AssetOrder.class)
@@ -74,7 +77,7 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(JsonUtil.toJson(assetOrders)));
 
-        client.get().uri("/issuer/issuerId/asset/assetName/orders/bid")
+        client.get().uri("/issuer/"+ISSUER+"/asset/TEST/orders/bid")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(AssetOrder.class)
@@ -92,13 +95,13 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(JsonUtil.toJson(entityOrders)));
 
-        client.get().uri("/entity/identity/orders/ask")
+        client.get().uri("/entity/"+ ID + "/orders/ask")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(EntityOrder.class)
                 .isEqualTo(List.of(new EntityOrder("issuer", "asset", 1, 2)));
 
-        assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getEntityAskOrders?entityId=identity");
+        assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getEntityAskOrders?entityId=" + ID);
     }
 
     @Test
@@ -110,13 +113,13 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(JsonUtil.toJson(entityOrders)));
 
-        client.get().uri("/entity/identity/orders/bid")
+        client.get().uri("/entity/" + ID + "/orders/bid")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(EntityOrder.class)
                 .isEqualTo(List.of(new EntityOrder("issuer", "asset", 1, 2)));
 
-        assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getEntityBidOrders?entityId=identity");
+        assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getEntityBidOrders?entityId=" + ID);
     }
 
 }
