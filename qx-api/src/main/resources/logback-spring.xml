@@ -13,7 +13,7 @@
   <logger name="at.qubic" level="INFO"/>
   <logger name="org.qubic" level="INFO"/>
   <!-- set commons request logging filter to debug for request logging -->
-  <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG" />
+  <!-- <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG" /> -->
 
   <root level="WARN" >
     <appender-ref ref="CONSOLE"/>
