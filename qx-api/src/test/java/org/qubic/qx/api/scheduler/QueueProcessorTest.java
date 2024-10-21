@@ -21,16 +21,19 @@ class QueueProcessorTest {
     private final QueueProcessor<Transaction, TransactionRedisDto> processor = new QueueProcessor<>(redisRepository, repository, mapper);
 
     @Test
-    void process_thenSaveAndReturnTransaction() {
+    void process_thenSaveAndReturnDto() {
         TransactionRedisDto redisDto = mock();
-        Transaction transaction = mock();
+        Transaction targetDto = mock();
 
         when(redisRepository.readFromQueue()).thenReturn(redisDto, (TransactionRedisDto) null);
-        when(mapper.map(redisDto)).thenReturn(transaction);
-        when(repository.save(transaction)).thenReturn(transaction);
+        when(mapper.map(redisDto)).thenReturn(targetDto);
+        when(repository.save(targetDto)).thenReturn(targetDto);
 
-        List<Transaction> transactions = processor.process();
-        assertThat(transactions).contains(transaction);
+        List<Transaction> targetDtos = processor.process();
+        assertThat(targetDtos).contains(targetDto);
+
+        verify(redisRepository).removeFromProcessingQueue(redisDto);
+        verify(redisRepository, never()).pushIntoErrorsQueue(any());
     }
 
     @Test
@@ -40,8 +43,8 @@ class QueueProcessorTest {
         when(redisRepository.readFromQueue()).thenReturn(redisDto, (TransactionRedisDto) null);
         when(mapper.map(redisDto)).thenThrow(new RuntimeException("exception for test"));
 
-        List<Transaction> transactions = processor.process();
-        assertThat(transactions).isEmpty();
+        List<Transaction> targetDtos = processor.process();
+        assertThat(targetDtos).isEmpty();
 
         verifyNoInteractions(repository);
         verify(redisRepository).pushIntoErrorsQueue(redisDto);
@@ -51,14 +54,14 @@ class QueueProcessorTest {
     @Test
     void process_givenDatabaseError_thenMoveIntoErrorQueue() {
         TransactionRedisDto redisDto = mock();
-        Transaction transaction = mock();
+        Transaction targetDto = mock();
 
         when(redisRepository.readFromQueue()).thenReturn(redisDto, (TransactionRedisDto) null);
-        when(mapper.map(redisDto)).thenReturn(transaction);
-        when(repository.save(transaction)).thenThrow(new RuntimeException("exception for test"));
+        when(mapper.map(redisDto)).thenReturn(targetDto);
+        when(repository.save(targetDto)).thenThrow(new RuntimeException("exception for test"));
 
-        List<Transaction> transactions = processor.process();
-        assertThat(transactions).isEmpty();
+        List<Transaction> targetDtos = processor.process();
+        assertThat(targetDtos).isEmpty();
 
         verify(redisRepository).pushIntoErrorsQueue(redisDto);
         verify(redisRepository).removeFromProcessingQueue(redisDto);

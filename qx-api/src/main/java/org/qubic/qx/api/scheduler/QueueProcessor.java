@@ -27,32 +27,38 @@ public class QueueProcessor<T, S> {
 
         boolean itemsAvailable = true;
         do  {
-            S dto = redisRepository.readFromQueue();
-            if (dto == null) {
+            S sourceDto = redisRepository.readFromQueue();
+            if (sourceDto == null) {
                 itemsAvailable = false;
                 log.debug("Transaction queue is empty");
             } else {
-                log.info("Processing from queue: {}", dto);
-                process(dto).ifPresent(processed::add);
+                log.info("Processing from queue: {}", sourceDto);
+                process(sourceDto).ifPresent(processed::add);
             }
 
         } while (itemsAvailable);
         return processed;
     }
 
-    protected Optional<T> process(S dto) {
+    protected Optional<T> process(S sourceDto) {
         try {
-            T trade = mapper.map(dto);
-            trade = repository.save(trade);
-            log.info("Saved to database: {}", trade);
-            return Optional.of(trade);
+            T targetDto = mapper.map(sourceDto);
+            targetDto = repository.save(targetDto);
+            log.info("Saved to database: {}", targetDto);
+            removeFromProcessingQueue(sourceDto);
+            return Optional.of(targetDto);
         } catch (RuntimeException e) {
-            log.error("Error processing redis message {}.", dto, e);
-            Long length = redisRepository.pushIntoErrorsQueue(dto);
+            log.error("Error processing redis message {}.", sourceDto, e);
+            Long length = redisRepository.pushIntoErrorsQueue(sourceDto);
             log.warn("Moved message into error queue. Error queue length: [{}].", length);
-            Long removed = redisRepository.removeFromProcessingQueue(dto);
-            log.warn("Removed [{}] messages from processing queue.", removed);
+            removeFromProcessingQueue(sourceDto);
             return Optional.empty();
         }
     }
+
+    private void removeFromProcessingQueue(S sourceDto) {
+        Long removed = redisRepository.removeFromProcessingQueue(sourceDto);
+        log.warn("Removed [{}] messages from processing queue.", removed);
+    }
+
 }
