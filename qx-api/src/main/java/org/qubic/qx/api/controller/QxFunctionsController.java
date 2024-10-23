@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.qubic.qx.api.redis.QxCacheManager.*;
+
 @CrossOrigin
 @Validated
 @RestController
@@ -23,33 +25,33 @@ public class QxFunctionsController {
         this.qxService = qxService;
     }
 
-    @Cacheable("fees")
+    @Cacheable(CACHE_NAME_FEES)
     @GetMapping("/fees")
     public Fees getFees() {
         return qxService.getFees();
     }
 
-    @Cacheable("assetAskOrders")
+    @Cacheable(cacheNames = CACHE_NAME_ASSET_ASK_ORDERS, key = CACHE_KEY_ASSET)
     @GetMapping("/issuer/{issuer}/asset/{asset}/orders/ask")
     public List<AssetOrder> getAssetAskOrders(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
                                               @PathVariable("asset") @Size(min=1, max=7) String asset) {
         return qxService.getAssetAskOrders(issuer, asset);
     }
 
-    @Cacheable("assetBidOrders")
+    @Cacheable(cacheNames = CACHE_NAME_ASSET_BID_ORDERS, key = CACHE_KEY_ASSET)
     @GetMapping("/issuer/{issuer}/asset/{asset}/orders/bid")
     public List<AssetOrder> getAssetBidOrders(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
                                               @PathVariable("asset") @Size(min=1, max=7) String asset) {
         return qxService.getAssetBidOrders(issuer, asset);
     }
 
-    @Cacheable("entityAskOrders")
+    @Cacheable(CACHE_NAME_ENTITY_ASK_ORDERS)
     @GetMapping("/entity/{identity}/orders/ask")
     public List<EntityOrder> getEntityAskOrders(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
         return qxService.getEntityAskOrders(identity);
     }
 
-    @Cacheable("entityBidOrders")
+    @Cacheable(CACHE_NAME_ENTITY_BID_ORDERS)
     @GetMapping("/entity/{identity}/orders/bid")
     public List<EntityOrder> getEntityBidOrders(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
         return qxService.getEntityBidOrders(identity);

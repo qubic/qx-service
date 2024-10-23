@@ -6,12 +6,15 @@ import org.qubic.qx.api.db.TradesRepository;
 import org.qubic.qx.api.db.TransactionsRepository;
 import org.qubic.qx.api.db.domain.Trade;
 import org.qubic.qx.api.db.domain.Transaction;
+import org.qubic.qx.api.redis.QxCacheManager;
 import org.qubic.qx.api.redis.dto.TradeRedisDto;
 import org.qubic.qx.api.redis.dto.TransactionRedisDto;
 import org.qubic.qx.api.redis.repository.TradesRedisRepository;
 import org.qubic.qx.api.redis.repository.TransactionsRedisRepository;
 import org.qubic.qx.api.scheduler.QueueProcessor;
 import org.qubic.qx.api.scheduler.RedisSyncScheduler;
+import org.qubic.qx.api.scheduler.TradesProcessor;
+import org.qubic.qx.api.scheduler.TransactionsProcessor;
 import org.qubic.qx.api.scheduler.mapping.DatabaseMappings;
 import org.qubic.qx.api.scheduler.mapping.TradeMapper;
 import org.qubic.qx.api.scheduler.mapping.TransactionMapper;
@@ -33,16 +36,16 @@ public class SchedulerConfiguration {
     }
 
     @Bean
-    QueueProcessor<Transaction, TransactionRedisDto> transactionsProcessor(TransactionsRedisRepository transactionsRedisRepository,
-                                                                           TransactionsRepository transactionsRepository,
-                                                                           TransactionMapper transactionMapper) {
-        return new QueueProcessor<>(transactionsRedisRepository, transactionsRepository, transactionMapper);
-
+    TransactionsProcessor transactionsProcessor(TransactionsRedisRepository transactionsRedisRepository,
+                                                TransactionsRepository transactionsRepository,
+                                                TransactionMapper transactionMapper,
+                                                QxCacheManager qxCacheManager) {
+        return new TransactionsProcessor(transactionsRedisRepository, transactionsRepository, transactionMapper, qxCacheManager);
     }
 
     @Bean
-    QueueProcessor<Trade, TradeRedisDto> tradesProcessor(TradesRedisRepository tradesRedisRepository, TradesRepository tradesRepository, TradeMapper tradeMapper) {
-        return new QueueProcessor<>(tradesRedisRepository, tradesRepository, tradeMapper);
+    TradesProcessor tradesProcessor(TradesRedisRepository tradesRedisRepository, TradesRepository tradesRepository, TradeMapper tradeMapper, QxCacheManager qxCacheManager) {
+        return new TradesProcessor(tradesRedisRepository, tradesRepository, tradeMapper, qxCacheManager);
     }
 
     @Bean

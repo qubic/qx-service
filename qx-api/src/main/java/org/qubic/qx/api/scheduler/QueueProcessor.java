@@ -1,5 +1,6 @@
 package org.qubic.qx.api.scheduler;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.redis.repository.QueueProcessingRepository;
 import org.qubic.qx.api.scheduler.mapping.RedisToDomainMapper;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-public class QueueProcessor<T, S> {
+public abstract class QueueProcessor<T, S> {
 
     private final QueueProcessingRepository<S> redisRepository;
     private final CrudRepository<T, Long> repository;
@@ -40,11 +41,12 @@ public class QueueProcessor<T, S> {
         return processed;
     }
 
-    protected Optional<T> process(S sourceDto) {
+    protected Optional<T> process(@NonNull S sourceDto) {
         try {
             T targetDto = mapper.map(sourceDto);
             targetDto = repository.save(targetDto);
             log.info("Saved to database: {}", targetDto);
+            postProcess(targetDto, sourceDto);
             removeFromProcessingQueue(sourceDto);
             return Optional.of(targetDto);
         } catch (RuntimeException e) {
@@ -56,7 +58,10 @@ public class QueueProcessor<T, S> {
         }
     }
 
-    private void removeFromProcessingQueue(S sourceDto) {
+    protected void postProcess(@NonNull final T targetDto, @NonNull final S sourceDto) {
+    }
+
+    protected void removeFromProcessingQueue(S sourceDto) {
         Long removed = redisRepository.removeFromProcessingQueue(sourceDto);
         log.warn("Removed [{}] messages from processing queue.", removed);
     }

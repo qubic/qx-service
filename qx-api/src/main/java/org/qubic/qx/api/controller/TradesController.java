@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.qubic.qx.api.redis.QxCacheManager.*;
+
 @CrossOrigin
 @Validated
 @RestController
@@ -21,20 +23,20 @@ public class TradesController {
         this.tradesService = tradesService;
     }
 
-    @Cacheable("trades")
+    @Cacheable(CACHE_NAME_TRADES)
     @GetMapping("/trades")
     public List<TradeDto> getTrades() {
         return tradesService.getTrades();
     }
 
-    @Cacheable("assetTrades")
+    @Cacheable(cacheNames = CACHE_NAME_ASSET_TRADES, key = CACHE_KEY_ASSET)
     @GetMapping("/issuer/{issuer}/asset/{asset}/trades")
     public List<TradeDto> getAssetTrades(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
                                          @PathVariable("asset") @Size(min = 1, max = 7) String asset) {
         return tradesService.getAssetTrades(issuer, asset);
     }
 
-    @Cacheable("entityTrades")
+    @Cacheable(CACHE_NAME_ENTITY_TRADES)
     @GetMapping("/entity/{identity}/trades")
     public List<TradeDto>  getEntityTrades(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
         return tradesService.getEntityTrades(identity);

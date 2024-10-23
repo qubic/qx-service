@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static org.qubic.qx.api.redis.QxCacheManager.CACHE_NAME_ASSETS;
+
 @CrossOrigin
 @Slf4j
 @RestController
@@ -23,7 +25,7 @@ public class AssetsController {
         this.assetsService = assetsService;
     }
 
-    @Cacheable("assets")
+    @Cacheable(CACHE_NAME_ASSETS)
     @GetMapping("/assets")
     public List<Asset> getAssets() {
         return assetsService.getAssets();

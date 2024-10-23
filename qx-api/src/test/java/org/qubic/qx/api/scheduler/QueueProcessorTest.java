@@ -18,7 +18,7 @@ class QueueProcessorTest {
     private final TransactionsRepository repository = mock();
     private final TransactionMapper mapper = mock();
 
-    private final QueueProcessor<Transaction, TransactionRedisDto> processor = new QueueProcessor<>(redisRepository, repository, mapper);
+    private final QueueProcessor<Transaction, TransactionRedisDto> processor = new QueueProcessor<>(redisRepository, repository, mapper) {};
 
     @Test
     void process_thenSaveAndReturnDto() {
