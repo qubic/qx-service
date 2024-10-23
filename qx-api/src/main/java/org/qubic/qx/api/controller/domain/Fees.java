@@ -1,5 +1,7 @@
 package org.qubic.qx.api.controller.domain;
 
-public record Fees(long assetIssuanceFee, long transferFee, long tradeFee) {
+import java.io.Serializable;
+
+public record Fees(long assetIssuanceFee, long transferFee, long tradeFee) implements Serializable {
 
 }

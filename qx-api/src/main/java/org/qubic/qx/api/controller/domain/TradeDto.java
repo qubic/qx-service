@@ -1,5 +1,6 @@
 package org.qubic.qx.api.controller.domain;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 public record TradeDto(Instant tickTime,
@@ -11,5 +12,5 @@ public record TradeDto(Instant tickTime,
                        boolean bid,
                        long price,
                        long numberOfShares
-)
+) implements Serializable
 {}

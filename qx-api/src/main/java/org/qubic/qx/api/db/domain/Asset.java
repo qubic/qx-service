@@ -7,11 +7,13 @@ import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.io.Serializable;
+
 @Jacksonized // attention: class reused in api interface
 @Builder
 @Data
 @Table("assets")
-public class Asset {
+public class Asset implements Serializable {
 
     @JsonIgnore
     @Id

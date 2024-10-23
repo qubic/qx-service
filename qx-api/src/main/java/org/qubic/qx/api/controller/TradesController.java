@@ -3,6 +3,7 @@ package org.qubic.qx.api.controller;
 import jakarta.validation.constraints.Size;
 import org.qubic.qx.api.controller.domain.TradeDto;
 import org.qubic.qx.api.controller.service.TradesService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,17 +21,20 @@ public class TradesController {
         this.tradesService = tradesService;
     }
 
+    @Cacheable("trades")
     @GetMapping("/trades")
     public List<TradeDto> getTrades() {
         return tradesService.getTrades();
     }
 
+    @Cacheable("assetTrades")
     @GetMapping("/issuer/{issuer}/asset/{asset}/trades")
     public List<TradeDto> getAssetTrades(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
                                          @PathVariable("asset") @Size(min = 1, max = 7) String asset) {
         return tradesService.getAssetTrades(issuer, asset);
     }
 
+    @Cacheable("entityTrades")
     @GetMapping("/entity/{identity}/trades")
     public List<TradeDto>  getEntityTrades(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
         return tradesService.getEntityTrades(identity);
