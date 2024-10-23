@@ -14,10 +14,6 @@
     <description>Service that provides an API to access qx data.</description>
     <packaging>jar</packaging>
 
-    <properties>
-            <commons-compress.version>1.26.1</commons-compress.version> <!-- 1.24 is vulnerable -->
-    </properties>
-
     <dependencies>
 
         <dependency>
@@ -97,6 +93,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -108,10 +105,10 @@
             <artifactId>testcontainers-redis</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- upgrade commons compress because of vulnerability -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>${commons-compress.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
