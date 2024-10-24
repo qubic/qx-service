@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TransactionMapperSpringIT extends AbstractSpringIntegrationTest { // new identities are saved to the db
 
     private static final String TEST_TRANSACTION_DATA = """
-            {"transactionHash":"kgmteqsciuhikcqrvqzfnlryywpgtnvtvaphbvgbucqgiqdkwfqtgfbezjto","sourcePublicId":"VFWIEWBYSIMPBDHBXYFJVMLGKCCABZKRYFLQJVZTRBUOYSUHOODPVAHHKXPJ","destinationPublicId":"BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARMID","amount":1000000,"tick":16519142,"inputType":2,"inputSize":80,"extraData":{"@class":".QxTransferAssetData","issuer":"CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL","assetName":"CFB","newOwner":"JEJDVYSXKRBJJEFTHXJBNDYBIKVABKLIYHWGOFXAPGJYBRUVXHCLUMBFTOFB","numberOfUnits":8239152},"moneyFlew":true}""";
+            {"transactionHash":"kgmteqsciuhikcqrvqzfnlryywpgtnvtvaphbvgbucqgiqdkwfqtgfbezjto","sourcePublicId":"VFWIEWBYSIMPBDHBXYFJVMLGKCCABZKRYFLQJVZTRBUOYSUHOODPVAHHKXPJ","destinationPublicId":"BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARMID","amount":1000000,"tick":16519142,"inputType":2,"inputSize":80,"extraData":{"@class":".QxTransferAssetData","issuer":"CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL","name":"CFB","newOwner":"JEJDVYSXKRBJJEFTHXJBNDYBIKVABKLIYHWGOFXAPGJYBRUVXHCLUMBFTOFB","numberOfShares":8239152},"moneyFlew":true}""";
 
     @Autowired
     private TransactionMapper transactionMapper;

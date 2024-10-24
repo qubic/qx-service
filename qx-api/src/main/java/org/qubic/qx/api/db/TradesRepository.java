@@ -16,7 +16,7 @@ public interface TradesRepository extends CrudRepository<Trade, Long> {
         join entities taker on tx.source_entity_id = taker.id
         join entities maker on t.maker_id = maker.id
         join assets a on t.asset_id = a.id
-    order by tick_time desc
+    order by tick_time desc, t.id desc
     limit :limit
     """)
     List<TradeDto> findOrderedByTickTimeDesc(long limit);
@@ -29,7 +29,7 @@ public interface TradesRepository extends CrudRepository<Trade, Long> {
         join entities maker on t.maker_id = maker.id
         join assets a on t.asset_id = a.id
     where a.issuer = :issuer and a.name = :name
-    order by tick_time desc
+    order by tick_time desc, t.id desc
     limit :limit
     """)
     List<TradeDto> findByAssetOrderedByTickTimeDesc(String issuer, String name, long limit);
@@ -42,7 +42,7 @@ public interface TradesRepository extends CrudRepository<Trade, Long> {
         join entities maker on t.maker_id = maker.id
         join assets a on t.asset_id = a.id
     where taker.identity = :identity or maker.identity = :identity
-    order by tick_time desc
+    order by tick_time desc, t.id desc
     limit :limit
     """)
     List<TradeDto> findByEntityOrderedByTickTimeDesc(String identity, long limit);

@@ -14,15 +14,15 @@ public class TradesService {
     }
 
     public List<TradeDto> getTrades() {
-        return tradesRepository.findOrderedByTickTimeDesc(100);
+        return tradesRepository.findOrderedByTickTimeDesc(50);
     }
 
     public List<TradeDto> getAssetTrades(String issuer, String assetName) {
-        return tradesRepository.findByAssetOrderedByTickTimeDesc(issuer, assetName, 100);
+        return tradesRepository.findByAssetOrderedByTickTimeDesc(issuer, assetName, 50);
     }
 
     public List<TradeDto> getEntityTrades(String identity) {
-        return tradesRepository.findByEntityOrderedByTickTimeDesc(identity, 100);
+        return tradesRepository.findByEntityOrderedByTickTimeDesc(identity, 50);
     }
 
 }

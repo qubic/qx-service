@@ -61,8 +61,8 @@ class ExtraDataMapperTest {
         assertThat(extraData).isNotNull();
         assertThat(extraData.issuer()).isEqualTo("0000000000000000000000000000000000000000000000000000000000000000");
         assertThat(extraData.newOwner()).isEqualTo("0101010000000000000000000000000000000000000000000000000000000000");
-        assertThat(extraData.assetName()).isEqualTo("FOO");
-        assertThat(extraData.numberOfUnits()).isEqualTo(666);
+        assertThat(extraData.name()).isEqualTo("FOO");
+        assertThat(extraData.numberOfShares()).isEqualTo(666);
     }
 
     @Test
@@ -80,7 +80,7 @@ class ExtraDataMapperTest {
         assertThat(mapped).isInstanceOf(QxIssueAssetData.class);
         QxIssueAssetData extraData = (QxIssueAssetData) mapped;
         assertThat(extraData.name()).isEqualTo("FOO");
-        assertThat(extraData.numberOfUnits()).isEqualTo(666);
+        assertThat(extraData.numberOfShares()).isEqualTo(666);
         assertThat(extraData.unitOfMeasurement()).isEqualTo("0000020");
         assertThat(extraData.numberOfDecimalPlaces()).isEqualTo((byte) 16);
     }
