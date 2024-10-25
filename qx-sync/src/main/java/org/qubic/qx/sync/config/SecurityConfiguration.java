@@ -17,7 +17,7 @@ public class SecurityConfiguration {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // not needed atm, but it would work (except test)
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/login", "/v1/qx/**").permitAll() // accessible for all
+                        .pathMatchers("/login").permitAll() // accessible for all
                         .pathMatchers("/actuator/health").permitAll() // for health monitoring
                         .anyExchange().authenticated() // other urls
                 )

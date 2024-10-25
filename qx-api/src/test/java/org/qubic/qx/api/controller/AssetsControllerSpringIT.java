@@ -15,7 +15,7 @@ class AssetsControllerSpringIT extends AbstractSpringIntegrationTest {
     private WebTestClient client;
 
     @BeforeEach
-    public void setUpTestNode(WebApplicationContext context) {
+    public void setUpClient(WebApplicationContext context) {
         client = MockMvcWebTestClient
                 .bindToApplicationContext(context)
                 .configureClient()

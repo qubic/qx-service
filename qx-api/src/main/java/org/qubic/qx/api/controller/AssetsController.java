@@ -1,6 +1,5 @@
 package org.qubic.qx.api.controller;
 
-import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.controller.service.AssetsService;
 import org.qubic.qx.api.db.domain.Asset;
 import org.springframework.cache.annotation.Cacheable;
@@ -14,7 +13,6 @@ import java.util.List;
 import static org.qubic.qx.api.redis.QxCacheManager.CACHE_NAME_ASSETS;
 
 @CrossOrigin
-@Slf4j
 @RestController
 @RequestMapping("/service/v1/qx")
 public class AssetsController {
