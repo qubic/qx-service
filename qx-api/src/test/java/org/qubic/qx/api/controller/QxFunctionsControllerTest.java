@@ -41,7 +41,7 @@ class QxFunctionsControllerTest {
         List<AssetOrder> expected = List.of(new AssetOrder("entity", 1, 2));
         when(qxService.getAssetAskOrders("issuerId", "assetName")).thenReturn(expected);
 
-        client.get().uri("/issuer/issuerId/asset/assetName/orders/ask")
+        client.get().uri("/issuer/issuerId/asset/assetName/asks")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(AssetOrder.class)
@@ -53,7 +53,7 @@ class QxFunctionsControllerTest {
         List<AssetOrder> expected = List.of(new AssetOrder("entity", 1, 2));
         when(qxService.getAssetBidOrders("issuerId", "assetName")).thenReturn(expected);
 
-        client.get().uri("/issuer/issuerId/asset/assetName/orders/bid")
+        client.get().uri("/issuer/issuerId/asset/assetName/bids")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(AssetOrder.class)
@@ -65,7 +65,7 @@ class QxFunctionsControllerTest {
         List<EntityOrder> expected = List.of(new EntityOrder("issuer", "asset", 1, 2));
         when(qxService.getEntityAskOrders("identity")).thenReturn(expected);
 
-        client.get().uri("/entity/identity/orders/ask")
+        client.get().uri("/entity/identity/asks")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(EntityOrder.class)
@@ -77,7 +77,7 @@ class QxFunctionsControllerTest {
         List<EntityOrder> expected = List.of(new EntityOrder("issuer", "asset", 1, 2));
         when(qxService.getEntityBidOrders("identity")).thenReturn(expected);
 
-        client.get().uri("/entity/identity/orders/bid")
+        client.get().uri("/entity/identity/bids")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(EntityOrder.class)

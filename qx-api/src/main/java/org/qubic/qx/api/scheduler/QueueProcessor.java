@@ -63,7 +63,7 @@ public abstract class QueueProcessor<T, S> {
 
     protected void removeFromProcessingQueue(S sourceDto) {
         Long removed = redisRepository.removeFromProcessingQueue(sourceDto);
-        log.warn("Removed [{}] messages from processing queue.", removed);
+        log.info("Removed [{}] messages from processing queue.", removed);
     }
 
 }

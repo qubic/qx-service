@@ -7,25 +7,42 @@ import java.util.List;
 
 public class TransactionsService {
 
+    static final int LIMIT = 25;
+    static final List<Integer> ORDER_INPUT_TYPES = List.of(5,6,7,8);
+    static final List<Integer> TRANSFER_INPUT_TYPE = List.of(2);
+
     private final TransactionsRepository transactionsRepository;
 
     public TransactionsService(TransactionsRepository transactionsRepository) {
         this.transactionsRepository = transactionsRepository;
     }
 
-    public List<TransactionDto> getTransactions() {
-        return transactionsRepository.findOrdered(50);
+    // transfers
+
+    public List<TransactionDto> getTransferTransactions() {
+        return transactionsRepository.findByInputTypesOrdered(TRANSFER_INPUT_TYPE, LIMIT);
     }
 
-    public List<TransactionDto> getTransactionsForAsset(String issuer, String asset) {
-        return transactionsRepository.findByAssetOrdered(issuer, asset, 50);
+    public List<TransactionDto> getTransferTransactionsForAsset(String issuer, String asset) {
+        return transactionsRepository.findByAssetOrdered(issuer, asset, TRANSFER_INPUT_TYPE, LIMIT);
     }
 
-    public List<TransactionDto> getTransactionsForTypes(List<Integer> types) {
-        return transactionsRepository.findByInputTypesOrdered(types, 50);
+    public List<TransactionDto> getTransferTransactionsForSourrce(String identity) {
+        return transactionsRepository.findBySourceEntityOrdered(identity, TRANSFER_INPUT_TYPE, LIMIT);
     }
 
-    public List<TransactionDto> getTransactionsForEntity(String identity) {
-        return transactionsRepository.findByEntityOrdered(identity, 50);
+    // orders
+
+    public List<TransactionDto> getOrderTransactions() {
+        return transactionsRepository.findByInputTypesOrdered(ORDER_INPUT_TYPES, LIMIT);
     }
+
+    public List<TransactionDto> getOrderTransactionsForAsset(String issuer, String asset) {
+        return transactionsRepository.findByAssetOrdered(issuer, asset, ORDER_INPUT_TYPES, LIMIT);
+    }
+
+    public List<TransactionDto> getOrderTransactionsForSourrce(String identity) {
+        return transactionsRepository.findBySourceEntityOrdered(identity, ORDER_INPUT_TYPES, LIMIT);
+    }
+
 }

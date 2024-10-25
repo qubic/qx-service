@@ -21,9 +21,9 @@ class TransactionsControllerTest {
             .build();
 
     @Test
-    void getTransactions() {
-        when(service.getTransactions()).thenReturn(List.of(mock(), mock()));
-        client.get().uri("/transactions")
+    void getTransferTransactions() {
+        when(service.getTransferTransactions()).thenReturn(List.of(mock(), mock()));
+        client.get().uri("/transfers")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(TradeDto.class)
@@ -31,9 +31,9 @@ class TransactionsControllerTest {
     }
 
     @Test
-    void getTransactionsForAsset() {
-        when(service.getTransactionsForAsset("ISSUER", "ASSET")).thenReturn(List.of(mock(), mock()));
-        client.get().uri("/issuer/ISSUER/asset/ASSET/transactions")
+    void getTransferTransactionsForAsset() {
+        when(service.getTransferTransactionsForAsset("ISSUER", "ASSET")).thenReturn(List.of(mock(), mock()));
+        client.get().uri("/issuer/ISSUER/asset/ASSET/transfers")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(TradeDto.class)
@@ -41,9 +41,9 @@ class TransactionsControllerTest {
     }
 
     @Test
-    void getTransactionsForEntity() {
-        when(service.getTransactionsForEntity("IDENTITY")).thenReturn(List.of(mock(), mock()));
-        client.get().uri("/entity/IDENTITY/transactions")
+    void getTransferTransactionsForEntity() {
+        when(service.getTransferTransactionsForSourrce("IDENTITY")).thenReturn(List.of(mock(), mock()));
+        client.get().uri("/entity/IDENTITY/transfers")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(TradeDto.class)
@@ -51,9 +51,29 @@ class TransactionsControllerTest {
     }
 
     @Test
-    void getTransactionsForType() {
-        when(service.getTransactionsForTypes(List.of(1,2,3))).thenReturn(List.of(mock(), mock()));
-        client.get().uri("/transactions?inputTypes=1,2,3")
+    void getOrderTransactions() {
+        when(service.getOrderTransactions()).thenReturn(List.of(mock(), mock()));
+        client.get().uri("/orders")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(TradeDto.class)
+                .hasSize(2);
+    }
+
+    @Test
+    void getOrderTransactionsForAsset() {
+        when(service.getOrderTransactionsForAsset("ISSUER", "ASSET")).thenReturn(List.of(mock(), mock()));
+        client.get().uri("/issuer/ISSUER/asset/ASSET/orders")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(TradeDto.class)
+                .hasSize(2);
+    }
+
+    @Test
+    void getOrderTransactionsForEntity() {
+        when(service.getOrderTransactionsForSourrce("IDENTITY")).thenReturn(List.of(mock(), mock()));
+        client.get().uri("/entity/IDENTITY/orders")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(TradeDto.class)

@@ -1,10 +1,8 @@
 package org.qubic.qx.api.controller;
 
 import jakarta.validation.constraints.Size;
-import org.apache.commons.collections4.CollectionUtils;
 import org.qubic.qx.api.controller.domain.TransactionDto;
 import org.qubic.qx.api.controller.service.TransactionsService;
-import org.qubic.qx.api.validation.AllOf;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,22 +20,46 @@ public class TransactionsController {
         this.transactionsService = transactionsService;
     }
 
-    @GetMapping("/transactions")
-    public List<TransactionDto> getTransactions(@RequestParam(value = "inputTypes", required = false) @AllOf({1,2,5,6,7,8}) List<Integer> inputTypes) {
-        return CollectionUtils.isEmpty(inputTypes)
-                ? transactionsService.getTransactions()
-                : transactionsService.getTransactionsForTypes(inputTypes);
+    // TODO make own 'filters' endpoint? These could be stored, cached and lead to fewer variations of get methods.
+    // .../transactions/filter/1, .../transactions/filter/2
+
+    // transfers
+
+    @GetMapping("/transfers")
+    public List<TransactionDto> getTransferTransactions() {
+        return transactionsService.getTransferTransactions();
     }
 
-    @GetMapping("/issuer/{issuer}/asset/{asset}/transactions")
-    public List<TransactionDto> getTransactionsForAsset(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
-                                                        @PathVariable("asset") @Size(min = 1, max = 7) String asset) {
-        return transactionsService.getTransactionsForAsset(issuer, asset);
+    @GetMapping("/issuer/{issuer}/asset/{asset}/transfers")
+    public List<TransactionDto> getTransferTransactionsForAsset(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
+                                                                @PathVariable("asset") @Size(min = 1, max = 7) String asset) {
+        return transactionsService.getTransferTransactionsForAsset(issuer, asset);
     }
 
-    @GetMapping("/entity/{identity}/transactions")
-    public List<TransactionDto> getTransactionsForEntity(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
-        return transactionsService.getTransactionsForEntity(identity);
+
+    @GetMapping("/entity/{identity}/transfers")
+    public List<TransactionDto> getTransferTransactionsForSender(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
+        return transactionsService.getTransferTransactionsForSourrce(identity);
     }
+
+    // orders
+
+    @GetMapping("/orders")
+    public List<TransactionDto> getOrderTransactions() {
+        return transactionsService.getOrderTransactions();
+    }
+
+    @GetMapping("/issuer/{issuer}/asset/{asset}/orders")
+    public List<TransactionDto> getOrderTransactionsForAsset(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
+                                                             @PathVariable("asset") @Size(min = 1, max = 7) String asset) {
+        return transactionsService.getOrderTransactionsForAsset(issuer, asset);
+    }
+
+    @GetMapping("/entity/{identity}/orders")
+    public List<TransactionDto> getOrderTransactionsForSender(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
+        return transactionsService.getOrderTransactionsForSourrce(identity);
+    }
+
+
 
 }

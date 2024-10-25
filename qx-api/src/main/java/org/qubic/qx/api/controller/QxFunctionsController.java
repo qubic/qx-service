@@ -32,27 +32,27 @@ public class QxFunctionsController {
     }
 
     @Cacheable(cacheNames = CACHE_NAME_ASSET_ASK_ORDERS, key = CACHE_KEY_ASSET)
-    @GetMapping("/issuer/{issuer}/asset/{asset}/orders/ask")
+    @GetMapping("/issuer/{issuer}/asset/{asset}/asks")
     public List<AssetOrder> getAssetAskOrders(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
                                               @PathVariable("asset") @Size(min=1, max=7) String asset) {
         return qxService.getAssetAskOrders(issuer, asset);
     }
 
     @Cacheable(cacheNames = CACHE_NAME_ASSET_BID_ORDERS, key = CACHE_KEY_ASSET)
-    @GetMapping("/issuer/{issuer}/asset/{asset}/orders/bid")
+    @GetMapping("/issuer/{issuer}/asset/{asset}/bids")
     public List<AssetOrder> getAssetBidOrders(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
                                               @PathVariable("asset") @Size(min=1, max=7) String asset) {
         return qxService.getAssetBidOrders(issuer, asset);
     }
 
     @Cacheable(CACHE_NAME_ENTITY_ASK_ORDERS)
-    @GetMapping("/entity/{identity}/orders/ask")
+    @GetMapping("/entity/{identity}/asks")
     public List<EntityOrder> getEntityAskOrders(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
         return qxService.getEntityAskOrders(identity);
     }
 
     @Cacheable(CACHE_NAME_ENTITY_BID_ORDERS)
-    @GetMapping("/entity/{identity}/orders/bid")
+    @GetMapping("/entity/{identity}/bids")
     public List<EntityOrder> getEntityBidOrders(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
         return qxService.getEntityBidOrders(identity);
     }

@@ -59,7 +59,7 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(JsonUtil.toJson(assetOrders)));
 
-        client.get().uri("/issuer/"+ISSUER+"/asset/TEST/orders/ask")
+        client.get().uri("/issuer/"+ISSUER+"/asset/TEST/asks")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(AssetOrder.class)
@@ -77,7 +77,7 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(JsonUtil.toJson(assetOrders)));
 
-        client.get().uri("/issuer/"+ISSUER+"/asset/TEST/orders/bid")
+        client.get().uri("/issuer/"+ISSUER+"/asset/TEST/bids")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(AssetOrder.class)
@@ -95,7 +95,7 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(JsonUtil.toJson(entityOrders)));
 
-        client.get().uri("/entity/"+ ID + "/orders/ask")
+        client.get().uri("/entity/"+ ID + "/asks")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(EntityOrder.class)
@@ -113,7 +113,7 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(JsonUtil.toJson(entityOrders)));
 
-        client.get().uri("/entity/" + ID + "/orders/bid")
+        client.get().uri("/entity/" + ID + "/bids")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(EntityOrder.class)

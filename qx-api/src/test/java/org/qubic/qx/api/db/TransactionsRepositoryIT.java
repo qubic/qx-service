@@ -13,6 +13,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Sql(scripts = "/testdata/db/setup-transactions-repository-test.sql")
 class TransactionsRepositoryIT extends AbstractPostgresJdbcTest {
 
+    private final List<Integer> ALL_INPUT_TYPES = List.of(1,2,5,6,7,8,9);
+
     @Autowired
     private EntitiesRepository entitiesRepository;
 
@@ -88,7 +90,7 @@ class TransactionsRepositoryIT extends AbstractPostgresJdbcTest {
     }
 
     @Test
-    void testTransactionDtoMapping() {
+    void transactionDtoMapping() {
         List<TransactionDto> result = repository.findOrdered(1);
         assertThat(result).isNotEmpty();
         assertThat(result).containsExactly(
@@ -112,10 +114,10 @@ class TransactionsRepositoryIT extends AbstractPostgresJdbcTest {
 
     @Test
     void findByAssetOrdered() {
-        List<TransactionDto> result = repository.findByAssetOrdered("ISSUER1", "ASSET1", 3);
+        List<TransactionDto> result = repository.findByAssetOrdered("ISSUER1", "ASSET1", List.of(1,2,5,6,7), 3);
         assertThat(result).isNotEmpty();
         assertThat(result.stream().map(TransactionDto::hash)).containsExactly(
-                "hash6", "hash4", "hash3"
+                "hash4", "hash3", "hash1"
         );
     }
 
@@ -129,8 +131,8 @@ class TransactionsRepositoryIT extends AbstractPostgresJdbcTest {
     }
 
     @Test
-    void findByEntityOrdered() {
-        List<TransactionDto> result = repository.findByEntityOrdered("ID1", 5);
+    void findBySourceEntityOrdered() {
+        List<TransactionDto> result = repository.findBySourceEntityOrdered("ID1", ALL_INPUT_TYPES, 5);
         assertThat(result).isNotEmpty();
         assertThat(result.stream().map(TransactionDto::hash)).containsExactly(
                 "hash6", "hash5", "hash4", "hash3", "hash1"
