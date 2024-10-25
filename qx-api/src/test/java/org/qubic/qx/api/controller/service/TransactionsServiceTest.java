@@ -32,10 +32,10 @@ class TransactionsServiceTest {
     }
 
     @Test
-    void getTransferTransactionsForSourrce() {
+    void getTransferTransactionsForEntity() {
         List<TransactionDto> expected = List.of(mock(), mock());
-        when(transactionsRepository.findBySourceEntityOrdered("identity", TRANSFER_INPUT_TYPE, LIMIT)).thenReturn(expected);
-        assertThat(transactionsService.getTransferTransactionsForSourrce("identity")).isEqualTo(expected);
+        when(transactionsRepository.findTransfersByEntityOrdered("identity", LIMIT)).thenReturn(expected);
+        assertThat(transactionsService.getTransferTransactionsForEntity("identity")).isEqualTo(expected);
     }
 
     // orders
@@ -55,10 +55,10 @@ class TransactionsServiceTest {
     }
 
     @Test
-    void getOrderTransactionsForSourrce() {
+    void getOrderTransactionsForEntity() {
         List<TransactionDto> expected = List.of(mock(), mock());
         when(transactionsRepository.findBySourceEntityOrdered("identity", ORDER_INPUT_TYPES, LIMIT)).thenReturn(expected);
-        assertThat(transactionsService.getOrderTransactionsForSourrce("identity")).isEqualTo(expected);
+        assertThat(transactionsService.getOrderTransactionsForEntity("identity")).isEqualTo(expected);
     }
 
 }

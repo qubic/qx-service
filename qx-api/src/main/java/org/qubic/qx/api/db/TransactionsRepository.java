@@ -55,4 +55,15 @@ public interface TransactionsRepository extends CrudRepository<Transaction, Long
     """)
     List<TransactionDto> findBySourceEntityOrdered(String identity, List<Integer> inputTypes, long limit);
 
+    @Query("""
+    select t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
+    from transactions t
+    join entities src on t.source_entity_id = src.id
+    where (src.identity = :identity or t.extra_data->>'newOwner' = :identity)
+    and t.input_type = 2
+    order by t.tick desc, t.id desc
+    limit :limit
+    """)
+    List<TransactionDto> findTransfersByEntityOrdered(String identity, long limit);
+
 }

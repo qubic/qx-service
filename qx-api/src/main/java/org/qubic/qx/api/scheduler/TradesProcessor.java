@@ -22,7 +22,7 @@ public class TradesProcessor extends QueueProcessor<Trade, TradeRedisDto> {
     protected void postProcess(Trade targetDto, TradeRedisDto sourceDto) {
         if (targetDto != null && sourceDto != null) {
             log.info("Evicting caches.");
-            qxCacheManager.evictTrades();
+            qxCacheManager.evictTradesCache();
             qxCacheManager.evictTradeCacheForAsset(sourceDto.issuer(), sourceDto.assetName());
             qxCacheManager.evictTradeCacheForEntity(sourceDto.maker());
             qxCacheManager.evictTradeCacheForEntity(sourceDto.taker());

@@ -43,7 +43,7 @@ class TradesControllerCacheIT extends AbstractSpringIntegrationTest {
     @Test
     void getTrades_givenCacheEvicted_thenCallServiceAgain() {
         verifyThatGetTradesIsCached();
-        qxCacheManager.evictTrades();
+        qxCacheManager.evictTradesCache();
         controller.getTrades();
         verify(tradesService, times(2)).getTrades();
     }

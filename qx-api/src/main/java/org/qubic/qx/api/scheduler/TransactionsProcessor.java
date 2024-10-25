@@ -3,6 +3,7 @@ package org.qubic.qx.api.scheduler;
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.db.domain.ExtraData;
 import org.qubic.qx.api.db.domain.QxAssetOrderData;
+import org.qubic.qx.api.db.domain.QxTransferAssetData;
 import org.qubic.qx.api.db.domain.Transaction;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.qubic.qx.api.redis.dto.TransactionRedisDto;
@@ -26,8 +27,15 @@ public class TransactionsProcessor extends QueueProcessor<Transaction, Transacti
             ExtraData extraData = sourceDto.extraData();
             if (extraData instanceof QxAssetOrderData orderData) {
                 log.info("Evicting caches.");
-                qxCacheManager.evictOrderCachesForAsset(orderData.issuer(), orderData.name());
-                qxCacheManager.evictOrderCachesForEntity(sourceDto.sourcePublicId());
+                qxCacheManager.evictOrdersCache();
+                qxCacheManager.evictOrderCacheForAsset(orderData.issuer(), orderData.name());
+                qxCacheManager.evictOrderCacheForEntity(sourceDto.sourcePublicId());
+            } else if (extraData instanceof QxTransferAssetData transferData) {
+                qxCacheManager.evictTransferCache();
+                qxCacheManager.evictTransferCacheForAsset(transferData.issuer(), transferData.name());
+                qxCacheManager.evictTransferCacheForEntity(sourceDto.sourcePublicId());
+                qxCacheManager.evictTransferCacheForEntity(transferData.newOwner());
+
             }
         }
     }

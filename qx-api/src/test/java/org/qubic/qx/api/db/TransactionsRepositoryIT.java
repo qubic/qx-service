@@ -139,6 +139,15 @@ class TransactionsRepositoryIT extends AbstractPostgresJdbcTest {
         );
     }
 
+    @Test
+    void findTransfersByEntityOrdered() {
+        List<TransactionDto> result = repository.findTransfersByEntityOrdered("ID1", 5);
+        assertThat(result).isNotEmpty();
+        assertThat(result.stream().map(TransactionDto::hash)).containsExactly(
+                "hash3", "hash7"
+        );
+    }
+
     private Entity getEntity(String identity) {
         return entitiesRepository.findByIdentity(identity).orElseThrow();
     }

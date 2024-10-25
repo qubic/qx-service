@@ -27,8 +27,8 @@ public class TransactionsService {
         return transactionsRepository.findByAssetOrdered(issuer, asset, TRANSFER_INPUT_TYPE, LIMIT);
     }
 
-    public List<TransactionDto> getTransferTransactionsForSourrce(String identity) {
-        return transactionsRepository.findBySourceEntityOrdered(identity, TRANSFER_INPUT_TYPE, LIMIT);
+    public List<TransactionDto> getTransferTransactionsForEntity(String identity) {
+        return transactionsRepository.findTransfersByEntityOrdered(identity, LIMIT);
     }
 
     // orders
@@ -41,7 +41,7 @@ public class TransactionsService {
         return transactionsRepository.findByAssetOrdered(issuer, asset, ORDER_INPUT_TYPES, LIMIT);
     }
 
-    public List<TransactionDto> getOrderTransactionsForSourrce(String identity) {
+    public List<TransactionDto> getOrderTransactionsForEntity(String identity) {
         return transactionsRepository.findBySourceEntityOrdered(identity, ORDER_INPUT_TYPES, LIMIT);
     }
 

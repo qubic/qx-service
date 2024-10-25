@@ -65,7 +65,7 @@ class QxFunctionsControllerCacheIT extends AbstractSpringIntegrationTest {
     @Test
     void getAssetAskOrders_givenCacheEvicted_thenCallServiceAgain() {
         verifyThatGetAssetAskOrdersAreCached();
-        qxCacheManager.evictOrderCachesForAsset(TEST_ISSUER, TEST_ASSET_NAME);
+        qxCacheManager.evictOrderCacheForAsset(TEST_ISSUER, TEST_ASSET_NAME);
         controller.getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME);
         verify(qxService, times(2)).getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME);
     }
@@ -98,7 +98,7 @@ class QxFunctionsControllerCacheIT extends AbstractSpringIntegrationTest {
     @Test
     void getAssetBidOrders_givenCacheEvicted_thenCallServiceAgain() {
         verifyThatGetAssetBidOrdersAreCached();
-        qxCacheManager.evictOrderCachesForAsset(TEST_ISSUER, TEST_ASSET_NAME);
+        qxCacheManager.evictOrderCacheForAsset(TEST_ISSUER, TEST_ASSET_NAME);
         controller.getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME);
         verify(qxService, times(2)).getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME);
     }
@@ -132,7 +132,7 @@ class QxFunctionsControllerCacheIT extends AbstractSpringIntegrationTest {
     @Test
     void getEntityAskOrders_givenCacheEvicted_thenCallServiceAgain() {
         verifyThatGetEntityAskOrdersAreCached();
-        qxCacheManager.evictOrderCachesForEntity(TEST_IDENTITY);
+        qxCacheManager.evictOrderCacheForEntity(TEST_IDENTITY);
         controller.getEntityAskOrders(TEST_IDENTITY);
         verify(qxService, times(2)).getEntityAskOrders(TEST_IDENTITY);
     }
@@ -165,7 +165,7 @@ class QxFunctionsControllerCacheIT extends AbstractSpringIntegrationTest {
     @Test
     void getEntityBidOrders_givenCacheEvicted_thenCallServiceAgain() {
         verifyThatGetEntityBidOrdersAreCached();
-        qxCacheManager.evictOrderCachesForEntity(TEST_IDENTITY);
+        qxCacheManager.evictOrderCacheForEntity(TEST_IDENTITY);
         controller.getEntityBidOrders(TEST_IDENTITY);
         verify(qxService, times(2)).getEntityBidOrders(TEST_IDENTITY);
     }

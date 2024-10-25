@@ -42,7 +42,7 @@ class TransactionsControllerTest {
 
     @Test
     void getTransferTransactionsForEntity() {
-        when(service.getTransferTransactionsForSourrce("IDENTITY")).thenReturn(List.of(mock(), mock()));
+        when(service.getTransferTransactionsForEntity("IDENTITY")).thenReturn(List.of(mock(), mock()));
         client.get().uri("/entity/IDENTITY/transfers")
                 .exchange()
                 .expectStatus().isOk()
@@ -72,7 +72,7 @@ class TransactionsControllerTest {
 
     @Test
     void getOrderTransactionsForEntity() {
-        when(service.getOrderTransactionsForSourrce("IDENTITY")).thenReturn(List.of(mock(), mock()));
+        when(service.getOrderTransactionsForEntity("IDENTITY")).thenReturn(List.of(mock(), mock()));
         client.get().uri("/entity/IDENTITY/orders")
                 .exchange()
                 .expectStatus().isOk()
