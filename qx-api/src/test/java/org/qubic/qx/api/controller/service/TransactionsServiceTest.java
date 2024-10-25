@@ -20,7 +20,7 @@ class TransactionsServiceTest {
     @Test
     void getTransferTransactions() {
         List<TransactionDto> expected = List.of(mock(), mock());
-        when(transactionsRepository.findByInputTypesOrdered(TRANSFER_INPUT_TYPE, LIMIT)).thenReturn(expected);
+        when(transactionsRepository.findByInputTypesOrdered(TRANSFER_INPUT_TYPE, 50)).thenReturn(expected);
         assertThat(transactionsService.getTransferTransactions()).isEqualTo(expected);
     }
 
