@@ -20,7 +20,7 @@ public class TransactionsService {
     // transfers
 
     public List<TransactionDto> getTransferTransactions() {
-        return transactionsRepository.findByInputTypesOrdered(TRANSFER_INPUT_TYPE, LIMIT);
+        return transactionsRepository.findByInputTypesOrdered(TRANSFER_INPUT_TYPE, 50);
     }
 
     public List<TransactionDto> getTransferTransactionsForAsset(String issuer, String asset) {
