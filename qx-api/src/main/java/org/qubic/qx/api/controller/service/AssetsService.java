@@ -15,7 +15,7 @@ public class AssetsService {
         this.assetsRepository = assetsRepository;
     }
 
-    public List<Asset> getAssets() {
+    public List<Asset> getVerifiedAssets() {
         return assetsRepository.findByVerifiedIsTrue().stream()
                 .toList();
     }

@@ -26,7 +26,7 @@ public class AssetsController {
     @Cacheable(CACHE_NAME_ASSETS)
     @GetMapping("/assets")
     public List<Asset> getAssets() {
-        return assetsService.getAssets();
+        return assetsService.getVerifiedAssets();
     }
 
 }

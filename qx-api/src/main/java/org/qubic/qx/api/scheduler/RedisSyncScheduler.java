@@ -21,7 +21,7 @@ public class RedisSyncScheduler {
         this.tradeProcessor = tradeProcessor;
     }
 
-    @Scheduled(initialDelay = 5000, fixedDelay = 5000)
+    @Scheduled(initialDelay = 10000, fixedDelay = 1000)
     void processTradesAndTransactions() {
         log.debug("Running data synchronization...");
         List<Transaction> transactions = transactionProcessor.process();

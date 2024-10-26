@@ -26,7 +26,7 @@ class AssetsControllerTest {
         Asset b = Asset.builder().issuer("issuerB").name("nameA").build();
         Asset c = Asset.builder().issuer("issuerB").name("nameB").build();
 
-        when(assetsService.getAssets()).thenReturn(List.of(a, b, c));
+        when(assetsService.getVerifiedAssets()).thenReturn(List.of(a, b, c));
 
         client.get().uri("/assets")
                 .exchange()

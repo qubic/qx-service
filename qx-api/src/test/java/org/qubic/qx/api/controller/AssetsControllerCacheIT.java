@@ -33,12 +33,12 @@ class AssetsControllerCacheIT extends AbstractSpringIntegrationTest {
                 .name("NAME1")
                 .build();
 
-        when(assetsService.getAssets()).thenReturn(List.of(asset1));
+        when(assetsService.getVerifiedAssets()).thenReturn(List.of(asset1));
 
         List<Asset> result1 = controller.getAssets();
         List<Asset> result2 = controller.getAssets();
 
-        verify(assetsService, times(1)).getAssets();
+        verify(assetsService, times(1)).getVerifiedAssets();
 
         assertThat(result1).contains(asset1);
         assertThat(result1).isEqualTo(result2);

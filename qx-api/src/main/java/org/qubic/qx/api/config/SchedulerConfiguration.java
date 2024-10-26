@@ -1,5 +1,6 @@
 package org.qubic.qx.api.config;
 
+import at.qubic.api.crypto.IdentityUtil;
 import org.qubic.qx.api.db.AssetsRepository;
 import org.qubic.qx.api.db.EntitiesRepository;
 import org.qubic.qx.api.db.TradesRepository;
@@ -39,12 +40,15 @@ public class SchedulerConfiguration {
     TransactionsProcessor transactionsProcessor(TransactionsRedisRepository transactionsRedisRepository,
                                                 TransactionsRepository transactionsRepository,
                                                 TransactionMapper transactionMapper,
+                                                AssetsRepository assetsRepository, IdentityUtil identityUtil,
                                                 QxCacheManager qxCacheManager) {
-        return new TransactionsProcessor(transactionsRedisRepository, transactionsRepository, transactionMapper, qxCacheManager);
+        return new TransactionsProcessor(transactionsRedisRepository, transactionsRepository, transactionMapper,
+                identityUtil, assetsRepository, qxCacheManager);
     }
 
     @Bean
-    TradesProcessor tradesProcessor(TradesRedisRepository tradesRedisRepository, TradesRepository tradesRepository, TradeMapper tradeMapper, QxCacheManager qxCacheManager) {
+    TradesProcessor tradesProcessor(TradesRedisRepository tradesRedisRepository, TradesRepository tradesRepository,
+                                    TradeMapper tradeMapper, QxCacheManager qxCacheManager) {
         return new TradesProcessor(tradesRedisRepository, tradesRepository, tradeMapper, qxCacheManager);
     }
 
