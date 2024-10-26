@@ -1,22 +1,15 @@
 package org.qubic.qx.sync.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Arrays;
-import java.util.List;
-
+@SuppressWarnings("SameParameterValue")
 @Slf4j
 public class TickRepository {
 
     public static final String KEY_TICK_SYNCED_LATEST = "tick:synced:latest"; // key value
     public static final String KEY_TICKS_PROCESSED = "ticks:processed"; // set
-    public static final String KEY_TICKS_WITH_QX_TRANSACTIONS = "ticks:qx"; // set
-    public static final String KEY_TRANSACTIONS_IN_TICK = "txs:%d"; // list
-    public static final String LIST_SEPARATOR = ",";
 
     private final ReactiveStringRedisTemplate redisStringTemplate;
 
@@ -38,10 +31,6 @@ public class TickRepository {
         return addToSet(KEY_TICKS_PROCESSED, String.valueOf(tickNumber));
     }
 
-    public Mono<Long> addToQxTicks(long tickNumber) {
-        return addToSet(KEY_TICKS_WITH_QX_TRANSACTIONS, String.valueOf(tickNumber));
-    }
-
     public Mono<Boolean> isProcessedTick(long tickNumber) {
         return redisStringTemplate.opsForSet()
                 .isMember(KEY_TICKS_PROCESSED, String.valueOf(tickNumber));
@@ -58,18 +47,6 @@ public class TickRepository {
                         log.debug("[{}] is already member of set [{}].", value, key);
                     }
                 });
-    }
-
-    public Mono<Boolean> setTickTransactions(long tickNumber, List<String> transactionHashes) {
-        return setValue(String.format(KEY_TRANSACTIONS_IN_TICK, tickNumber), StringUtils.join(transactionHashes, LIST_SEPARATOR));
-    }
-
-    public Flux<String> getTickTransactions(long tickNumber) {
-        return getValue(String.format(KEY_TRANSACTIONS_IN_TICK, tickNumber))
-                .switchIfEmpty(Mono.just(StringUtils.EMPTY)
-                        .doOnNext(x -> log.warn("Could not get transactions. There are no transactions for tick: [{}].", tickNumber)))
-                .map(val -> Arrays.stream(StringUtils.split(val, LIST_SEPARATOR)).toList())
-                .flatMapIterable(val -> val);
     }
 
     private Mono<Boolean> setValue(String key, String value) {

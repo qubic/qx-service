@@ -51,7 +51,6 @@ public class TickSyncJob {
 
     private Mono<Long> processNewTick(Long tickNumber) {
         return coreService.getQxTransactions(tickNumber)
-                .doFirst(() -> log.debug("Query node for tick [{}].", tickNumber))
                 .doOnNext(tx -> log.info("[{}] Received [{}] transaction.", tx.transactionHash(), Qx.OrderType.fromCode(tx.inputType())))
                 .collectList()
                 .flatMap(list -> processTransactions(tickNumber, list))
@@ -68,14 +67,12 @@ public class TickSyncJob {
         if (CollectionUtils.isEmpty(txs)) {
             return storeTickNumberMono.then(Mono.just(false));
         } else {
-
             return coreService.getTickData(tickNumber)
                     .doFirst(() -> log.info("Tick [{}]: processing [{}] qx orders.", tickNumber, txs.size()))
                     .map(TickData::timestamp)
                     .flatMap(instant -> transactionProcessor.processQxOrders(tickNumber, instant, txs))
                     .then(storeTickNumberMono)
-                    .then(tickRepository.addToQxTicks(tickNumber))
-                    .then(tickRepository.setTickTransactions(tickNumber, txs.stream().map(Transaction::transactionHash).toList()));
+                    .then(Mono.just(true));
         }
     }
 
