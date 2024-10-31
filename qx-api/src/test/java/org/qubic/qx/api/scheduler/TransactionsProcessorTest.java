@@ -114,6 +114,22 @@ class TransactionsProcessorTest {
 
     @Test
     void postProcess_givenIssueAsset_thenCreate() {
+        TransactionRedisDto source = createIssueAssetTransaction();
+        when(identityUtil.isValidIdentity(anyString())).thenReturn(true);
+        when(assetsRepository.save(any(Asset.class))).then(args -> args.getArgument(0));
+
+        processor.postProcess(mock(), source);
+        verify(assetsRepository).save(Asset.builder().issuer("ISSUER").name("NAME").verified(false).build());
+    }
+
+    @Test
+    void postProcess_givenIssueAsset_thenEvictCache() {
+        TransactionRedisDto source = createIssueAssetTransaction();
+        processor.postProcess(mock(), source);
+        verify(qxCacheManager).evictIssuedAssetsCache();
+    }
+
+    private static TransactionRedisDto createIssueAssetTransaction() {
         TransactionRedisDto source = mock();
         QxIssueAssetData issueAsset = new QxIssueAssetData(
                 "NAME", 42, "0000200", (byte) 10
@@ -121,13 +137,7 @@ class TransactionsProcessorTest {
         when(source.extraData()).thenReturn(issueAsset);
         when(source.sourcePublicId()).thenReturn("ISSUER");
         when(source.moneyFlew()).thenReturn(true);
-        when(identityUtil.isValidIdentity(anyString())).thenReturn(true);
-        when(assetsRepository.save(any(Asset.class))).then(args -> args.getArgument(0));
-
-        processor.postProcess(mock(), source);
-        verify(assetsRepository).save(Asset.builder().issuer("ISSUER").name("NAME").verified(false).build());
-
-
+        return source;
     }
 
 }

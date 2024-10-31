@@ -20,7 +20,7 @@ public class TransactionsProcessor extends QueueProcessor<Transaction, Transacti
 
     private final IdentityUtil identityUtil;
     private final AssetsRepository assetsRepository;
-    private final  QxCacheManager qxCacheManager;
+    private final QxCacheManager qxCacheManager;
 
     public TransactionsProcessor(QueueProcessingRepository<TransactionRedisDto> redisRepository, CrudRepository<Transaction, Long> repository, RedisToDomainMapper<Transaction, TransactionRedisDto> mapper, IdentityUtil identityUtil, AssetsRepository assetsRepository, QxCacheManager qxCacheManager) {
         super(redisRepository, repository, mapper);
@@ -47,6 +47,7 @@ public class TransactionsProcessor extends QueueProcessor<Transaction, Transacti
             qxCacheManager.evictTransferCacheForEntity(transferData.newOwner());
         } else if (extraData instanceof QxIssueAssetData issueAssetData) {
             createAssetIfItDoesNotExist(sourceDto.sourcePublicId(), issueAssetData.name(), sourceDto.moneyFlew());
+            qxCacheManager.evictIssuedAssetsCache();
         }
     }
 
@@ -73,6 +74,5 @@ public class TransactionsProcessor extends QueueProcessor<Transaction, Transacti
                 .verified(false)
                 .build()));
     }
-
 
 }

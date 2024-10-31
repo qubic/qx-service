@@ -22,6 +22,8 @@ public class QxCacheManager {
     public static final String CACHE_NAME_ENTITY_ASKS = "cache:entityAsks";
     public static final String CACHE_NAME_ENTITY_BIDS = "cache:entityBids";
 
+    public static final String CACHE_NAME_ISSUED_ASSETS = "cache:issuedAssets";
+
     public static final String CACHE_NAME_TRANSFERS = "cache:transfers";
     public static final String CACHE_NAME_TRANSFERS_ASSET = "cache:transfersAsset";
     public static final String CACHE_NAME_TRANSFERS_ENTITY = "cache:transfersEntity";
@@ -85,4 +87,8 @@ public class QxCacheManager {
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRANSFERS_ASSET)).evict(String.format("%s:%s", issuer, name));
     }
 
+    public void evictIssuedAssetsCache() {
+        log.debug("Evicting cache for issued assets.");
+        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ISSUED_ASSETS)).clear();
+    }
 }

@@ -73,4 +73,12 @@ class TransactionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .expectBodyList(TransactionDto.class);
     }
 
+    @Test
+    void getIssuedAssets() {
+        client.get().uri("/issued-assets")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(TransactionDto.class);
+    }
+
 }

@@ -61,4 +61,14 @@ class TransactionsServiceTest {
         assertThat(transactionsService.getOrderTransactionsForEntity("identity")).isEqualTo(expected);
     }
 
+    // issued assets
+
+    @Test
+    void getIssuedAssets() {
+        List<TransactionDto> expected = List.of(mock(), mock());
+        when(transactionsRepository.findByInputTypesOrdered(List.of(1), LIMIT))
+                .thenReturn(expected);
+        assertThat(transactionsService.getIssuedAssets()).isEqualTo(expected);
+    }
+
 }

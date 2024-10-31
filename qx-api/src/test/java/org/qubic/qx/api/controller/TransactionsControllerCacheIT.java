@@ -164,6 +164,25 @@ class TransactionsControllerCacheIT extends AbstractSpringIntegrationTest {
         verify(service, times(2)).getOrderTransactionsForEntity(TEST_IDENTITY);
     }
 
+    @Test
+    void getIssuedAssets_givenCached_thenHitCache() {
+        TransactionDto dto = mock();
+        when(service.getIssuedAssets()).thenReturn(List.of(dto));
+        controller.getIssuedAssets();
+        controller.getIssuedAssets();
+        verify(service, times(1)).getIssuedAssets();
+    }
+
+    @Test
+    void getIssuedAssets_givenCacheEvicted_thenHitServiceAgain() {
+        TransactionDto dto = mock();
+        when(service.getIssuedAssets()).thenReturn(List.of(dto));
+        controller.getIssuedAssets();
+        qxCacheManager.evictIssuedAssetsCache();
+        controller.getIssuedAssets();
+        verify(service, times(2)).getIssuedAssets();
+    }
+
     @BeforeEach
     void clearCache() {
         evictAllCaches();

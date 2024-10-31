@@ -7,9 +7,10 @@ import java.util.List;
 
 public class TransactionsService {
 
-    static final int LIMIT = 25;
+    static final int LIMIT = 50;
     static final List<Integer> ORDER_INPUT_TYPES = List.of(5,6,7,8);
     static final List<Integer> TRANSFER_INPUT_TYPE = List.of(2);
+    static final List<Integer> ISSUE_ASSET_INPUT_TYPE = List.of(1);
 
     private final TransactionsRepository transactionsRepository;
 
@@ -43,6 +44,10 @@ public class TransactionsService {
 
     public List<TransactionDto> getOrderTransactionsForEntity(String identity) {
         return transactionsRepository.findBySourceEntityOrdered(identity, ORDER_INPUT_TYPES, LIMIT);
+    }
+
+    public List<TransactionDto> getIssuedAssets() {
+        return transactionsRepository.findByInputTypesOrdered(ISSUE_ASSET_INPUT_TYPE, LIMIT);
     }
 
 }
