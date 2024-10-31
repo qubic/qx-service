@@ -47,7 +47,9 @@ public class TransactionProcessor {
                         .then());
     }
 
-    public Mono<List<Trade>> processQxOrders(long tickNumber, Instant tickTime, List<Transaction> txs) {
+    public Mono<List<Trade>> processQxTransactions(long tickNumber, Instant tickTime, List<Transaction> txs) {
+
+        Flux<Transaction> storeTransactionsMono = storeTransactions(txs);
 
         List<Transaction> orderTransactions = txs.stream()
                 .filter(tx -> tx.extraData() instanceof QxAssetOrderData)
@@ -59,6 +61,15 @@ public class TransactionProcessor {
                 .map(extra -> new Asset(extra.issuer(), extra.name()))
                 .collect(Collectors.toSet());
 
+        return storeTransactionsMono
+                .then(processPotentialTrades(tickNumber,
+                        tickTime,
+                        assetInformation,
+                        orderTransactions));
+
+    }
+
+    private Mono<List<Trade>> processPotentialTrades(long tickNumber, Instant tickTime, Set<Asset> assetInformation, List<Transaction> orderTransactions) {
         return coreService.getCurrentTick()
                 .flatMapMany(tick -> assetService.retrieveCurrentOrderBooks(tick, assetInformation))
                 .collect(Collectors.toSet())
@@ -66,9 +77,13 @@ public class TransactionProcessor {
                         .collect(Collectors.toSet())
                         .map(previous -> Tuples.of(currentOrderBooks, previous)))
                 .map(tuple -> handleQxOrderTransactions(tuple.getT1(), tuple.getT2(), orderTransactions, tickTime))
-                .flatMapMany(trades -> this.storeTradeInformation(txs, trades))
+                .flatMapMany(this::storeTrades)
                 .collectList();
+    }
 
+    private Flux<Trade> storeTrades(List<Trade> trades) {
+        return Flux.fromIterable(trades)
+                .flatMap(tradeRepository::storeTrade);
     }
 
     private static boolean mightBeSuccessful(Transaction tx) {
@@ -96,11 +111,6 @@ public class TransactionProcessor {
     private Flux<Transaction> storeTransactions(List<Transaction> txs) {
         return Flux.fromIterable(txs)
                 .flatMap(transactionRepository::putTransaction);
-    }
-
-    private Flux<Trade> storeTradeInformation(List<Transaction> transactions, List<Trade> list) {
-        return storeTransactions(transactions)
-                .thenMany(Flux.fromIterable(list).flatMap(tradeRepository::storeTrade));
     }
 
     private List<Trade> handleQxOrderTransactions(Set<OrderBook> currentObs, Set<OrderBook> previousObs, List<Transaction> orderTransactions, Instant tickTime) {

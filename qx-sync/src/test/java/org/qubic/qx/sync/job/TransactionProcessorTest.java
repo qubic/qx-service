@@ -34,7 +34,7 @@ class TransactionProcessorTest {
     private final TransactionProcessor transactionProcessor = new TransactionProcessor(coreApiService, assetService, orderBookCalculator, transactionRepository, tradeRepository);
 
     @Test
-    void processQxOrders_thenStoreTradeInformation() {
+    void processQxTransactions_thenStoreTradeInformation() {
 
         OrderType orderType = OrderType.ADD_BID;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "assetName", 5, 5);
@@ -54,7 +54,7 @@ class TransactionProcessorTest {
         when(tradeRepository.storeTrade(any(Trade.class))).then(args -> Mono.just(args.getArgument(0)));
         when(orderBookCalculator.updateOrderBooksWithTrades(previousOrderBook, transaction, orderType, orderData, matchedOrders, trades)).thenReturn(Tuples.of("issuer/assetName", previousOrderBook));
 
-        StepVerifier.create(transactionProcessor.processQxOrders(42, Instant.EPOCH, List.of(transaction)))
+        StepVerifier.create(transactionProcessor.processQxTransactions(42, Instant.EPOCH, List.of(transaction)))
                 .expectNext(trades)
                 .verifyComplete();
 

@@ -70,7 +70,7 @@ public class TickSyncJob {
             return coreService.getTickData(tickNumber)
                     .doFirst(() -> log.info("Tick [{}]: processing [{}] qx orders.", tickNumber, txs.size()))
                     .map(TickData::timestamp)
-                    .flatMap(instant -> transactionProcessor.processQxOrders(tickNumber, instant, txs))
+                    .flatMap(instant -> transactionProcessor.processQxTransactions(tickNumber, instant, txs))
                     .then(storeTickNumberMono)
                     .then(Mono.just(true));
         }

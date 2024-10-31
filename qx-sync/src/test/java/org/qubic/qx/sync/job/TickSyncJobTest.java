@@ -37,7 +37,7 @@ class TickSyncJobTest {
         when(coreService.getQxTransactions(3458L)).thenReturn(Flux.just(tx, tx, tx));
         when(coreService.getTickData(anyLong())).thenReturn(Mono.just(new TickData(1, 1L, Instant.now())));
 
-        when(transactionProcessor.processQxOrders(anyLong(), any(Instant.class), anyList())).thenReturn(Mono.empty());
+        when(transactionProcessor.processQxTransactions(anyLong(), any(Instant.class), anyList())).thenReturn(Mono.empty());
         when(transactionProcessor.updateAllOrderBooks()).thenReturn(Mono.empty());
 
         StepVerifier.create(tickSync.sync().log())

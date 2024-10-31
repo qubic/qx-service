@@ -7,7 +7,6 @@ import org.qubic.qx.sync.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 public class TransactionRepositorySpringIT extends AbstractRedisTest {
@@ -42,32 +41,22 @@ public class TransactionRepositorySpringIT extends AbstractRedisTest {
     private ReactiveStringRedisTemplate redisStringTemplate;
 
     @Test
-    void putTransaction() {
+    void putTransaction_thenPushIntoTransactionProcessingQueue() {
 
         StepVerifier.create(transactionRepository.putTransaction(TX))
                 .expectNext(TX)
                 .verifyComplete();
 
-        StepVerifier.create(redisTransactionOperations.opsForValue()
-                .get("tx:transaction-hash"))
+        StepVerifier.create(redisTransactionOperations
+                        .opsForList()
+                        .range("queue:transactions", 0, 1))
                 .expectNext(TX)
                 .verifyComplete();
 
-        StepVerifier.create(redisStringTemplate.opsForValue().get("tx:transaction-hash"))
+        StepVerifier.create(redisStringTemplate
+                        .opsForList()
+                        .rightPop("queue:transactions"))
                 .expectNext(SERIALIZED_TX)
-                .verifyComplete();
-
-    }
-
-    @Test
-    void getTransaction() {
-
-        Mono<Transaction> storeAndGetTransaction = redisStringTemplate.opsForValue()
-                .set("tx:foo", SERIALIZED_TX)
-                .then(transactionRepository.getTransaction("foo"));
-
-        StepVerifier.create(storeAndGetTransaction)
-                .expectNext(TX)
                 .verifyComplete();
 
     }
