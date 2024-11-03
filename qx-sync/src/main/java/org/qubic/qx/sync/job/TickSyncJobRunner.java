@@ -21,11 +21,11 @@ public class TickSyncJobRunner {
 
     public void loopForever() {
 
-        Mono<?> updateAllOrderBooks = syncJob.updateAllOrderBooks();
+        Mono<?> updateAllOrderBooks = syncJob.initializeOrderBooks();
 
 
         Flux<? extends Serializable> syncLoop = syncJob.sync()
-                .flatMap(ti -> syncJob.updateLatestSyncedTick(ti.tick()))
+                .flatMap(syncJob::updateLatestSyncedTick)
                 .doOnNext(tick -> log.debug("Sync to [{}] completed.", tick))
                 .doOnError(t -> log.error("Error running sync job.", t))
                 .retryWhen(Retry.backoff(Long.MAX_VALUE, Duration.ofMillis(100)))

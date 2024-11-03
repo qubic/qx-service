@@ -7,8 +7,6 @@ import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.List;
-
 class TickRepositorySpringIT extends AbstractRedisTest {
 
     @Autowired
@@ -65,36 +63,6 @@ class TickRepositorySpringIT extends AbstractRedisTest {
 
         StepVerifier.create(tickRepository.isProcessedTick(666L))
                 .expectNext(false)
-                .verifyComplete();
-    }
-
-    @Test
-    void setTickTransactions() {
-        StepVerifier.create(tickRepository.setTickTransactions(123, List.of("a", "b", "c")))
-                .expectNext(true)
-                .verifyComplete();
-
-        StepVerifier.create(redisStringTemplate.opsForValue().get("txs:123"))
-                .expectNext("a,b,c")
-                .verifyComplete();
-
-    }
-
-    @Test
-    void getTickTransactions() {
-        tickRepository.setTickTransactions(42L, List.of("a", "b", "c"))
-                .then(tickRepository.setTickTransactions(43L, List.of("x", "y", "z")))
-                .block();
-
-        StepVerifier.create(tickRepository.getTickTransactions(42L))
-                .expectNext("a", "b", "c")
-                .verifyComplete();
-
-        StepVerifier.create(tickRepository.getTickTransactions(43L))
-                .expectNext("x", "y", "z")
-                .verifyComplete();
-
-        StepVerifier.create(tickRepository.getTickTransactions(666L))
                 .verifyComplete();
     }
 
