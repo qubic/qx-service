@@ -11,6 +11,9 @@
   <logger name="org.springframework" level="WARN"/>
   <logger name="org.qubic" level="DEBUG"/>
 
+  <logger name="reactor.Flux" level="INFO"/>
+  <logger name="reactor.Mono" level="INFO"/>
+
   <root level="WARN" >
     <appender-ref ref="CONSOLE"/>
   </root>

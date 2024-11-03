@@ -40,13 +40,6 @@ public class TransactionProcessor {
         this.tradeRepository = tradeRepository;
     }
 
-    public Mono<Void> updateAllOrderBooks() {
-        return coreService.getCurrentTick()
-                .flatMap(tick -> assetService
-                        .retrieveAllCurrentOrderBooks(tick)
-                        .then());
-    }
-
     public Mono<List<Trade>> processQxTransactions(long tickNumber, Instant tickTime, List<Transaction> txs) {
 
         Flux<Transaction> storeTransactionsMono = storeTransactions(txs);

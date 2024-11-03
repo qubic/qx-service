@@ -21,7 +21,7 @@ public class TickSyncJobRunner {
 
     public void loopForever() {
 
-        Mono<?> updateAllOrderBooks = syncJob.updateAllOrderBooks();
+        Mono<?> updateAllOrderBooks = syncJob.initializeOrderBooks();
 
 
         Flux<? extends Serializable> syncLoop = syncJob.sync()

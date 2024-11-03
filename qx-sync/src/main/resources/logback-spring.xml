@@ -20,6 +20,9 @@
   <logger name="ch.qos.logback" level="WARN"/>
   <logger name="org.springframework" level="WARN"/>
 
+  <logger name="reactor.Flux" level="WARN"/>
+  <logger name="reactor.Mono" level="WARN"/>
+
   <logger name="at.qubic" level="INFO"/>
   <logger name="at.qubic.api.network" level="WARN"/>
 <!--  <logger name="at.qubic.api.service.ComputorService" level="DEBUG"/>-->

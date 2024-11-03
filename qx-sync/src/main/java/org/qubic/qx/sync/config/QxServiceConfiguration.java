@@ -79,8 +79,8 @@ public class QxServiceConfiguration {
     }
 
     @Bean
-    TickSyncJob tickSyncJob(TickRepository tickRepository, CoreApiService coreService, TransactionProcessor transactionProcessor) {
-        return new TickSyncJob(tickRepository, coreService, transactionProcessor);
+    TickSyncJob tickSyncJob(AssetService assetService, TickRepository tickRepository, CoreApiService coreService, TransactionProcessor transactionProcessor) {
+        return new TickSyncJob(assetService, tickRepository, coreService, transactionProcessor);
     }
 
     @Bean

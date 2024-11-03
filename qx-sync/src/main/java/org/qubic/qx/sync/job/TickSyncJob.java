@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.Qx;
+import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
 import org.qubic.qx.sync.domain.Transaction;
@@ -18,13 +19,15 @@ import java.util.List;
 @Slf4j
 public class TickSyncJob {
 
+    private final AssetService assetService;
     private final TickRepository tickRepository;
     private final CoreApiService coreService;
     private final TransactionProcessor transactionProcessor;
 
     private TickInfo currentTickInfo;
 
-    public TickSyncJob(TickRepository tickRepository, CoreApiService coreService, TransactionProcessor transactionProcessor) {
+    public TickSyncJob(AssetService assetService, TickRepository tickRepository, CoreApiService coreService, TransactionProcessor transactionProcessor) {
+        this.assetService = assetService;
         this.tickRepository = tickRepository;
         this.coreService = coreService;
         this.transactionProcessor = transactionProcessor;
@@ -58,8 +61,10 @@ public class TickSyncJob {
                 .doOnNext(tno -> log.debug("Synced tick [{}].", tno));
     }
 
-    public Mono<Void> updateAllOrderBooks() {
-        return transactionProcessor.updateAllOrderBooks();
+    public Mono<Void> initializeOrderBooks() {
+        return coreService.getCurrentTick()
+                .flatMapMany(assetService::initializeOrderBooks)
+                .then();
     }
 
     private Mono<Boolean> processTransactions(Long tickNumber, List<Transaction> txs) {
