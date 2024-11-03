@@ -15,6 +15,7 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Slf4j
 public class TickSyncJob {
@@ -24,8 +25,6 @@ public class TickSyncJob {
     private final CoreApiService coreService;
     private final TransactionProcessor transactionProcessor;
 
-    private TickInfo currentTickInfo;
-
     public TickSyncJob(AssetService assetService, TickRepository tickRepository, CoreApiService coreService, TransactionProcessor transactionProcessor) {
         this.assetService = assetService;
         this.tickRepository = tickRepository;
@@ -33,16 +32,15 @@ public class TickSyncJob {
         this.transactionProcessor = transactionProcessor;
     }
 
-    public Mono<TickInfo> sync() {
+    public Mono<Long> sync() {
         // get highes available start block (start from scratch or last db state)
         return coreService.getTickInfo()
-                .doOnNext(ti -> this.currentTickInfo = ti)
                 .flatMap(this::calculateStartTick)
                 .flatMapMany(this::calculateSyncRange)
-                .doOnNext(tickNumber -> log.debug("Preparing to sync tick [{}].", tickNumber))
+                .doOnNext(tickNumber -> log.debug("Syncing tick [{}].", tickNumber))
                 .concatMap(this::processTick)
-                .then(Mono.defer(() -> Mono.just(currentTickInfo))) // sequential processing for order book calculations
-                ;
+                .last()
+                .onErrorResume(NoSuchElementException.class, e -> Mono.empty());
     }
 
     private Mono<Long> processTick(Long tickNumber) {
@@ -85,13 +83,19 @@ public class TickSyncJob {
 
     private Flux<Long> calculateSyncRange(Tuple2<TickInfo, Long> endAndStartTick) {
         long startTick = endAndStartTick.getT2();
-        long endTick = Math.max(startTick, endAndStartTick.getT1().tick());
-        int numberOfTicks = (int) (endTick - startTick);
-        if (numberOfTicks > 1) {
-            log.info("Syncing from tick [{}] to [{}]. Number of ticks: [{}].", startTick, endTick, numberOfTicks);
+        long endTick = endAndStartTick.getT1().tick();
+        int numberOfTicks = (int) (endTick - startTick); // we don't sync the latest tick (integration api might still be behind)
+        if (numberOfTicks > 0) {
+            if (numberOfTicks > 1) {
+                log.info("Syncing from tick [{}] (incl) to [{}] (excl). Number of ticks: [{}].", startTick, endTick, numberOfTicks);
+                return Flux.range(0, numberOfTicks).map(counter -> startTick + counter);
+            } else {
+                return Flux.just(startTick);
+            }
+        } else {
+            log.debug("Nothing to sync...");
+            return Flux.empty();
         }
-        return Flux.range(0, numberOfTicks)
-                .map(counter -> startTick + counter);
     }
 
     public Mono<Long> updateLatestSyncedTick(long syncedTick) {
@@ -104,9 +108,9 @@ public class TickSyncJob {
 
     private Mono<Tuple2<TickInfo, Long>> calculateStartTick(TickInfo tickInfo) {
         return tickRepository.getLatestSyncedTick()
-                .map(latestStoredTick -> tickInfo.initialTick() > latestStoredTick
+                .map(latestStoredTick -> latestStoredTick < tickInfo.initialTick()
                         ? tickInfo.initialTick()
-                        : latestStoredTick)
+                        : latestStoredTick + 1)
                 .map(startTick -> Tuples.of(tickInfo, startTick));
     }
 
