@@ -1,10 +1,12 @@
 package org.qubic.qx.api.db;
 
+import org.qubic.qx.api.controller.domain.AvgPriceData;
 import org.qubic.qx.api.controller.domain.TradeDto;
 import org.qubic.qx.api.db.domain.Trade;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.time.Instant;
 import java.util.List;
 
 public interface TradesRepository extends CrudRepository<Trade, Long> {
@@ -46,5 +48,23 @@ public interface TradesRepository extends CrudRepository<Trade, Long> {
     limit :limit
     """)
     List<TradeDto> findByEntityOrderedByTickTimeDesc(String identity, long limit);
+
+
+    @Query("""
+        select
+            t.tick_time::date as time,
+            min(t.price) as min,
+            max(t.price) as max,
+            sum(t.number_of_shares) total_shares,
+            sum(t.price * t.number_of_shares) total_amount,
+            sum(t.price * t.number_of_shares) / sum(t.number_of_shares) as average_price,
+            COUNT(*) AS total_trades
+        from trades t
+        join assets a on t.asset_id = a.id
+        where a.issuer = :issuer and a.name = :name and t.tick_time >= :after
+        group by t.tick_time::date
+        order by time;
+    """)
+    List<AvgPriceData> findAveragePriceByAssetGroupedByDay(String issuer, String name, Instant after);
 
 }

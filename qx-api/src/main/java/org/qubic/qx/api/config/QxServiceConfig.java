@@ -4,10 +4,7 @@ import at.qubic.api.crypto.IdentityUtil;
 import at.qubic.api.crypto.NoCrypto;
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.adapter.QxApiService;
-import org.qubic.qx.api.controller.service.AssetsService;
-import org.qubic.qx.api.controller.service.QxService;
-import org.qubic.qx.api.controller.service.TradesService;
-import org.qubic.qx.api.controller.service.TransactionsService;
+import org.qubic.qx.api.controller.service.*;
 import org.qubic.qx.api.db.AssetsRepository;
 import org.qubic.qx.api.db.TradesRepository;
 import org.qubic.qx.api.db.TransactionsRepository;
@@ -36,6 +33,11 @@ public class QxServiceConfig {
     @Bean
     TradesService tradesService(TradesRepository tradesRepository) {
         return new TradesService(tradesRepository);
+    }
+
+    @Bean
+    ChartService chartService(TradesRepository tradesRepository) {
+        return new ChartService(tradesRepository);
     }
 
     @Bean

@@ -126,7 +126,7 @@ class TransactionsProcessorTest {
     void postProcess_givenIssueAsset_thenEvictCache() {
         TransactionRedisDto source = createIssueAssetTransaction();
         processor.postProcess(mock(), source);
-        verify(qxCacheManager).evictIssuedAssetsCache();
+        verify(qxCacheManager).evictAssetsCaches();
     }
 
     private static TransactionRedisDto createIssueAssetTransaction() {

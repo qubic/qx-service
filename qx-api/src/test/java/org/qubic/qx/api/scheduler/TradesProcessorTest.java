@@ -22,6 +22,7 @@ class TradesProcessorTest {
 
         verify(qxCacheManager).evictTradesCache();
         verify(qxCacheManager).evictTradeCacheForAsset("ISSUER", "ASSET");
+        verify(qxCacheManager).evictChartCachesForAsset("ISSUER", "ASSET");
         verify(qxCacheManager).evictTradeCacheForEntity("MAKER");
         verify(qxCacheManager).evictTradeCacheForEntity("TAKER");
     }

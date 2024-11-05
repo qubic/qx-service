@@ -178,7 +178,7 @@ class TransactionsControllerCacheIT extends AbstractSpringIntegrationTest {
         TransactionDto dto = mock();
         when(service.getIssuedAssets()).thenReturn(List.of(dto));
         controller.getIssuedAssets();
-        qxCacheManager.evictIssuedAssetsCache();
+        qxCacheManager.evictAssetsCaches();
         controller.getIssuedAssets();
         verify(service, times(2)).getIssuedAssets();
     }

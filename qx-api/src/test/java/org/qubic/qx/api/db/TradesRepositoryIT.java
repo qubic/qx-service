@@ -1,6 +1,7 @@
 package org.qubic.qx.api.db;
 
 import org.junit.jupiter.api.Test;
+import org.qubic.qx.api.controller.domain.AvgPriceData;
 import org.qubic.qx.api.controller.domain.TradeDto;
 import org.qubic.qx.api.db.domain.Asset;
 import org.qubic.qx.api.db.domain.Entity;
@@ -9,9 +10,10 @@ import org.qubic.qx.api.db.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.time.Instant;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -123,6 +125,38 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
                         tradeDto(asset, entity1, entity2, trade3));
     }
 
+    @Test
+    void findAveragePriceByAssetGroupedByDay() {
+        Asset asset = assetsRepository.findAll().iterator().next();
+        Transaction tx = transactionsRepository.findAll().iterator().next();
+        Instant now = Instant.now();
+
+        repository.save(trade(tx, asset, 100, 1, now.minus(Duration.ofDays(7))));
+
+        repository.save(trade(tx, asset, 1, 4, now.minus(Duration.ofDays(6))));
+        repository.save(trade(tx, asset, 2, 3, now.minus(Duration.ofDays(6))));
+        repository.save(trade(tx, asset, 3, 1, now.minus(Duration.ofDays(6))));
+
+        repository.save(trade(tx, asset, 4, 2, now.minus(Duration.ofDays(4))));
+        repository.save(trade(tx, asset, 8, 1, now.minus(Duration.ofDays(4))));
+
+        repository.save(trade(tx, asset, 16, 2, now.minus(Duration.ofDays(1))));
+
+        repository.save(trade(tx, asset, 32, 3, now));
+
+        List<AvgPriceData> priceData = repository.findAveragePriceByAssetGroupedByDay(asset.getIssuer(), asset.getName(), now.minus(Duration.ofDays(6)));
+        assertThat(priceData.size()).isEqualTo(4);
+
+        ZoneId UTC = ZoneId.of("UTC");
+        assertThat(priceData).containsExactly(
+                new AvgPriceData(LocalDate.ofInstant(now.minus(Duration.ofDays(6)), UTC), 1, 3, 8, 13, (double) 13 / 8, 3),
+                new AvgPriceData(LocalDate.ofInstant(now.minus(Duration.ofDays(4)), UTC), 4, 8, 3, 16, (double) 16 / 3, 2),
+                new AvgPriceData(LocalDate.ofInstant(now.minus(Duration.ofDays(1)), UTC), 16, 16, 2, 32, 16, 1),
+                new AvgPriceData(LocalDate.ofInstant(now, UTC), 32, 32, 3, 96, 32, 1)
+        );
+
+    }
+
     private Instant nowPlusSeconds(long seconds) {
         return Instant.now().plusSeconds(seconds).truncatedTo(ChronoUnit.MILLIS);
     }
@@ -145,15 +179,24 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
         );
     }
 
+    private static Trade trade(Transaction transaction, Asset asset, long price, long shares, Instant tickTime) {
+        return trade(transaction.getId(), asset.getId(), transaction.getSourceId(), price, shares, tickTime);
+    }
+
+
     private static Trade trade(Transaction transaction, Asset asset, Entity maker, Instant tickTime) {
+        return trade(transaction.getId(), asset.getId(), maker.getId(), 1, 2, tickTime);
+    }
+
+    private static Trade trade(long transactionId, long assetId, long makerId, long price, long shares, Instant tickTime) {
         return Trade.builder()
-                .transactionId(transaction.getId())
+                .transactionId(transactionId)
                 .bid(true)
-                .price(1)
-                .numberOfShares(2)
+                .price(price)
+                .numberOfShares(shares)
                 .tickTime(tickTime)
-                .makerId(maker.getId()) // doesn't make sense but good enough for test
-                .assetId(asset.getId())
+                .makerId(makerId) // doesn't make sense but good enough for test
+                .assetId(assetId)
                 .build();
     }
 

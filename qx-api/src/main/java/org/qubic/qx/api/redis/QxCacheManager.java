@@ -34,6 +34,8 @@ public class QxCacheManager {
 
     public static final String CACHE_KEY_ASSET = "#issuer + ':' + #asset";
 
+    public static final String CACHE_NAME_CHART_AVG_PRICE = "cache:chartAvgPrice";
+
     public QxCacheManager(CacheManager cacheManager) {
         this.cacheManager = cacheManager;
     }
@@ -87,8 +89,15 @@ public class QxCacheManager {
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRANSFERS_ASSET)).evict(String.format("%s:%s", issuer, name));
     }
 
-    public void evictIssuedAssetsCache() {
+    public void evictChartCachesForAsset(String issuer, String name) {
+        log.debug("Evicting chart caches for assets issuer [{}] and name [{}].", issuer, name);
+        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_CHART_AVG_PRICE)).clear();
+    }
+
+    public void evictAssetsCaches() {
         log.debug("Evicting cache for issued assets.");
+        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSETS)).clear();
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ISSUED_ASSETS)).clear();
     }
+
 }
