@@ -6,7 +6,7 @@ import org.qubic.qx.api.redis.dto.TradeRedisDto;
 
 import static org.mockito.Mockito.*;
 
-class TradesProcessorTest {
+class TradesProcessorPostProcessingTest {
 
     private final QxCacheManager qxCacheManager = mock();
     private final TradesProcessor processor = new TradesProcessor(null, null, null, qxCacheManager);

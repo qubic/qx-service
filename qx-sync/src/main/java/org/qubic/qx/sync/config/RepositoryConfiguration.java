@@ -2,7 +2,7 @@ package org.qubic.qx.sync.config;
 
 import org.qubic.qx.sync.api.domain.AssetOrder;
 import org.qubic.qx.sync.domain.Trade;
-import org.qubic.qx.sync.domain.Transaction;
+import org.qubic.qx.sync.domain.TransactionWithTime;
 import org.qubic.qx.sync.repository.OrderBookRepository;
 import org.qubic.qx.sync.repository.TickRepository;
 import org.qubic.qx.sync.repository.TradeRepository;
@@ -21,11 +21,11 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RepositoryConfiguration {
 
     @Bean
-    public ReactiveRedisTemplate<String, Transaction> transactionRedisTemplate(ReactiveRedisConnectionFactory connectionFactory) {
-        Jackson2JsonRedisSerializer<Transaction> serializer = new Jackson2JsonRedisSerializer<>(Transaction.class);
-        RedisSerializationContext.RedisSerializationContextBuilder<String, Transaction> builder =
+    public ReactiveRedisTemplate<String, TransactionWithTime> transactionRedisTemplate(ReactiveRedisConnectionFactory connectionFactory) {
+        Jackson2JsonRedisSerializer<TransactionWithTime> serializer = new Jackson2JsonRedisSerializer<>(TransactionWithTime.class);
+        RedisSerializationContext.RedisSerializationContextBuilder<String, TransactionWithTime> builder =
                 RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
-        RedisSerializationContext<String, Transaction> context = builder
+        RedisSerializationContext<String, TransactionWithTime> context = builder
                 .value(serializer)
                 .hashValue(serializer)
                 .build();
@@ -55,7 +55,7 @@ public class RepositoryConfiguration {
     }
 
     @Bean
-    TransactionRepository transactionRepository(ReactiveRedisTemplate<String, Transaction> redisTransactionTemplate) {
+    TransactionRepository transactionRepository(ReactiveRedisTemplate<String, TransactionWithTime> redisTransactionTemplate) {
         return new TransactionRepository(redisTransactionTemplate);
     }
 

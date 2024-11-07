@@ -15,7 +15,7 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
-class TransactionsProcessorTest {
+class TransactionsProcessorPostProcessingTest {
 
     private final IdentityUtil identityUtil = mock();
     private final AssetsRepository assetsRepository = mock();

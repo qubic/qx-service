@@ -10,6 +10,7 @@ import org.qubic.qx.sync.api.service.QxService;
 import org.qubic.qx.sync.assets.Asset;
 import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.assets.Assets;
+import org.qubic.qx.sync.mapper.TransactionMapper;
 import org.qubic.qx.sync.repository.OrderBookRepository;
 import org.qubic.qx.sync.repository.TickRepository;
 import org.qubic.qx.sync.repository.TradeRepository;
@@ -74,8 +75,8 @@ public class QxServiceConfiguration {
 
     @Bean
     TransactionProcessor transactionProcessor(CoreApiService coreApiService, AssetService assetService, OrderBookCalculator orderBookCalculator,
-                                              TransactionRepository transactionRepository, TradeRepository tradeRepository) {
-        return new TransactionProcessor(coreApiService, assetService, orderBookCalculator, transactionRepository, tradeRepository);
+                                              TransactionRepository transactionRepository, TradeRepository tradeRepository, TransactionMapper transactionMapper) {
+        return new TransactionProcessor(coreApiService, assetService, orderBookCalculator, transactionRepository, tradeRepository, transactionMapper);
     }
 
     @Bean

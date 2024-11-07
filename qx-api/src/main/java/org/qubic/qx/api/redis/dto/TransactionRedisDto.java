@@ -8,6 +8,7 @@ public record TransactionRedisDto(
         String destinationPublicId,
         long amount,
         long tick,
+        long timestamp,
         int inputType,
         int inputSize,
         ExtraData extraData, // compatible with domain object

@@ -6,10 +6,8 @@ import org.qubic.qx.sync.adapter.Qx.OrderType;
 import org.qubic.qx.sync.api.domain.AssetOrder;
 import org.qubic.qx.sync.assets.Asset;
 import org.qubic.qx.sync.assets.AssetService;
-import org.qubic.qx.sync.domain.OrderBook;
-import org.qubic.qx.sync.domain.QxAssetOrderData;
-import org.qubic.qx.sync.domain.Trade;
-import org.qubic.qx.sync.domain.Transaction;
+import org.qubic.qx.sync.domain.*;
+import org.qubic.qx.sync.mapper.TransactionMapper;
 import org.qubic.qx.sync.repository.TradeRepository;
 import org.qubic.qx.sync.repository.TransactionRepository;
 import reactor.core.publisher.Flux;
@@ -31,7 +29,8 @@ class TransactionProcessorTest {
     private final OrderBookCalculator orderBookCalculator = mock();
     private final TransactionRepository transactionRepository = mock();
     private final TradeRepository tradeRepository = mock();
-    private final TransactionProcessor transactionProcessor = new TransactionProcessor(coreApiService, assetService, orderBookCalculator, transactionRepository, tradeRepository);
+    private final TransactionMapper transactionMapper = mock();
+    private final TransactionProcessor transactionProcessor = new TransactionProcessor(coreApiService, assetService, orderBookCalculator, transactionRepository, tradeRepository, transactionMapper);
 
     @Test
     void processQxTransactions_thenStoreTradeInformation() {
@@ -39,6 +38,7 @@ class TransactionProcessorTest {
         OrderType orderType = OrderType.ADD_BID;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "assetName", 5, 5);
         Transaction transaction = new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
+        TransactionWithTime transactionWithTime = new TransactionWithTime("hash", "sourceId", "destinationId", 123, 42, Instant.EPOCH.getEpochSecond(), orderType.code, 0, orderData, null);
         Asset asset = new Asset("issuer", "assetName");
         OrderBook previousOrderBook = new OrderBook(41, "issuer", "assetName", List.of(), List.of());
         OrderBook currentOrderBook = new OrderBook(43, "issuer", "assetName", List.of(), List.of());
@@ -50,7 +50,8 @@ class TransactionProcessorTest {
         when(orderBookCalculator.getMatchedOrders(previousOrderBook, orderData, orderType)).thenReturn(matchedOrders);
         List<Trade> trades = List.of(mock(), mock());
         when(orderBookCalculator.handleTrades(transaction, Instant.EPOCH, matchedOrders, orderData, orderType)).thenReturn(trades);
-        when(transactionRepository.putTransaction(transaction)).thenReturn(Mono.just(transaction));
+        when(transactionMapper.map(transaction, Instant.EPOCH.getEpochSecond())).thenReturn(transactionWithTime);
+        when(transactionRepository.putTransaction(transactionWithTime)).thenReturn(Mono.just(transactionWithTime));
         when(tradeRepository.storeTrade(any(Trade.class))).then(args -> Mono.just(args.getArgument(0)));
         when(orderBookCalculator.updateOrderBooksWithTrades(previousOrderBook, transaction, orderType, orderData, matchedOrders, trades)).thenReturn(Tuples.of("issuer/assetName", previousOrderBook));
 

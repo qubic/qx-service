@@ -8,6 +8,7 @@ import org.qubic.qx.sync.api.domain.AssetOrder;
 import org.qubic.qx.sync.assets.Asset;
 import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.domain.*;
+import org.qubic.qx.sync.mapper.TransactionMapper;
 import org.qubic.qx.sync.repository.TradeRepository;
 import org.qubic.qx.sync.repository.TransactionRepository;
 import reactor.core.publisher.Flux;
@@ -30,19 +31,23 @@ public class TransactionProcessor {
     private final OrderBookCalculator orderBookCalculator;
     private final TransactionRepository transactionRepository;
     private final TradeRepository tradeRepository;
+    private final TransactionMapper transactionMapper;
 
 
-    public TransactionProcessor(CoreApiService coreService, AssetService assetService, OrderBookCalculator orderBookCalculator, TransactionRepository transactionRepository, TradeRepository tradeRepository) {
+    public TransactionProcessor(CoreApiService coreService, AssetService assetService, OrderBookCalculator orderBookCalculator, TransactionRepository transactionRepository, TradeRepository tradeRepository, TransactionMapper transactionMapper) {
         this.coreService = coreService;
         this.assetService = assetService;
         this.orderBookCalculator = orderBookCalculator;
         this.transactionRepository = transactionRepository;
         this.tradeRepository = tradeRepository;
+        this.transactionMapper = transactionMapper;
     }
 
     public Mono<List<Trade>> processQxTransactions(long tickNumber, Instant tickTime, List<Transaction> txs) {
 
-        Flux<Transaction> storeTransactionsMono = storeTransactions(txs);
+        // TODO get event and skip more complicated calculations in case it is available
+
+        Flux<TransactionWithTime> storeTransactionsMono = storeTransactions(txs, tickTime);
 
         List<Transaction> orderTransactions = txs.stream()
                 .filter(tx -> tx.extraData() instanceof QxAssetOrderData)
@@ -101,8 +106,9 @@ public class TransactionProcessor {
         return potentiallySuccessful;
     }
 
-    private Flux<Transaction> storeTransactions(List<Transaction> txs) {
+    private Flux<TransactionWithTime> storeTransactions(List<Transaction> txs, Instant tickTime) {
         return Flux.fromIterable(txs)
+                .map(tx -> transactionMapper.map(tx, tickTime.getEpochSecond()))
                 .flatMap(transactionRepository::putTransaction);
     }
 
