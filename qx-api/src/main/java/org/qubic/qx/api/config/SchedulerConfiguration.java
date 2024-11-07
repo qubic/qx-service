@@ -1,6 +1,7 @@
 package org.qubic.qx.api.config;
 
 import at.qubic.api.crypto.IdentityUtil;
+import org.qubic.qx.api.adapter.CoreArchiveApiService;
 import org.qubic.qx.api.db.AssetsRepository;
 import org.qubic.qx.api.db.EntitiesRepository;
 import org.qubic.qx.api.db.TradesRepository;
@@ -12,10 +13,7 @@ import org.qubic.qx.api.redis.dto.TradeRedisDto;
 import org.qubic.qx.api.redis.dto.TransactionRedisDto;
 import org.qubic.qx.api.redis.repository.TradesRedisRepository;
 import org.qubic.qx.api.redis.repository.TransactionsRedisRepository;
-import org.qubic.qx.api.scheduler.QueueProcessor;
-import org.qubic.qx.api.scheduler.RedisSyncScheduler;
-import org.qubic.qx.api.scheduler.TradesProcessor;
-import org.qubic.qx.api.scheduler.TransactionsProcessor;
+import org.qubic.qx.api.scheduler.*;
 import org.qubic.qx.api.scheduler.mapping.DatabaseMappings;
 import org.qubic.qx.api.scheduler.mapping.TradeMapper;
 import org.qubic.qx.api.scheduler.mapping.TransactionMapper;
@@ -55,6 +53,11 @@ public class SchedulerConfiguration {
     @Bean
     RedisSyncScheduler redisSyncScheduler(QueueProcessor<Transaction, TransactionRedisDto> transactionProcessor, QueueProcessor<Trade, TradeRedisDto> tradesProcessor) {
         return new RedisSyncScheduler(transactionProcessor, tradesProcessor);
+    }
+
+    @Bean
+    TransactionMigrationScheduler transactionMigrationScheduler(TransactionsRepository transactionsRepository, CoreArchiveApiService coreArchiveApiService) {
+        return new TransactionMigrationScheduler(coreArchiveApiService, transactionsRepository);
     }
 
 }

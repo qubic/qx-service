@@ -2,6 +2,7 @@ package org.qubic.qx.api.db;
 
 import org.qubic.qx.api.controller.domain.TransactionDto;
 import org.qubic.qx.api.db.domain.Transaction;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -11,6 +12,8 @@ import java.util.Optional;
 public interface TransactionsRepository extends CrudRepository<Transaction, Long>  {
 
     Optional<Transaction> findByHash(String transactionHash);
+
+    List<Transaction> findByTickTimeIsNull(Pageable pageable);
 
     @Query("""
     select t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew

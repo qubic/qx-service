@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.controller.domain.TransactionDto;
 import org.qubic.qx.api.db.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
@@ -45,6 +46,14 @@ class TransactionsRepositoryIT extends AbstractPostgresJdbcTest {
         Transaction reloaded = repository.findById(saved.getId()).orElseThrow();
         assertThat(reloaded).isEqualTo(saved);
         assertThat(reloaded.getExtraData()).isEqualTo(extraData);
+    }
+
+    @Test
+    void findByTickTimeIsNull() {
+
+        List<Transaction> transactions = repository.findByTickTimeIsNull(Pageable.ofSize(3));
+        assertThat(transactions).hasSize(3);
+
     }
 
     @Test

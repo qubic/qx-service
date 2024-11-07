@@ -2,7 +2,10 @@ package org.qubic.qx.api.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.qubic.qx.api.adapter.CoreArchiveApiService;
 import org.qubic.qx.api.adapter.QxApiService;
+import org.qubic.qx.api.adapter.il.ArchiveMapper;
+import org.qubic.qx.api.adapter.il.IntegrationArchiveApiService;
 import org.qubic.qx.api.adapter.il.IntegrationQxApiService;
 import org.qubic.qx.api.adapter.il.QxMapper;
 import org.qubic.qx.api.properties.IntegrationClientProperties;
@@ -52,6 +55,11 @@ public class IntegrationLayerConfig {
                     httpHeaders.setContentType(MediaType.APPLICATION_JSON);
                 })
                 .build();
+    }
+
+    @Bean
+    CoreArchiveApiService integrationArchiveService(WebClient webClient, ArchiveMapper archiveMapper) {
+        return new IntegrationArchiveApiService(webClient, archiveMapper);
     }
 
     @Bean
