@@ -6,8 +6,9 @@ insert into entities (identity) VALUES ('ISSUER2');
 insert into assets (issuer, name) VALUES ('ISSUER1', 'ASSET1');
 insert into assets (issuer, name) VALUES ('ISSUER2', 'ASSET2');
 
-insert into transactions (hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
-values ('hash1',
+insert into transactions (tick_time, hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
+values (null,
+        'hash1',
         currval('entities_id_seq') - 3, -- ID1
         currval('entities_id_seq') - 4, -- CONTRACT_ADDRESS
         1,
@@ -17,8 +18,9 @@ values ('hash1',
         '{"name": "ASSET1", "price": 123, "@class": ".QxAssetOrderData", "issuer": "ISSUER1", "numberOfShares": 456}',
         false);
 
-insert into transactions (hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
-values ('hash7',
+insert into transactions (tick_time, hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
+values ('2024-01-01T10:10:10+00:00',
+        'hash7',
         currval('entities_id_seq') - 2, -- ID2
         currval('entities_id_seq') - 4, -- CONTRACT_ADDRESS
         7,
@@ -28,8 +30,9 @@ values ('hash7',
         '{"@class": ".QxTransferAssetData", "issuer": "ISSUER1", "newOwner": "ID1", "name": "ASSET2", "numberOfShares": 8239152}',
         true);
 
-insert into transactions (hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
-values ('hash2',
+insert into transactions (tick_time, hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
+values (null,
+        'hash2',
         currval('entities_id_seq') - 1, -- ISSUER1
         currval('entities_id_seq') - 4, -- CONTRACT_ADDRESS
         2,
@@ -39,8 +42,9 @@ values ('hash2',
         '{"name": "ASSET1", "numberOfShares": 1000000000, "@class": ".QxIssueAssetData", "unitOfMeasurement": "00000100", "numberOfDecimalPlaces": 10}',
         true);
 
-insert into transactions (hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
-values ('hash3',
+insert into transactions (tick_time, hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
+values ('2024-01-01T10:10:10+00:00',
+        'hash3',
         currval('entities_id_seq') - 3, -- ID1
         currval('entities_id_seq') - 4, -- CONTRACT_ADDRESS
         3,
@@ -50,8 +54,9 @@ values ('hash3',
         '{"@class": ".QxTransferAssetData", "issuer": "ISSUER1", "newOwner": "ID2", "name": "ASSET1", "numberOfShares": 8239152}',
         true);
 
-insert into transactions (hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
-values ('hash4',
+insert into transactions (tick_time, hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
+values ('2024-01-01T10:10:10+00:00',
+        'hash4',
         currval('entities_id_seq') - 3, -- ID1
         currval('entities_id_seq') - 4, -- CONTRACT_ADDRESS
         4,
@@ -61,8 +66,9 @@ values ('hash4',
         '{"name": "ASSET1", "price": 123, "@class": ".QxAssetOrderData", "issuer": "ISSUER1", "numberOfShares": 456}',
         null);
 
-insert into transactions (hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
-values ('hash5',
+insert into transactions (tick_time, hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
+values ('2024-01-01T10:10:10+00:00',
+        'hash5',
         currval('entities_id_seq') - 3, -- ID1
         currval('entities_id_seq') - 4, -- CONTRACT_ADDRESS
         5,
@@ -72,8 +78,9 @@ values ('hash5',
         '{"name": "ASSET2", "price": 123, "@class": ".QxAssetOrderData", "issuer": "ISSUER2", "numberOfShares": 456}',
         false);
 
-insert into transactions (hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
-values ('hash6',
+insert into transactions (tick_time, hash, source_entity_id, destination_entity_id, amount, tick, input_type, input_size, extra_data, money_flew)
+values ('2024-01-01T10:10:10+00:00',
+        'hash6',
         currval('entities_id_seq') - 3, -- ID1
         currval('entities_id_seq') - 4, -- CONTRACT_ADDRESS
         6,

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,8 +52,8 @@ class TransactionsRepositoryIT extends AbstractPostgresJdbcTest {
     @Test
     void findByTickTimeIsNull() {
 
-        List<Transaction> transactions = repository.findByTickTimeIsNull(Pageable.ofSize(3));
-        assertThat(transactions).hasSize(3);
+        List<Transaction> transactions = repository.findByTickTimeIsNull(Pageable.ofSize(1));
+        assertThat(transactions).hasSize(1);
 
     }
 
@@ -103,7 +104,8 @@ class TransactionsRepositoryIT extends AbstractPostgresJdbcTest {
         List<TransactionDto> result = repository.findOrdered(1);
         assertThat(result).isNotEmpty();
         assertThat(result).containsExactly(
-                new TransactionDto("hash6",
+                new TransactionDto(Instant.parse("2024-01-01T10:10:10Z"),
+                        "hash6",
                         "ID1", 6,
                         5, 8,
                         new QxAssetOrderData("ISSUER1", "ASSET1", 123, 456),

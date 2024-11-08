@@ -10,6 +10,7 @@ import org.qubic.qx.api.db.domain.QxIssueAssetData;
 import org.qubic.qx.api.db.domain.QxTransferAssetData;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
@@ -138,6 +139,7 @@ class TransactionsControllerTest {
             );
         }
         return new TransactionDto(
+                Instant.now(),
                 RandomStringUtils.random(32),
                 RandomStringUtils.random(32),
                 42,

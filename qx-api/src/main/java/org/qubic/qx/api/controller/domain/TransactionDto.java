@@ -3,8 +3,10 @@ package org.qubic.qx.api.controller.domain;
 import org.qubic.qx.api.db.domain.ExtraData;
 
 import java.io.Serializable;
+import java.time.Instant;
 
 public record TransactionDto(
+        Instant tickTime,
         String hash,
         String source,
         long amount,

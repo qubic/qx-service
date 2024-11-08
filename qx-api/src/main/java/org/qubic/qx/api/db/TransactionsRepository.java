@@ -16,7 +16,7 @@ public interface TransactionsRepository extends CrudRepository<Transaction, Long
     List<Transaction> findByTickTimeIsNull(Pageable pageable);
 
     @Query("""
-    select t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
+    select t.tick_time, t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
     from transactions t
     join entities src on t.source_entity_id = src.id
     order by t.tick desc, t.id desc
@@ -25,7 +25,7 @@ public interface TransactionsRepository extends CrudRepository<Transaction, Long
     List<TransactionDto> findOrdered(long limit);
 
     @Query("""
-    select t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
+    select t.tick_time, t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
     from transactions t
     join entities src on t.source_entity_id = src.id
     where t.input_type in (:inputTypes)
@@ -35,7 +35,7 @@ public interface TransactionsRepository extends CrudRepository<Transaction, Long
     List<TransactionDto> findByInputTypesOrdered(List<Integer> inputTypes, long limit);
 
     @Query("""
-    select t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
+    select t.tick_time, t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
     from transactions t
     join entities src on t.source_entity_id = src.id
     join assets a on t.extra_data->>'issuer' = a.issuer and t.extra_data->>'name' = a.name
@@ -48,7 +48,7 @@ public interface TransactionsRepository extends CrudRepository<Transaction, Long
     List<TransactionDto> findByAssetOrdered(String issuer, String asset, List<Integer> inputTypes, long limit); // inputType 1 does not work here
 
     @Query("""
-    select t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
+    select t.tick_time, t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
     from transactions t
     join entities src on t.source_entity_id = src.id
     where src.identity = :identity
@@ -59,7 +59,7 @@ public interface TransactionsRepository extends CrudRepository<Transaction, Long
     List<TransactionDto> findBySourceEntityOrdered(String identity, List<Integer> inputTypes, long limit);
 
     @Query("""
-    select t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
+    select t.tick_time, t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
     from transactions t
     join entities src on t.source_entity_id = src.id
     where (src.identity = :identity or t.extra_data->>'newOwner' = :identity)
