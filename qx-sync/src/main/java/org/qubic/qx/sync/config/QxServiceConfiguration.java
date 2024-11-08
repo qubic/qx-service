@@ -10,10 +10,7 @@ import org.qubic.qx.sync.adapter.qubicj.mapping.DataTypeTranslator;
 import org.qubic.qx.sync.assets.Asset;
 import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.assets.Assets;
-import org.qubic.qx.sync.job.OrderBookCalculator;
-import org.qubic.qx.sync.job.TickSyncJob;
-import org.qubic.qx.sync.job.TickSyncJobRunner;
-import org.qubic.qx.sync.job.TransactionProcessor;
+import org.qubic.qx.sync.job.*;
 import org.qubic.qx.sync.mapper.TransactionMapper;
 import org.qubic.qx.sync.repository.OrderBookRepository;
 import org.qubic.qx.sync.repository.TickRepository;
@@ -69,10 +66,20 @@ public class QxServiceConfiguration {
     }
 
     @Bean
-    TransactionProcessor transactionProcessor(CoreApiService coreApiService, AssetService assetService,
-                                              OrderBookCalculator orderBookCalculator, TransactionRepository transactionRepository,
-                                              TradeRepository tradeRepository, TransactionMapper transactionMapper) {
-        return new TransactionProcessor(coreApiService, assetService, orderBookCalculator, transactionRepository, tradeRepository, transactionMapper);
+    OrderBookProcessor orderBookProcessor(CoreApiService coreService, AssetService assetService, OrderBookCalculator orderBookCalculator) {
+        return new OrderBookProcessor(coreService, assetService, orderBookCalculator);
+    }
+
+    @Bean
+    EventsProcessor eventsProcessor(IdentityUtil identityUtil) {
+        return new EventsProcessor(identityUtil);
+    }
+
+    @Bean
+    TransactionProcessor transactionProcessor(TransactionRepository transactionRepository,
+                                              TradeRepository tradeRepository, TransactionMapper transactionMapper,
+                                              EventsProcessor eventsProcessor, OrderBookProcessor orderBookProcessor) {
+        return new TransactionProcessor(transactionRepository, tradeRepository, transactionMapper, eventsProcessor, orderBookProcessor);
     }
 
     @Bean

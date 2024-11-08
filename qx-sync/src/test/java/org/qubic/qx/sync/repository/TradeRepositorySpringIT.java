@@ -18,10 +18,10 @@ class TradeRepositorySpringIT extends AbstractRedisTest {
     private ReactiveRedisTemplate<String, Trade> redisTradeTemplate;
 
     @Test
-    void storeTrade_thenPushIntoTradesQueue() {
+    void putTradeIntoQueue_thenPushIntoTradesQueue() {
         Trade trade = new Trade(1, Instant.EPOCH.getEpochSecond(), "hash", true, "taker", "maker", "issuer", "asset", 3, 2);
 
-        StepVerifier.create(tradeRepository.storeTrade(trade))
+        StepVerifier.create(tradeRepository.putTradeIntoQueue(trade))
                 .expectNext(trade)
                 .verifyComplete();
 

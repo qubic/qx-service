@@ -42,9 +42,9 @@ public class TransactionRepositorySpringIT extends AbstractRedisTest {
     private ReactiveStringRedisTemplate redisStringTemplate;
 
     @Test
-    void putTransaction_thenPushIntoTransactionProcessingQueue() {
+    void putTransactionIntoQueue() {
 
-        StepVerifier.create(transactionRepository.putTransaction(TX))
+        StepVerifier.create(transactionRepository.putTransactionIntoQueue(TX))
                 .expectNext(TX)
                 .verifyComplete();
 

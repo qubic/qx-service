@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 public class Qx {
 
+    public static final int CONTRACT_INDEX = 1;
+
     public static final byte[] QX_PUBLIC_KEY = new byte[]{
             1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0

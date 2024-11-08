@@ -75,8 +75,6 @@ public class TickSyncJob {
             return storeTickNumberMono.then(Mono.just(false));
         } else {
 
-            // eventApiService.getTickEvents(tickNumber)
-
             Mono<List<TransactionEvents>> eventsMono = eventService.getTickEvents(tickNumber).defaultIfEmpty(List.of());
             Mono<TickData> tickDataMono = coreService.getTickData(tickNumber);
             return Mono.zip(eventsMono, tickDataMono)
