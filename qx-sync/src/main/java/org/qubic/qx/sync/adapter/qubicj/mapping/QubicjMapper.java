@@ -3,7 +3,7 @@ package org.qubic.qx.sync.adapter.qubicj.mapping;
 import at.qubic.api.domain.std.SignedTransaction;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
 import org.qubic.qx.sync.domain.Transaction;

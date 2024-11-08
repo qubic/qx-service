@@ -2,9 +2,9 @@ package org.qubic.qx.sync.job;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.Qx;
-import org.qubic.qx.sync.api.domain.AssetOrder;
 import org.qubic.qx.sync.assets.Asset;
 import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.domain.*;
@@ -43,9 +43,12 @@ public class TransactionProcessor {
         this.transactionMapper = transactionMapper;
     }
 
-    public Mono<List<Trade>> processQxTransactions(long tickNumber, Instant tickTime, List<Transaction> txs) {
+    public Mono<List<Trade>> processQxTransactions(long tickNumber, Instant tickTime, List<TransactionEvents> events, List<Transaction> txs) {
 
-        // TODO get event and skip more complicated calculations in case it is available
+        // qu transfer: 0
+        // asset issuance: 1
+        // asset ownership change: 2
+        // asset possession change: 3
 
         Flux<TransactionWithTime> storeTransactionsMono = storeTransactions(txs, tickTime);
 
@@ -63,18 +66,19 @@ public class TransactionProcessor {
                 .then(processPotentialTrades(tickNumber,
                         tickTime,
                         assetInformation,
+                        events,
                         orderTransactions));
 
     }
 
-    private Mono<List<Trade>> processPotentialTrades(long tickNumber, Instant tickTime, Set<Asset> assetInformation, List<Transaction> orderTransactions) {
+    private Mono<List<Trade>> processPotentialTrades(long tickNumber, Instant tickTime, Set<Asset> assetInformation, List<TransactionEvents> events, List<Transaction> orderTransactions) {
         return coreService.getCurrentTick()
                 .flatMapMany(tick -> assetService.retrieveCurrentOrderBooks(tick, assetInformation))
                 .collect(Collectors.toSet())
                 .flatMap(currentOrderBooks -> assetService.loadLatestOrderBooksBeforeTick(tickNumber, assetInformation)
                         .collect(Collectors.toSet())
                         .map(previous -> Tuples.of(currentOrderBooks, previous)))
-                .map(tuple -> handleQxOrderTransactions(tuple.getT1(), tuple.getT2(), orderTransactions, tickTime))
+                .map(tuple -> handleQxOrderTransactions(tuple.getT1(), tuple.getT2(), events, orderTransactions, tickTime))
                 .flatMapMany(this::storeTrades)
                 .collectList();
     }
@@ -112,7 +116,7 @@ public class TransactionProcessor {
                 .flatMap(transactionRepository::putTransaction);
     }
 
-    private List<Trade> handleQxOrderTransactions(Set<OrderBook> currentObs, Set<OrderBook> previousObs, List<Transaction> orderTransactions, Instant tickTime) {
+    private List<Trade> handleQxOrderTransactions(Set<OrderBook> currentObs, Set<OrderBook> previousObs, List<TransactionEvents> events, List<Transaction> orderTransactions, Instant tickTime) {
 
         Map<String, OrderBook> currentOrderBooks = currentObs.stream().collect(Collectors.toMap(TransactionProcessor::orderBookKey, x -> x));
         Map<String, OrderBook> previousOrderBooks = previousObs.stream().collect(Collectors.toMap(TransactionProcessor::orderBookKey, x -> x));
@@ -121,6 +125,10 @@ public class TransactionProcessor {
 
         // interpret orders
         for (Transaction tx : orderTransactions) {
+
+            List<TransactionEvents> relevantEvents = events.stream()
+                    .filter(event -> StringUtils.equals(event.txId(), tx.transactionHash()))
+                    .toList();
 
             QxAssetOrderData orderData = (QxAssetOrderData) tx.extraData();
             OrderBook previousOrderBook = previousOrderBooks.get(orderBookKey(orderData));

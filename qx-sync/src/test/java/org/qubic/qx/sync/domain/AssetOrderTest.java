@@ -1,4 +1,4 @@
-package org.qubic.qx.sync.api.domain;
+package org.qubic.qx.sync.domain;
 
 import org.junit.jupiter.api.Test;
 

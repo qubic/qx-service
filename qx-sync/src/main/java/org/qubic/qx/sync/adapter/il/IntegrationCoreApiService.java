@@ -23,7 +23,7 @@ import java.util.Optional;
 public class IntegrationCoreApiService implements CoreApiService {
 
     private static final String CORE_BASE_PATH_V1 = "/v1/core";
-    private static final int NUM_RETRIES = 1;
+    private static final int NUM_RETRIES = 3;
     private final WebClient webClient;
     private final IlCoreMapper mapper;
 

@@ -1,6 +1,6 @@
 package org.qubic.qx.sync.adapter;
 
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 import reactor.core.publisher.Mono;
 
 import java.util.List;

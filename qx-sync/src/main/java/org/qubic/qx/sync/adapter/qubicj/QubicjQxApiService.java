@@ -3,7 +3,7 @@ package org.qubic.qx.sync.adapter.qubicj;
 import at.qubic.api.service.ComputorService;
 import org.qubic.qx.sync.adapter.QxApiService;
 import org.qubic.qx.sync.adapter.qubicj.mapping.QubicjMapper;
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 import reactor.core.publisher.Mono;
 
 import java.util.List;

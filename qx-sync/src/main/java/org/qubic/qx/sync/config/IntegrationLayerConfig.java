@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.QxApiService;
 import org.qubic.qx.sync.adapter.il.IntegrationCoreApiService;
+import org.qubic.qx.sync.adapter.il.IntegrationEventApiService;
 import org.qubic.qx.sync.adapter.il.IntegrationQxApiService;
 import org.qubic.qx.sync.adapter.il.mapping.IlCoreMapper;
 import org.qubic.qx.sync.adapter.il.mapping.IlQxMapper;
@@ -57,6 +58,11 @@ public class IntegrationLayerConfig {
                     httpHeaders.setContentType(MediaType.APPLICATION_JSON);
                 })
                 .build();
+    }
+
+    @Bean
+    IntegrationEventApiService integrationEventApiService(WebClient webClient) {
+        return new IntegrationEventApiService(webClient);
     }
 
     @Bean

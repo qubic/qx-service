@@ -3,7 +3,6 @@ package org.qubic.qx.sync.job;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.Qx.OrderType;
-import org.qubic.qx.sync.api.domain.AssetOrder;
 import org.qubic.qx.sync.assets.Asset;
 import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.domain.*;
@@ -55,7 +54,7 @@ class TransactionProcessorTest {
         when(tradeRepository.storeTrade(any(Trade.class))).then(args -> Mono.just(args.getArgument(0)));
         when(orderBookCalculator.updateOrderBooksWithTrades(previousOrderBook, transaction, orderType, orderData, matchedOrders, trades)).thenReturn(Tuples.of("issuer/assetName", previousOrderBook));
 
-        StepVerifier.create(transactionProcessor.processQxTransactions(42, Instant.EPOCH, List.of(transaction)))
+        StepVerifier.create(transactionProcessor.processQxTransactions(42, Instant.EPOCH, List.of(), List.of(transaction)))
                 .expectNext(trades)
                 .verifyComplete();
 

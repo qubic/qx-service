@@ -3,11 +3,13 @@ package org.qubic.qx.sync.job;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
+import org.qubic.qx.sync.adapter.EventApiService;
 import org.qubic.qx.sync.adapter.Qx;
 import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
 import org.qubic.qx.sync.domain.Transaction;
+import org.qubic.qx.sync.domain.TransactionEvents;
 import org.qubic.qx.sync.repository.TickRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,12 +25,14 @@ public class TickSyncJob {
     private final AssetService assetService;
     private final TickRepository tickRepository;
     private final CoreApiService coreService;
+    private final EventApiService eventService;
     private final TransactionProcessor transactionProcessor;
 
-    public TickSyncJob(AssetService assetService, TickRepository tickRepository, CoreApiService coreService, TransactionProcessor transactionProcessor) {
+    public TickSyncJob(AssetService assetService, TickRepository tickRepository, CoreApiService coreService, EventApiService eventService, TransactionProcessor transactionProcessor) {
         this.assetService = assetService;
         this.tickRepository = tickRepository;
         this.coreService = coreService;
+        this.eventService = eventService;
         this.transactionProcessor = transactionProcessor;
     }
 
@@ -70,12 +74,20 @@ public class TickSyncJob {
         if (CollectionUtils.isEmpty(txs)) {
             return storeTickNumberMono.then(Mono.just(false));
         } else {
-            return coreService.getTickData(tickNumber)
+
+            // eventApiService.getTickEvents(tickNumber)
+
+            Mono<List<TransactionEvents>> eventsMono = eventService.getTickEvents(tickNumber).defaultIfEmpty(List.of());
+            Mono<TickData> tickDataMono = coreService.getTickData(tickNumber);
+            return Mono.zip(eventsMono, tickDataMono)
                     .doFirst(() -> log.info("Tick [{}]: processing [{}] qx orders.", tickNumber, txs.size()))
-                    .map(TickData::timestamp)
-                    .flatMap(instant -> transactionProcessor.processQxTransactions(tickNumber, instant, txs))
+                    .flatMap(tuple -> transactionProcessor.processQxTransactions(tickNumber,
+                            tuple.getT2().timestamp(), // tick data
+                            tuple.getT1(), // transaction events
+                            txs))
                     .then(storeTickNumberMono)
                     .then(Mono.just(true));
+
         }
     }
 

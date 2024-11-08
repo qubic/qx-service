@@ -2,7 +2,7 @@ package org.qubic.qx.sync.adapter.il.mapping;
 
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.il.domain.IlAssetOrder;
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 

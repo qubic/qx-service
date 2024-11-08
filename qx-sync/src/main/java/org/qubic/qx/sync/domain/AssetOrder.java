@@ -1,4 +1,4 @@
-package org.qubic.qx.sync.api.domain;
+package org.qubic.qx.sync.domain;
 
 public record AssetOrder(String entityId, long price, long numberOfShares) {
 }

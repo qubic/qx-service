@@ -2,7 +2,7 @@ package org.qubic.qx.sync.adapter.il.mapping;
 
 import org.mapstruct.Mapper;
 import org.qubic.qx.sync.adapter.il.domain.IlAssetOrder;
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 
 import java.util.List;
 

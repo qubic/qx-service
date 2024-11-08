@@ -1,7 +1,6 @@
 package org.qubic.qx.sync.domain;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.sync.api.domain.AssetOrder;
 
 import java.util.List;
 

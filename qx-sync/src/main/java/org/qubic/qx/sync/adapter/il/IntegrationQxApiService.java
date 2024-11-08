@@ -3,7 +3,7 @@ package org.qubic.qx.sync.adapter.il;
 import org.qubic.qx.sync.adapter.QxApiService;
 import org.qubic.qx.sync.adapter.il.domain.IlAssetOrders;
 import org.qubic.qx.sync.adapter.il.mapping.IlQxMapper;
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Mono;
