@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 @Slf4j
@@ -31,38 +32,18 @@ public class EventsProcessor {
 
             if (tx.extraData() instanceof QxAssetOrderData orderData) {
 
-                List<TransactionEvent> relevantEvents = events.stream()
-                        .filter(event -> StringUtils.equals(event.txId(), tx.transactionHash()))
-                        .flatMap(e -> e.events().stream())
-                        .toList();
+                List<TransactionEvent> relevantEvents = getEventsForTransaction(events, tx);
+                List<AssetChangeEvent> assetTransfers = getAssetTransfers(relevantEvents);
+                List<QxTradeMessageEvent> qxTrades = getTrades(relevantEvents);
 
-
-                List<TransactionEvent> quTransfers = relevantEvents.stream()
-                        .filter(byTransactionEvent(EventType.QU_TRANSFER))
-                        .toList();
-
-                List<TransactionEvent> assetTransfers = relevantEvents.stream()
-                        .filter(byTransactionEvent(EventType.ASSET_OWNERSHIP_CHANGE))
-                        .toList();
-
-                List<TransactionEvent> qxTrades = relevantEvents.stream()
-                        .filter(byTransactionEvent(EventType.CONTRACT_INFORMATION_MESSAGE))
-                        .filter(e -> { // filter trade messages
-                            ContractInformationEvent cie = ContractInformationEvent.fromBytes(Base64.getDecoder().decode(e.eventData()));
-                            return cie.getType() == 0 && cie.getContractIndex() == Qx.CONTRACT_INDEX;
-                        })
-                        .toList();
-
-                log.info("Events for transaction [{}]: [{}] qu transfers, [{}] asset transfers, [{}] trades",
-                        tx.transactionHash(), quTransfers.size(), assetTransfers.size(), qxTrades.size());
+                log.info("Events for transaction [{}]: [{}] asset transfers, [{}] trades",
+                        tx.transactionHash(),assetTransfers.size(), qxTrades.size());
 
                 for (int i = 0; i < qxTrades.size(); i++) {
+                    QxTradeMessageEvent qxTrade = qxTrades.get(i);
 
-                    boolean isAskOrder = isAskOrder(getOrderType(tx));
-                    TransactionEvent event = qxTrades.get(i);
-                    QxTradeMessageEvent qxTrade = QxTradeMessageEvent.fromBytes(Base64.getDecoder().decode(event.eventData()));
-                    String maker = tryToInferMakerFromEvents(qxTrades, assetTransfers, quTransfers, isAskOrder, i);
-                    Trade trade = new Trade(tickNumber, tickTime.getEpochSecond(), tx.transactionHash(), !isAskOrder, tx.sourcePublicId(), maker, orderData.issuer(), orderData.name(), qxTrade.getPrice(), qxTrade.getNumberOfShares());
+                    String maker = tryToInferMakerFromEvents(qxTrades, assetTransfers, isAskOrder(getOrderType(tx)), i);
+                    Trade trade = new Trade(tickNumber, tickTime.getEpochSecond(), tx.transactionHash(), !isAskOrder(getOrderType(tx)), tx.sourcePublicId(), maker, orderData.issuer(), orderData.name(), qxTrade.getPrice(), qxTrade.getNumberOfShares());
                     log.info("Detected trade: {}", trade);
                     trades.add(trade);
 
@@ -72,26 +53,64 @@ public class EventsProcessor {
         return trades;
     }
 
-    private String tryToInferMakerFromEvents(List<TransactionEvent> qxTrades, List<TransactionEvent> assetTransfers, List<TransactionEvent> quTransfers, boolean isAskOrder, int i) {
-        String maker = qxTrades.size() == assetTransfers.size() && qxTrades.size() == quTransfers.size()
-                ? isAskOrder ? getSourcePublicKey(getAssetChangeEvent(assetTransfers.get(i))) : getDestinationPublicKey(getAssetChangeEvent(assetTransfers.get(i)))
-                : null;
-        if (StringUtils.isBlank(maker)) {
-            log.warn("Could not infer maker from trade events: {} {} {}", qxTrades, assetTransfers, quTransfers);
+    private String tryToInferMakerFromEvents(List<QxTradeMessageEvent> qxTrades, List<AssetChangeEvent> assetTransfers, boolean isAskOrder, int i) {
+        Optional<AssetChangeEvent> assetChangeEvent = getAssetChangeEventForTrade(qxTrades, assetTransfers, i);
+        return assetChangeEvent.map(e -> isAskOrder
+                        ? getIdentityFromPublicKey(e.getDestinationPublicKey())
+                        : getIdentityFromPublicKey(e.getSourcePublicKey()))
+                .orElse(null);
+    }
+
+    private String getIdentityFromPublicKey(byte[] publicKey) {
+        return identityUtil.getIdentityFromPublicKey(publicKey);
+    }
+
+    private static Optional<AssetChangeEvent> getAssetChangeEventForTrade(List<QxTradeMessageEvent> qxTrades, List<AssetChangeEvent> assetTransfers, int i) {
+
+        QxTradeMessageEvent qxTrade = qxTrades.get(i);
+        List<AssetChangeEvent> relevantAssetChanges = assetTransfers.stream()
+                .filter(tr -> tr.getNumberOfShares() == qxTrade.getNumberOfShares())
+                .toList();
+
+        if (relevantAssetChanges.size() == 1) { // easy
+
+            return Optional.of(relevantAssetChanges.getFirst());
+
+        } else if (qxTrades.size() == assetTransfers.size()) { // one asset change per trade
+            log.info("Taking trade #{} to find maker.", i);
+            return Optional.of(relevantAssetChanges.get(i)); // hope that order is deterministic
+
+        } else {
+            log.warn("Could not infer maker from trade events: {} {}. Index: [{}].", qxTrades, assetTransfers, i);
+            return Optional.empty();
+
         }
-        return maker;
+
     }
 
-    private String getSourcePublicKey(AssetChangeEvent assetChangeEvent) {
-        return identityUtil.getIdentityFromPublicKey(assetChangeEvent.getSourcePublicKey());
+    private static List<TransactionEvent> getEventsForTransaction(List<TransactionEvents> events, Transaction tx) {
+        return events.stream()
+                .filter(event -> StringUtils.equals(event.txId(), tx.transactionHash()))
+                .flatMap(e -> e.events().stream())
+                .toList();
     }
 
-    private String getDestinationPublicKey(AssetChangeEvent assetChangeEvent) {
-        return identityUtil.getIdentityFromPublicKey(assetChangeEvent.getDestinationPublicKey());
+    private static List<QxTradeMessageEvent> getTrades(List<TransactionEvent> relevantEvents) {
+        return relevantEvents.stream()
+                .filter(byTransactionEvent(EventType.CONTRACT_INFORMATION_MESSAGE))
+                .filter(e -> { // filter trade messages
+                    ContractInformationEvent cie = ContractInformationEvent.fromBytes(Base64.getDecoder().decode(e.eventData()));
+                    return cie.getType() == 0 && cie.getContractIndex() == Qx.CONTRACT_INDEX;
+                })
+                .map(e -> QxTradeMessageEvent.fromBytes(Base64.getDecoder().decode(e.eventData())))
+                .toList();
     }
 
-    private static AssetChangeEvent getAssetChangeEvent(TransactionEvent transactionEvent) {
-        return AssetChangeEvent.fromBytes(Base64.getDecoder().decode(transactionEvent.eventData()));
+    private static List<AssetChangeEvent> getAssetTransfers(List<TransactionEvent> relevantEvents) {
+        return relevantEvents.stream()
+                .filter(byTransactionEvent(EventType.ASSET_OWNERSHIP_CHANGE))
+                .map(e -> AssetChangeEvent.fromBytes(Base64.getDecoder().decode(e.eventData())))
+                .toList();
     }
 
     private static Predicate<TransactionEvent> byTransactionEvent(EventType quTransfer) {

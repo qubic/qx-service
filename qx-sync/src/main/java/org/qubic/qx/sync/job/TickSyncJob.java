@@ -6,10 +6,7 @@ import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.EventApiService;
 import org.qubic.qx.sync.adapter.Qx;
 import org.qubic.qx.sync.assets.AssetService;
-import org.qubic.qx.sync.domain.TickData;
-import org.qubic.qx.sync.domain.TickInfo;
-import org.qubic.qx.sync.domain.Transaction;
-import org.qubic.qx.sync.domain.TransactionEvents;
+import org.qubic.qx.sync.domain.*;
 import org.qubic.qx.sync.repository.TickRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -38,13 +35,23 @@ public class TickSyncJob {
 
     public Mono<Long> sync() {
         // get highes available start block (start from scratch or last db state)
-        return coreService.getTickInfo()
-                .flatMap(this::calculateStartTick)
+        return getLatestAvailableTick()
+                .flatMap(this::calculateStartAndEndTick)
                 .flatMapMany(this::calculateSyncRange)
                 .doOnNext(tickNumber -> log.debug("Syncing tick [{}].", tickNumber))
                 .concatMap(this::processTick)
                 .last()
                 .onErrorResume(NoSuchElementException.class, e -> Mono.empty());
+    }
+
+    private Mono<Tuple2<TickInfo, EpochAndTick>> getLatestAvailableTick() {
+        return Mono.zip(coreService.getTickInfo(), eventService.getLastProcessedTick())
+                .doOnNext(tuple -> {
+                    if (tuple.getT1().tick() > tuple.getT2().tickNumber() + 2) {
+                        log.info("Current tick: [{}]. Events are available until tick [{}].",
+                                tuple.getT1().tick(), tuple.getT2().tickNumber());
+                    }
+                });
     }
 
     private Mono<Long> processTick(Long tickNumber) {
@@ -74,7 +81,6 @@ public class TickSyncJob {
         if (CollectionUtils.isEmpty(txs)) {
             return storeTickNumberMono.then(Mono.just(false));
         } else {
-
             Mono<List<TransactionEvents>> eventsMono = eventService.getTickEvents(tickNumber).defaultIfEmpty(List.of());
             Mono<TickData> tickDataMono = coreService.getTickData(tickNumber);
             return Mono.zip(eventsMono, tickDataMono)
@@ -91,9 +97,9 @@ public class TickSyncJob {
 
     // minor helper methods
 
-    private Flux<Long> calculateSyncRange(Tuple2<TickInfo, Long> endAndStartTick) {
-        long startTick = endAndStartTick.getT2();
-        long endTick = endAndStartTick.getT1().tick();
+    private Flux<Long> calculateSyncRange(Tuple2<Long, Long> startAndEndTick) {
+        long startTick = startAndEndTick.getT1();
+        long endTick = startAndEndTick.getT2();
         int numberOfTicks = (int) (endTick - startTick); // we don't sync the latest tick (integration api might still be behind)
         if (numberOfTicks > 0) {
             if (numberOfTicks > 1) {
@@ -116,12 +122,13 @@ public class TickSyncJob {
                .then(Mono.just(syncedTick));
     }
 
-    private Mono<Tuple2<TickInfo, Long>> calculateStartTick(TickInfo tickInfo) {
+    private Mono<Tuple2<Long, Long>> calculateStartAndEndTick(Tuple2<TickInfo, EpochAndTick> tuple) {
         return tickRepository.getLatestSyncedTick()
-                .map(latestStoredTick -> latestStoredTick < tickInfo.initialTick()
-                        ? tickInfo.initialTick()
+                .map(latestStoredTick -> latestStoredTick < tuple.getT1().initialTick()
+                        ? tuple.getT1().initialTick()
                         : latestStoredTick + 1)
-                .map(startTick -> Tuples.of(tickInfo, startTick));
+                // take the lowest common tick where event data is available (most probably always getT2().tickNumber()
+                .map(startTick -> Tuples.of(startTick, Math.min(tuple.getT1().tick(), tuple.getT2().tickNumber())));
     }
 
 }

@@ -1,0 +1,112 @@
+{
+  "lastProcessedTick": {
+    "tickNumber": 17127356,
+    "epoch": 134
+  },
+  "lastProcessedTicksPerEpoch": {
+    "129": 16432330,
+    "130": 16622885,
+    "131": 16765446,
+    "132": 16908130,
+    "133": 17032837,
+    "134": 17127356
+  },
+  "skippedTicks": [
+    {
+      "startTick": 1,
+      "endTick": 16299999
+    },
+    {
+      "startTick": 16432331,
+      "endTick": 16499999
+    },
+    {
+      "startTick": 16622886,
+      "endTick": 16639999
+    },
+    {
+      "startTick": 16672623,
+      "endTick": 16672999
+    },
+    {
+      "startTick": 16765447,
+      "endTick": 16779999
+    },
+    {
+      "startTick": 16781234,
+      "endTick": 16789999
+    },
+    {
+      "startTick": 16908131,
+      "endTick": 16909999
+    },
+    {
+      "startTick": 17032838,
+      "endTick": 17032838
+    }
+  ],
+  "processedTickIntervalsPerEpoch": [
+    {
+      "epoch": 129,
+      "intervals": [
+        {
+          "initialProcessedTick": 16300000,
+          "lastProcessedTick": 16432330
+        }
+      ]
+    },
+    {
+      "epoch": 130,
+      "intervals": [
+        {
+          "initialProcessedTick": 16500000,
+          "lastProcessedTick": 16622885
+        }
+      ]
+    },
+    {
+      "epoch": 131,
+      "intervals": [
+        {
+          "initialProcessedTick": 16640000,
+          "lastProcessedTick": 16672622
+        },
+        {
+          "initialProcessedTick": 16673000,
+          "lastProcessedTick": 16765446
+        }
+      ]
+    },
+    {
+      "epoch": 132,
+      "intervals": [
+        {
+          "initialProcessedTick": 16780000,
+          "lastProcessedTick": 16781233
+        },
+        {
+          "initialProcessedTick": 16790000,
+          "lastProcessedTick": 16908130
+        }
+      ]
+    },
+    {
+      "epoch": 133,
+      "intervals": [
+        {
+          "initialProcessedTick": 16910000,
+          "lastProcessedTick": 17032837
+        }
+      ]
+    },
+    {
+      "epoch": 134,
+      "intervals": [
+        {
+          "initialProcessedTick": 17032839,
+          "lastProcessedTick": 17127356
+        }
+      ]
+    }
+  ]
+}
