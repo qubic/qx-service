@@ -128,7 +128,8 @@ public class TickSyncJob {
                         ? tuple.getT1().initialTick()
                         : latestStoredTick + 1)
                 // take the lowest common tick where event data is available (most probably always getT2().tickNumber()
-                .map(startTick -> Tuples.of(startTick, Math.min(tuple.getT1().tick(), tuple.getT2().tickNumber())));
+                // +1 because end tick is not inclusive by default
+                .map(startTick -> Tuples.of(startTick, Math.min(tuple.getT1().tick(), tuple.getT2().tickNumber()+1)));
     }
 
 }
