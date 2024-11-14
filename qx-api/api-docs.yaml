@@ -1,0 +1,499 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: http://localhost:8081
+    description: Generated server url
+paths:
+  /service/v1/qx/transfers:
+    get:
+      tags:
+        - transactions-controller
+      operationId: getTransferTransactions
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionDto"
+  /service/v1/qx/trades:
+    get:
+      tags:
+        - trades-controller
+      operationId: getTrades
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TradeDto"
+  /service/v1/qx/orders:
+    get:
+      tags:
+        - transactions-controller
+      operationId: getOrderTransactions
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionDto"
+  /service/v1/qx/issuer/{issuer}/asset/{asset}/transfers:
+    get:
+      tags:
+        - transactions-controller
+      operationId: getTransferTransactionsForAsset
+      parameters:
+        - name: issuer
+          in: path
+          required: true
+          schema:
+            maxLength: 60
+            minLength: 60
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            maxLength: 7
+            minLength: 1
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionDto"
+  /service/v1/qx/issuer/{issuer}/asset/{asset}/trades:
+    get:
+      tags:
+        - trades-controller
+      operationId: getAssetTrades
+      parameters:
+        - name: issuer
+          in: path
+          required: true
+          schema:
+            maxLength: 60
+            minLength: 60
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            maxLength: 7
+            minLength: 1
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TradeDto"
+  /service/v1/qx/issuer/{issuer}/asset/{asset}/orders:
+    get:
+      tags:
+        - transactions-controller
+      operationId: getOrderTransactionsForAsset
+      parameters:
+        - name: issuer
+          in: path
+          required: true
+          schema:
+            maxLength: 60
+            minLength: 60
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            maxLength: 7
+            minLength: 1
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionDto"
+  /service/v1/qx/issuer/{issuer}/asset/{asset}/chart/average-price:
+    get:
+      tags:
+        - chart-controller
+      operationId: getAveragePriceForAsset
+      parameters:
+        - name: issuer
+          in: path
+          required: true
+          schema:
+            maxLength: 60
+            minLength: 60
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            maxLength: 7
+            minLength: 1
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AvgPriceData"
+  /service/v1/qx/issuer/{issuer}/asset/{asset}/bids:
+    get:
+      tags:
+        - qx-functions-controller
+      operationId: getAssetBidOrders
+      parameters:
+        - name: issuer
+          in: path
+          required: true
+          schema:
+            maxLength: 60
+            minLength: 60
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            maxLength: 7
+            minLength: 1
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AssetOrder"
+  /service/v1/qx/issuer/{issuer}/asset/{asset}/asks:
+    get:
+      tags:
+        - qx-functions-controller
+      operationId: getAssetAskOrders
+      parameters:
+        - name: issuer
+          in: path
+          required: true
+          schema:
+            maxLength: 60
+            minLength: 60
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            maxLength: 7
+            minLength: 1
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AssetOrder"
+  /service/v1/qx/issued-assets:
+    get:
+      tags:
+        - transactions-controller
+      operationId: getIssuedAssets
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionDto"
+  /service/v1/qx/fees:
+    get:
+      tags:
+        - qx-functions-controller
+      operationId: getFees
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Fees"
+  /service/v1/qx/entity/{identity}/transfers:
+    get:
+      tags:
+        - transactions-controller
+      operationId: getTransferTransactionsForEntity
+      parameters:
+        - name: identity
+          in: path
+          required: true
+          schema:
+            maxLength: 60
+            minLength: 60
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionDto"
+  /service/v1/qx/entity/{identity}/trades:
+    get:
+      tags:
+        - trades-controller
+      operationId: getEntityTrades
+      parameters:
+        - name: identity
+          in: path
+          required: true
+          schema:
+            maxLength: 60
+            minLength: 60
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TradeDto"
+  /service/v1/qx/entity/{identity}/orders:
+    get:
+      tags:
+        - transactions-controller
+      operationId: getOrderTransactionsForEntity
+      parameters:
+        - name: identity
+          in: path
+          required: true
+          schema:
+            maxLength: 60
+            minLength: 60
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionDto"
+  /service/v1/qx/entity/{identity}/bids:
+    get:
+      tags:
+        - qx-functions-controller
+      operationId: getEntityBidOrders
+      parameters:
+        - name: identity
+          in: path
+          required: true
+          schema:
+            maxLength: 60
+            minLength: 60
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EntityOrder"
+  /service/v1/qx/entity/{identity}/asks:
+    get:
+      tags:
+        - qx-functions-controller
+      operationId: getEntityAskOrders
+      parameters:
+        - name: identity
+          in: path
+          required: true
+          schema:
+            maxLength: 60
+            minLength: 60
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EntityOrder"
+  /service/v1/qx/assets:
+    get:
+      tags:
+        - assets-controller
+      operationId: getAssets
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Asset"
+components:
+  schemas:
+    ExtraData:
+      required:
+        - '@class'
+      type: object
+      properties:
+        '@class':
+          type: string
+      discriminator:
+        propertyName: '@class'
+    TransactionDto:
+      type: object
+      properties:
+        tickTime:
+          type: string
+          format: date-time
+        hash:
+          type: string
+        source:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        tick:
+          type: integer
+          format: int64
+        inputType:
+          type: integer
+          format: int32
+        extraData:
+          $ref: "#/components/schemas/ExtraData"
+        moneyFlew:
+          type: boolean
+    TradeDto:
+      type: object
+      properties:
+        tickTime:
+          type: string
+          format: date-time
+        transactionHash:
+          type: string
+        taker:
+          type: string
+        maker:
+          type: string
+        issuer:
+          type: string
+        assetName:
+          type: string
+        bid:
+          type: boolean
+        price:
+          type: integer
+          format: int64
+        numberOfShares:
+          type: integer
+          format: int64
+    AvgPriceData:
+      type: object
+      properties:
+        time:
+          type: string
+          format: date
+        min:
+          type: integer
+          format: int64
+        max:
+          type: integer
+          format: int64
+        totalShares:
+          type: integer
+          format: int64
+        totalAmount:
+          type: integer
+          format: int64
+        averagePrice:
+          type: number
+          format: double
+        totalTrades:
+          type: integer
+          format: int64
+    AssetOrder:
+      type: object
+      properties:
+        entityId:
+          type: string
+        price:
+          type: integer
+          format: int64
+        numberOfShares:
+          type: integer
+          format: int64
+    Fees:
+      type: object
+      properties:
+        assetIssuanceFee:
+          type: integer
+          format: int64
+        transferFee:
+          type: integer
+          format: int64
+        tradeFee:
+          type: integer
+          format: int64
+    EntityOrder:
+      type: object
+      properties:
+        issuerId:
+          type: string
+        assetName:
+          type: string
+        price:
+          type: integer
+          format: int64
+        numberOfShares:
+          type: integer
+          format: int64
+    Asset:
+      type: object
+      properties:
+        issuer:
+          type: string
+        name:
+          type: string
