@@ -12,6 +12,7 @@
 
   <logger name="at.qubic" level="INFO"/>
   <logger name="org.qubic" level="INFO"/>
+  <logger name="com.zaxxer.hikari.HikariConfig" level="DEBUG" />
   <!-- set commons request logging filter to debug for request logging -->
   <!-- <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG" /> -->
 
