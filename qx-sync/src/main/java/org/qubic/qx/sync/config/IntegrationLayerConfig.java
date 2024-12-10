@@ -35,7 +35,7 @@ public class IntegrationLayerConfig {
     }
 
     @Bean
-    WebClient integrationApiWebClient(IntegrationClientProperties properties) {
+    WebClient integrationApiWebClient(IntegrationClientProperties properties, WebClient.Builder builder) {
 
         HttpClient httpClient = HttpClient.create()
                 .responseTimeout(Duration.ofSeconds(3));
@@ -49,7 +49,7 @@ public class IntegrationLayerConfig {
 
         log.info("Integration layer API url: {}", uri);
 
-        return WebClient.builder()
+        return builder
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .baseUrl(uri.toString())
                 .defaultHeaders(httpHeaders -> {
