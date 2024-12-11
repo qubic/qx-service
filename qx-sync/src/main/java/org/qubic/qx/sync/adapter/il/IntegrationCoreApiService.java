@@ -16,7 +16,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
+import reactor.util.retry.Retry;
+import reactor.util.retry.RetryBackoffSpec;
 
+import java.time.Duration;
 import java.util.Optional;
 
 @Slf4j
@@ -49,7 +52,7 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .map(mapper::map)
                 .switchIfEmpty(Mono.error(new EmptyResultException("Could not get tick info.")))
                 .doOnError(e -> log.error("Error getting tick info: {}", e.getMessage()))
-                .retry(NUM_RETRIES);
+                .retryWhen(retrySpec());
     }
 
     @Override
@@ -62,7 +65,7 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .map(mapper::map)
                 .switchIfEmpty(Mono.error(emptyResult("get tick data", tick)))
                 .doOnError(e -> log.error("Error getting tick data: {}", e.getMessage()))
-                .retry(NUM_RETRIES);
+                .retryWhen(retrySpec());
     }
 
     @Override
@@ -83,7 +86,7 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .bodyToMono(IlTransactions.class)
                 .switchIfEmpty(Mono.error(emptyResult("get tick transactions", tick)))
                 .doOnError(e -> log.error("Error getting tick transactions: {}", e.getMessage()))
-                .retry(NUM_RETRIES);
+                .retryWhen(retrySpec());
     }
 
     @Override
@@ -95,7 +98,11 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .bodyToMono(TickTransactionsStatus.class)
                 .switchIfEmpty(Mono.error(emptyResult("get tick transactions status", tick)))
                 .doOnError(e -> log.error("Error getting tick transaction status: {}", e.getMessage()))
-                .retry(NUM_RETRIES);
+                .retryWhen(retrySpec());
+    }
+
+    private static RetryBackoffSpec retrySpec() {
+        return Retry.backoff(NUM_RETRIES, Duration.ofSeconds(1)).doBeforeRetry(c -> log.info("Retry: [{}].", c.totalRetries() + 1));
     }
 
     private boolean isRelevantTransaction(IlTransaction transaction) {

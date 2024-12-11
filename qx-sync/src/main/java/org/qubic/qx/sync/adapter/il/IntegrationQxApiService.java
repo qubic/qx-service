@@ -9,8 +9,11 @@ import org.qubic.qx.sync.domain.AssetOrder;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+import reactor.util.retry.RetryBackoffSpec;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.List;
 import java.util.function.Function;
 
@@ -36,7 +39,7 @@ public class IntegrationQxApiService implements QxApiService {
                 .map(qxMapper::mapAssetOrderList)
                 .switchIfEmpty(Mono.error(emptyResult("asks", issuer, asset)))
                 .doOnError(e -> log.error("Error getting ask orders: {}", e.getMessage()))
-                .retry(NUM_RETRIES);
+                .retryWhen(retrySpec());
     }
 
     @Override public Mono<List<AssetOrder>> getAssetBidOrders(String issuer, String asset) {
@@ -48,7 +51,11 @@ public class IntegrationQxApiService implements QxApiService {
                 .map(qxMapper::mapAssetOrderList)
                 .switchIfEmpty(Mono.error(emptyResult("bids", issuer, asset)))
                 .doOnError(e -> log.error("Error getting bid orders: {}", e.getMessage()))
-                .retry(NUM_RETRIES);
+                .retryWhen(retrySpec());
+    }
+
+    private static RetryBackoffSpec retrySpec() {
+        return Retry.backoff(NUM_RETRIES, Duration.ofSeconds(1)).doBeforeRetry(c -> log.info("Retry: [{}].", c.totalRetries() + 1));
     }
 
     private static EmptyResultException emptyResult(String action, String issuer, String asset) {

@@ -9,7 +9,10 @@ import org.qubic.qx.sync.domain.TickEvents;
 import org.qubic.qx.sync.domain.TransactionEvents;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+import reactor.util.retry.RetryBackoffSpec;
 
+import java.time.Duration;
 import java.util.List;
 
 @Slf4j
@@ -33,7 +36,7 @@ public class IntegrationEventApiService implements EventApiService {
                 .map(TickEvents::txEvents)
                 .switchIfEmpty(Mono.error(emptyGetEventsResult(tick)))
                 .doOnError(e -> log.error("Error getting tick events: {}", e.getMessage()))
-                .retry(NUM_RETRIES);
+                .retryWhen(retrySpec());
     }
 
     @Override
@@ -45,7 +48,11 @@ public class IntegrationEventApiService implements EventApiService {
                 .map(EventProcessingStatus::lastProcessedTick)
                 .switchIfEmpty(Mono.error(new EmptyResultException("Could not get event status.")))
                 .doOnError(e -> log.error("Error getting last processed tick: {}", e.getMessage()))
-                .retry(NUM_RETRIES);
+                .retryWhen(retrySpec());
+    }
+
+    private static RetryBackoffSpec retrySpec() {
+        return Retry.backoff(NUM_RETRIES, Duration.ofSeconds(1)).doBeforeRetry(c -> log.info("Retry: [{}].", c.totalRetries() + 1));
     }
 
     private static String tickPayloadBody(long tick) {
