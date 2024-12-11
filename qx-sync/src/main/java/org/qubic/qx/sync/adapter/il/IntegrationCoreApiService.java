@@ -36,14 +36,20 @@ public class IntegrationCoreApiService implements CoreApiService {
     public Mono<Long> getCurrentTick() {
         return getTickInfo()
                 .map(TickInfo::tick)
-                .doOnNext(tick -> log.debug("Current tick: [{}]", tick));
+                .doOnNext(tick -> log.debug("Current tick: [{}]", tick))
+                .doOnError(e -> log.error("Error getting current tick: {}", e.getMessage()));
     }
 
     @Override
-    public Mono<Long> getInitialTick() {
-        return getTickInfo()
-                .map(TickInfo::initialTick)
-                .doOnNext(tick -> log.debug("Initial epoch tick: [{}]", tick));
+    public Mono<TickInfo> getTickInfo() {
+        return webClient.get()
+                .uri(CORE_BASE_PATH_V1 + "/getTickInfo")
+                .retrieve()
+                .bodyToMono(IlTickInfo.class)
+                .map(mapper::map)
+                .switchIfEmpty(Mono.error(new EmptyResultException("Could not get tick info.")))
+                .doOnError(e -> log.error("Error getting tick info: {}", e.getMessage()))
+                .retry(NUM_RETRIES);
     }
 
     @Override
@@ -53,8 +59,10 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .bodyValue(tickPayloadBody(tick))
                 .retrieve()
                 .bodyToMono(IlTickData.class)
-                .retry(NUM_RETRIES)
-                .map(mapper::map);
+                .map(mapper::map)
+                .switchIfEmpty(Mono.error(emptyResult("get tick data", tick)))
+                .doOnError(e -> log.error("Error getting tick data: {}", e.getMessage()))
+                .retry(NUM_RETRIES);
     }
 
     @Override
@@ -63,7 +71,8 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .flatMapMany(tuple -> Flux.fromIterable(tuple.getT1().transactions())
                         .map(ilt -> Tuples.of(ilt, getMoneyFlewStatus(tuple, ilt))))
                 .filter(tuple -> isRelevantTransaction(tuple.getT1()))
-                .map(tuple -> mapper.mapTransaction(tuple.getT1(), tuple.getT2().orElse(null)));
+                .map(tuple -> mapper.mapTransaction(tuple.getT1(), tuple.getT2().orElse(null)))
+                .doOnError(e -> log.error("Error getting qx transactions: {}", e.getMessage()));
     }
 
     Mono<IlTransactions> getTickTransactions(long tick) {
@@ -73,6 +82,7 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .retrieve()
                 .bodyToMono(IlTransactions.class)
                 .switchIfEmpty(Mono.error(emptyResult("get tick transactions", tick)))
+                .doOnError(e -> log.error("Error getting tick transactions: {}", e.getMessage()))
                 .retry(NUM_RETRIES);
     }
 
@@ -84,18 +94,8 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .retrieve()
                 .bodyToMono(TickTransactionsStatus.class)
                 .switchIfEmpty(Mono.error(emptyResult("get tick transactions status", tick)))
+                .doOnError(e -> log.error("Error getting tick transaction status: {}", e.getMessage()))
                 .retry(NUM_RETRIES);
-    }
-
-    @Override
-    public Mono<TickInfo> getTickInfo() {
-        return webClient.get()
-                .uri(CORE_BASE_PATH_V1 + "/getTickInfo")
-                .retrieve()
-                .bodyToMono(IlTickInfo.class)
-                .retry(NUM_RETRIES)
-                .map(mapper::map)
-                .switchIfEmpty(Mono.error(new EmptyResultException("Could not get tick info.")));
     }
 
     private boolean isRelevantTransaction(IlTransaction transaction) {

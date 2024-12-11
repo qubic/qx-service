@@ -55,21 +55,6 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
     }
 
     @Test
-    void getInitialTick() {
-        prepareResponse(response -> response
-                .setResponseCode(HttpStatus.OK.value())
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(TICK_INFO_RESPONSE));
-
-        StepVerifier.create(apiService.getInitialTick())
-                .expectNext(99L)
-                .verifyComplete();
-
-        assertRequest("/v1/core/getTickInfo");
-
-    }
-
-    @Test
     void getTickData() {
         String responseJson = """
                 {"computorIndex":598,

@@ -5,6 +5,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.EventApiService;
 import org.qubic.qx.sync.adapter.Qx;
+import org.qubic.qx.sync.adapter.exception.EmptyResultException;
 import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.domain.*;
 import org.qubic.qx.sync.repository.TickRepository;
@@ -67,7 +68,8 @@ public class TickSyncJob {
                 .collectList()
                 .flatMap(list -> processTransactions(tickNumber, list))
                 .map(x -> tickNumber)
-                .doOnNext(tno -> log.debug("Synced tick [{}].", tno));
+                .doOnNext(tno -> log.debug("Synced tick [{}].", tno))
+                .doOnError(err -> log.error("Error processing tick [{}]: {}", tickNumber, err.toString()));
     }
 
     public Mono<Void> initializeOrderBooks() {
@@ -77,13 +79,14 @@ public class TickSyncJob {
     }
 
     private Mono<Boolean> processTransactions(Long tickNumber, List<Transaction> txs) {
-        Mono<Long> storeTickNumberMono = tickRepository.addToProcessedTicks(tickNumber);
+        Mono<Long> storeTickNumberMono = Mono.defer(() -> tickRepository.addToProcessedTicks(tickNumber));
         if (CollectionUtils.isEmpty(txs)) {
             return storeTickNumberMono.then(Mono.just(false));
         } else {
-            Mono<List<TransactionEvents>> eventsMono = eventService.getTickEvents(tickNumber).defaultIfEmpty(List.of());
+            Mono<List<TransactionEvents>> eventsMono = eventService.getTickEvents(tickNumber);
             Mono<TickData> tickDataMono = coreService.getTickData(tickNumber);
             return Mono.zip(eventsMono, tickDataMono)
+                    .switchIfEmpty(Mono.error(new EmptyResultException(String.format("Could not get events or tick data for tick [%s].", tickNumber))))
                     .doFirst(() -> log.info("Tick [{}]: processing [{}] qx orders.", tickNumber, txs.size()))
                     .flatMap(tuple -> transactionProcessor.processQxTransactions(tickNumber,
                             tuple.getT2().timestamp(), // tick data

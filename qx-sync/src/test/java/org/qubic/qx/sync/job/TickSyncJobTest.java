@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.EventApiService;
+import org.qubic.qx.sync.adapter.exception.EmptyResultException;
 import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.domain.EpochAndTick;
 import org.qubic.qx.sync.domain.TickData;
@@ -57,6 +58,32 @@ class TickSyncJobTest {
         StepVerifier.create(tickSync.sync())
                 .expectNext(3459L)
                 .verifyComplete();
+    }
+
+    @Test
+    void sync_givenEmptyTickEventsOrNoTickData_thenError() {
+        when(eventService.getLastProcessedTick()).thenReturn(Mono.just(new EpochAndTick(1, 3457)));
+
+        TickInfo currentTickInfo = new TickInfo(1, 3460, 1000);
+        when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
+        when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(3456L));
+        when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(false));
+        Transaction tx = new Transaction("tx-hash", "b", "c", 0, 0, 6, 0, null, null);
+        when(coreService.getQxTransactions(3457L)).thenReturn(Flux.just(tx));
+
+        when(eventService.getTickEvents(3457)).thenReturn(Mono.empty()); // must not be empty
+        when(coreService.getTickData(3457)).thenReturn(Mono.just(new TickData(1,2, Instant.now())));
+        StepVerifier.create(tickSync.sync())
+                .expectError(EmptyResultException.class)
+                .verify();
+
+        when(eventService.getTickEvents(3457)).thenReturn(Mono.just(List.of()));
+        when(coreService.getTickData(3457)).thenReturn(Mono.empty()); // must not be empty
+        StepVerifier.create(tickSync.sync())
+                .expectError(EmptyResultException.class)
+                .verify();
+
+        verify(tickRepository, never()).addToProcessedTicks(anyLong());
     }
 
     @Test

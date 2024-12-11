@@ -62,11 +62,6 @@ public class QubicjCoreApiService implements CoreApiService {
     }
 
     @Override
-    public Mono<Long> getInitialTick() {
-        return getTickInfo().map(TickInfo::initialTick);
-    }
-
-    @Override
     public Mono<TickData> getTickData(long tickNumber) {
         return computorService.getTickData((int) tickNumber)
                 .repeatWhenEmpty(RETRIES, repeat -> repeat.doOnNext(count -> log.info("Repeat [{}] getting tick data [{}].", count, tickNumber)))

@@ -2,6 +2,7 @@ package org.qubic.qx.sync.adapter.il;
 
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.sync.adapter.EventApiService;
+import org.qubic.qx.sync.adapter.exception.EmptyResultException;
 import org.qubic.qx.sync.domain.EpochAndTick;
 import org.qubic.qx.sync.domain.EventProcessingStatus;
 import org.qubic.qx.sync.domain.TickEvents;
@@ -29,9 +30,10 @@ public class IntegrationEventApiService implements EventApiService {
                 .bodyValue(tickPayloadBody(tick))
                 .retrieve()
                 .bodyToMono(TickEvents.class)
-                .retry(NUM_RETRIES)
-                .doOnError(e -> log.error("Error getting tick events.", e))
-                .map(TickEvents::txEvents);
+                .map(TickEvents::txEvents)
+                .switchIfEmpty(Mono.error(emptyGetEventsResult(tick)))
+                .doOnError(e -> log.error("Error getting tick events: {}", e.getMessage()))
+                .retry(NUM_RETRIES);
     }
 
     @Override
@@ -40,13 +42,18 @@ public class IntegrationEventApiService implements EventApiService {
                 .uri(BASE_PATH + "/status")
                 .retrieve()
                 .bodyToMono(EventProcessingStatus.class)
-                .retry(NUM_RETRIES)
                 .map(EventProcessingStatus::lastProcessedTick)
-                .doOnError(e -> log.error("Error getting tick events.", e));
+                .switchIfEmpty(Mono.error(new EmptyResultException("Could not get event status.")))
+                .doOnError(e -> log.error("Error getting last processed tick: {}", e.getMessage()))
+                .retry(NUM_RETRIES);
     }
 
     private static String tickPayloadBody(long tick) {
         return String.format("{\"tick\":%d}", tick);
+    }
+
+    private static EmptyResultException emptyGetEventsResult(long tick) {
+        return new EmptyResultException(String.format("Could not get events for tick [%d].", tick));
     }
 
 }

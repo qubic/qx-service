@@ -38,4 +38,10 @@ class IlQxMapperSpringIT {
         assertThat(target.get(1).entityId()).isEqualTo("bar");
     }
 
+    @Test
+    void mapList_givenNone_thenEmptyList() {
+        List<AssetOrder> mapped = qxMapper.mapAssetOrderList(List.of());
+        assertThat(mapped).isEmpty();
+    }
+
 }
