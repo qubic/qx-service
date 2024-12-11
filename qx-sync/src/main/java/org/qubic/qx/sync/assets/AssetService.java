@@ -2,7 +2,7 @@ package org.qubic.qx.sync.assets;
 
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.sync.adapter.QxApiService;
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 import org.qubic.qx.sync.domain.OrderBook;
 import org.qubic.qx.sync.repository.OrderBookRepository;
 import reactor.core.publisher.Flux;

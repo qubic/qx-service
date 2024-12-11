@@ -16,7 +16,7 @@ public class TransactionRepository {
         this.redisTransactionOperations = redisTransactionOperations;
     }
 
-    public Mono<TransactionWithTime> putTransaction(TransactionWithTime transaction) {
+    public Mono<TransactionWithTime> putTransactionIntoQueue(TransactionWithTime transaction) {
         return redisTransactionOperations.opsForList().leftPush(KEY_QUEUE_TRANSACTIONS, transaction)
                 .doOnNext(count -> log.info("Pushed transaction [{}] into transaction queue. Queue length: [{}].", transaction.transactionHash(), count))
                 .map(added -> transaction);

@@ -3,7 +3,7 @@ package org.qubic.qx.sync.job;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.sync.adapter.Qx;
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 import org.qubic.qx.sync.domain.OrderBook;
 import org.qubic.qx.sync.domain.QxAssetOrderData;
 import org.qubic.qx.sync.domain.Trade;

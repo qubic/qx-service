@@ -17,7 +17,7 @@ public class TradeRepository {
         log.info(redisTradeTemplate.getClass().toString());
     }
 
-    public Mono<Trade> storeTrade(Trade trade) {
+    public Mono<Trade> putTradeIntoQueue(Trade trade) {
         return redisTradeTemplate.opsForList().leftPush(KEY_QUEUE_TRADES, trade)
                 .doOnNext(count -> log.info("Pushed trade for transaction [{}] into trades queue. Queue length: [{}].", trade.transactionHash(), count))
                 .map(b -> trade);

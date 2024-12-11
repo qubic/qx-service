@@ -2,7 +2,7 @@ package org.qubic.qx.sync.job;
 
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.Qx;
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 import org.qubic.qx.sync.domain.OrderBook;
 import org.qubic.qx.sync.domain.QxAssetOrderData;
 import org.qubic.qx.sync.domain.Trade;

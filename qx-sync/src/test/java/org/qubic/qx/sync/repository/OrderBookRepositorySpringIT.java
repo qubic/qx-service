@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.AbstractRedisTest;
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 import org.qubic.qx.sync.domain.OrderBook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Range;

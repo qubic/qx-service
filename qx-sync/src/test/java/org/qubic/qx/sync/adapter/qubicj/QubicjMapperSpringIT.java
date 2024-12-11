@@ -5,7 +5,7 @@ import at.qubic.api.domain.std.SignedTransaction;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.ExtraDataMapper;
 import org.qubic.qx.sync.adapter.qubicj.mapping.QubicjMapper;
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 import org.qubic.qx.sync.domain.ExtraData;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.Transaction;

@@ -2,7 +2,7 @@ package org.qubic.qx.sync.adapter.il.mapping;
 
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.il.domain.IlAssetOrder;
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -36,6 +36,12 @@ class IlQxMapperSpringIT {
         assertThat(target.size()).isEqualTo(2);
         assertThat(target.get(0).entityId()).isEqualTo("foo");
         assertThat(target.get(1).entityId()).isEqualTo("bar");
+    }
+
+    @Test
+    void mapList_givenNone_thenEmptyList() {
+        List<AssetOrder> mapped = qxMapper.mapAssetOrderList(List.of());
+        assertThat(mapped).isEmpty();
     }
 
 }

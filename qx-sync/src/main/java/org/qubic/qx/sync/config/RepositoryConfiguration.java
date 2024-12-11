@@ -1,6 +1,6 @@
 package org.qubic.qx.sync.config;
 
-import org.qubic.qx.sync.api.domain.AssetOrder;
+import org.qubic.qx.sync.domain.AssetOrder;
 import org.qubic.qx.sync.domain.Trade;
 import org.qubic.qx.sync.domain.TransactionWithTime;
 import org.qubic.qx.sync.repository.OrderBookRepository;
