@@ -10,14 +10,14 @@
         -->
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.5</version>
+        <version>3.3.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.qubic.qx</groupId>
     <artifactId>qx-parent</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.3.0-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Qubic QX Service</description>
     <packaging>pom</packaging>
@@ -27,7 +27,6 @@
 
         <!-- vulnerablity overrides -->
         <commons-compress.version>1.26.1</commons-compress.version> <!-- 1.24 is vulnerable -->
-        <netty.version>4.1.115.Final</netty.version> <!-- 4.1.114 is vulnerable on windows -->
         <xmlunit2.version>2.10.0</xmlunit2.version> <!-- 2.9.x is vulnerable -->
 
         <embedded-redis.version>1.4.3</embedded-redis.version>
