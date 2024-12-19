@@ -9,6 +9,7 @@ import org.qubic.qx.api.adapter.il.IntegrationArchiveApiService;
 import org.qubic.qx.api.adapter.il.IntegrationQxApiService;
 import org.qubic.qx.api.adapter.il.QxMapper;
 import org.qubic.qx.api.properties.IntegrationClientProperties;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,27 +27,60 @@ import java.util.List;
 @Configuration
 public class IntegrationLayerConfig {
 
-    @ConfigurationProperties(prefix = "il.client", ignoreUnknownFields = false)
-    @Bean
-    IntegrationClientProperties integrationClientProperties() {
+    @ConfigurationProperties(prefix = "il.qx.client", ignoreUnknownFields = false)
+    @Bean(name="qxClientProperties")
+    IntegrationClientProperties integrationQxClientProperties() {
         return new IntegrationClientProperties();
     }
 
+    @ConfigurationProperties(prefix = "il.archive.client", ignoreUnknownFields = false)
+    @Bean(name="archiveClientProperties")
+    IntegrationClientProperties integrationArchiveClientProperties() {
+        return new IntegrationClientProperties();
+    }
+
+    @Bean(name="qxClient")
+    WebClient integrationQxWebClient(@Qualifier("qxClientProperties") IntegrationClientProperties properties, WebClient.Builder builder) {
+        HttpClient httpClient = createHttpClient();
+        URI uri = createUri(properties);
+        log.info("Integration layer qx API url: {}", uri);
+        return createClient(builder, httpClient, uri);
+    }
+
+    @Bean(name="archiveClient")
+    WebClient integrationArchiveWebClient(@Qualifier("archiveClientProperties") IntegrationClientProperties properties, WebClient.Builder builder) {
+        HttpClient httpClient = createHttpClient();
+        URI uri = createUri(properties);
+        log.info("Integration layer archive API url: {}", uri);
+        return createClient(builder, httpClient, uri);
+    }
+
     @Bean
-    WebClient integrationApiWebClient(IntegrationClientProperties properties, WebClient.Builder builder) {
+    CoreArchiveApiService integrationArchiveService(@Qualifier("archiveClient") WebClient webClient, ArchiveMapper archiveMapper) {
+        return new IntegrationArchiveApiService(webClient, archiveMapper);
+    }
 
-        HttpClient httpClient = HttpClient.create()
+    @Bean
+    QxApiService integrationQxApiService(@Qualifier("qxClient") WebClient integrationApiWebClient, QxMapper qxIntegrationMapper) {
+        return new IntegrationQxApiService(integrationApiWebClient, qxIntegrationMapper);
+    }
+
+    // helper methods
+    private static HttpClient createHttpClient() {
+        return HttpClient.create()
                 .responseTimeout(Duration.ofSeconds(3));
+    }
 
-        URI uri = UriComponentsBuilder.newInstance()
+    private static URI createUri(IntegrationClientProperties properties) {
+        return UriComponentsBuilder.newInstance()
                 .scheme(properties.getScheme())
                 .host(properties.getHost())
                 .port(StringUtils.stripToNull(properties.getPort()))
                 .build()
                 .toUri();
+    }
 
-        log.info("Integration layer API url: {}", uri);
-
+    private static WebClient createClient(WebClient.Builder builder, HttpClient httpClient, URI uri) {
         return builder
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .baseUrl(uri.toString())
@@ -55,16 +89,6 @@ public class IntegrationLayerConfig {
                     httpHeaders.setContentType(MediaType.APPLICATION_JSON);
                 })
                 .build();
-    }
-
-    @Bean
-    CoreArchiveApiService integrationArchiveService(WebClient webClient, ArchiveMapper archiveMapper) {
-        return new IntegrationArchiveApiService(webClient, archiveMapper);
-    }
-
-    @Bean
-    QxApiService integrationQxApiService(WebClient integrationApiWebClient, QxMapper qxIntegrationMapper) {
-        return new IntegrationQxApiService(integrationApiWebClient, qxIntegrationMapper);
     }
 
 }

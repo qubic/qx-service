@@ -14,9 +14,15 @@ import java.util.function.Consumer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = """
-    il.client.scheme=http
-    il.client.host=localhost
-    il.client.port=1234
+    il.qx.client.scheme=http
+    il.qx.client.host=localhost
+    il.qx.client.port=1234
+    il.event.client.scheme=http
+    il.event.client.host=localhost
+    il.event.client.port=1234
+    il.core.client.scheme=http
+    il.core.client.host=localhost
+    il.core.client.port=1234
     backend=integration
 """)
 abstract class AbstractIntegrationApiTest {

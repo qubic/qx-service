@@ -26,9 +26,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ImportTestcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest(properties = """
-    il.client.scheme=http
-    il.client.host=localhost
-    il.client.port=1234
+    il.qx.client.scheme=http
+    il.qx.client.host=localhost
+    il.qx.client.port=1234
+    il.archive.client.scheme=http
+    il.archive.client.host=localhost
+    il.archive.client.port=1234
     spring.data.redis.port=26379
     spring.cache.type=NONE
 """)
