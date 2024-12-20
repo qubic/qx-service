@@ -8,6 +8,7 @@ target/
 *.versionsBackup
 
 # local property files
+flyway.conf
 application-local.properties
 
 # log files

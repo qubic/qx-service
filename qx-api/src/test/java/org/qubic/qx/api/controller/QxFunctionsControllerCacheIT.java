@@ -10,7 +10,7 @@ import org.qubic.qx.api.controller.service.QxService;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ class QxFunctionsControllerCacheIT extends AbstractSpringIntegrationTest {
     private static final String TEST_IDENTITY = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHI";
     private static final String TEST_IDENTITY_2 = "CDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJ";
 
-    @MockBean
+    @MockitoBean
     private QxService qxService;
 
     @Autowired

@@ -8,7 +8,7 @@ import org.qubic.qx.api.controller.service.TradesService;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,7 +26,7 @@ class TradesControllerCacheIT extends AbstractSpringIntegrationTest {
     private static final String TEST_IDENTITY = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHI";
     private static final TradeDto TEST_TRADE = new TradeDto(Instant.now(), "hash", "taker", "maker", "issuer", "assetName", true, 123, 456);
 
-    @MockBean
+    @MockitoBean
     private TradesService tradesService;
 
     @Autowired

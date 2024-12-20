@@ -8,7 +8,7 @@ import org.qubic.qx.api.controller.service.TransactionsService;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ class TransactionsControllerCacheIT extends AbstractSpringIntegrationTest {
     @Autowired
     private TransactionsController controller;
 
-    @MockBean
+    @MockitoBean
     private TransactionsService service;
 
     @Test

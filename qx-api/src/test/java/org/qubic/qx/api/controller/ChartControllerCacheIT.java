@@ -7,7 +7,7 @@ import org.qubic.qx.api.controller.service.ChartService;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.mockito.Mockito.*;
 
@@ -18,7 +18,7 @@ class ChartControllerCacheIT extends AbstractSpringIntegrationTest {
 
     private static final String ISSUER = "ISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUER";
 
-    @MockBean
+    @MockitoBean
     private ChartService chartService;
 
     @Autowired

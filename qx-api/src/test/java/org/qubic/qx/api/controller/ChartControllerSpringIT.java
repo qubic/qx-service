@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.AbstractSpringIntegrationTest;
 import org.qubic.qx.api.controller.domain.AvgPriceData;
 import org.qubic.qx.api.controller.service.ChartService;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
 import org.springframework.web.context.WebApplicationContext;
@@ -19,7 +19,7 @@ class ChartControllerSpringIT extends AbstractSpringIntegrationTest  {
 
     private static final String ISSUER = "ISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUER";
 
-    @MockBean
+    @MockitoBean
     private ChartService chartService;
 
     private WebTestClient client;

@@ -7,7 +7,7 @@ import org.qubic.qx.api.controller.service.AssetsService;
 import org.qubic.qx.api.db.domain.Asset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 """)
 class AssetsControllerCacheIT extends AbstractSpringIntegrationTest {
 
-    @MockBean
+    @MockitoBean
     private AssetsService assetsService;
 
     @Autowired
