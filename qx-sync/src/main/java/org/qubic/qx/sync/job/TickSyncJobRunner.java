@@ -7,6 +7,7 @@ import reactor.util.retry.Retry;
 
 import java.io.Serializable;
 import java.time.Duration;
+import java.util.NoSuchElementException;
 
 @Slf4j
 public class TickSyncJobRunner {
@@ -21,10 +22,7 @@ public class TickSyncJobRunner {
 
     public void loopForever() {
 
-        Mono<?> updateAllOrderBooks = syncJob.initializeOrderBooks();
-
-
-        Flux<? extends Serializable> syncLoop = syncJob.sync()
+        Flux<? extends Serializable> syncLoop = runSyncJobMono()
                 .flatMap(syncJob::updateLatestSyncedTick)
                 .doOnNext(tick -> log.debug("Sync to [{}] completed.", tick))
                 .doOnError(t -> log.error("Error running sync job.", t))
@@ -32,14 +30,18 @@ public class TickSyncJobRunner {
                 .doOnTerminate(() -> log.debug("Sync run finished. Next run in [{}].", sleepDuration))
                 .repeatWhen(repeat -> repeat.delayElements(sleepDuration));
 
-        updateAllOrderBooks
-                .thenMany(syncLoop)
-                .subscribe(
+        syncLoop.subscribe(
                         x -> {},
                         err -> log.error("Finished with error.", err),
                         () -> log.debug("Completed sync loop.")
                 );
 
+    }
+
+    private Mono<Long> runSyncJobMono() {
+        return syncJob.sync()
+                .last()
+                .onErrorResume(NoSuchElementException.class, e -> Mono.empty());
     }
 
 }

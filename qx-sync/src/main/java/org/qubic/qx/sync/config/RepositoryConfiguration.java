@@ -3,7 +3,6 @@ package org.qubic.qx.sync.config;
 import org.qubic.qx.sync.domain.AssetOrder;
 import org.qubic.qx.sync.domain.Trade;
 import org.qubic.qx.sync.domain.TransactionWithTime;
-import org.qubic.qx.sync.repository.OrderBookRepository;
 import org.qubic.qx.sync.repository.TickRepository;
 import org.qubic.qx.sync.repository.TradeRepository;
 import org.qubic.qx.sync.repository.TransactionRepository;
@@ -67,11 +66,6 @@ public class RepositoryConfiguration {
     @Bean
     TradeRepository tradeRepository(@Qualifier("tradeRedisTemplate") ReactiveRedisTemplate<String, Trade> redisTradeTemplate) {
         return new TradeRepository(redisTradeTemplate);
-    }
-
-    @Bean
-    OrderBookRepository orderBookRepository(ReactiveStringRedisTemplate redisStringTemplate, ReactiveRedisTemplate<String, AssetOrder[]> assetOrderRedisTemplate) {
-        return new OrderBookRepository(redisStringTemplate, assetOrderRedisTemplate);
     }
 
 }

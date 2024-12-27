@@ -3,6 +3,7 @@ package org.qubic.qx.sync.job;
 import at.qubic.api.crypto.IdentityUtil;
 import at.qubic.api.crypto.NoCrypto;
 import io.micrometer.core.instrument.util.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.domain.*;
 import org.qubic.qx.sync.util.JsonUtil;
@@ -48,15 +49,17 @@ class EventsProcessorIT {
         String sourceId = "BOJOBRHAZILUCDADNGBXYUIYHNIDCKBSQEWGUFCAJASIOPFNBMWWXDJHCCTC";
         String destinationId = "BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARMID";
         String issuer = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB";
-        Transaction transaction = new Transaction(transactionHash,
+        QxAssetOrderData orderData = new QxAssetOrderData(issuer, "MLM", 1, 2);
+        TransactionWithTime transaction = new TransactionWithTime(transactionHash,
                 sourceId,
-                destinationId, 1, 16585576, 5, 0,
-                new QxAssetOrderData(issuer, "MLM", 1, 2),
+                destinationId, 1, 16585576, Instant.EPOCH.getEpochSecond(), 5, 0,
+                orderData,
                 null);
 
         List<TransactionEvents> transactionEventList = Arrays.asList(JsonUtil.fromJson(responseJson, TransactionEvents[].class));
+        List<TransactionEvent> events = transactionEventList.stream().filter(te -> StringUtils.equals(te.txId(), transactionHash)).findAny().orElseThrow().events();
 
-        List<Trade> trades = processor.calculateTrades(16585576, Instant.EPOCH, transactionEventList, List.of(transaction));
+        List<Trade> trades = processor.calculateTrades(transaction, events, orderData);
         assertThat(trades.size()).isEqualTo(2);
 
 

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.EventApiService;
 import org.qubic.qx.sync.adapter.exception.EmptyResultException;
-import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.domain.EpochAndTick;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
@@ -22,13 +21,12 @@ import static org.mockito.Mockito.*;
 
 class TickSyncJobTest {
 
-    private final AssetService assetService = mock();
     private final TickRepository tickRepository = mock();
     private final CoreApiService coreService = mock();
     private final EventApiService eventService = mock();
     private final TransactionProcessor transactionProcessor = mock();
 
-    private final TickSyncJob tickSync = new TickSyncJob(assetService, tickRepository, coreService, eventService, transactionProcessor);
+    private final TickSyncJob tickSync = new TickSyncJob(tickRepository, coreService, eventService, transactionProcessor);
 
     @BeforeEach
     void setup() {
@@ -43,17 +41,27 @@ class TickSyncJobTest {
 
         StepVerifier.create(tickSync.sync())
                 .verifyComplete();
+
+        verify(coreService).getTickInfo();
+        verify(tickRepository).getLatestSyncedTick();
+        verify(eventService).getLastProcessedTick();
+        verifyNoMoreInteractions(tickRepository, coreService, eventService);
+        verifyNoInteractions(transactionProcessor);
     }
 
     @Test
-    void sync_givenOneNewTick_thenSync() {
+    void sync_givenOneNewTick_thenProcessTick() {
         TickInfo currentTickInfo = new TickInfo(1, 3460, 3456);
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(3458L));
 
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(false));
         when(tickRepository.addToProcessedTicks(anyLong())).thenReturn(Mono.just(1L));
+
+        TickData tickData = new TickData(1, 3459, Instant.now());
         when(coreService.getQxTransactions(3459L)).thenReturn(Flux.empty());
+        when(coreService.getTickData(3459L)).thenReturn(Mono.just(tickData));
+        when(eventService.getTickEvents(3459L)).thenReturn(Mono.just(List.of()));
 
         StepVerifier.create(tickSync.sync())
                 .expectNext(3459L)
@@ -62,33 +70,31 @@ class TickSyncJobTest {
 
     @Test
     void sync_givenEmptyTickEventsOrNoTickData_thenError() {
-        when(eventService.getLastProcessedTick()).thenReturn(Mono.just(new EpochAndTick(1, 3457)));
 
-        TickInfo currentTickInfo = new TickInfo(1, 3460, 1000);
+        TickInfo currentTickInfo = new TickInfo(1, 3458, 1000);
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(3456L));
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(false));
         Transaction tx = new Transaction("tx-hash", "b", "c", 0, 0, 6, 0, null, null);
         when(coreService.getQxTransactions(3457L)).thenReturn(Flux.just(tx));
+        when(eventService.getTickEvents(3457)).thenReturn(Mono.just(List.of())); //
 
-        when(eventService.getTickEvents(3457)).thenReturn(Mono.empty()); // must not be empty
-        when(coreService.getTickData(3457)).thenReturn(Mono.just(new TickData(1,2, Instant.now())));
-        StepVerifier.create(tickSync.sync())
-                .expectError(EmptyResultException.class)
-                .verify();
 
-        when(eventService.getTickEvents(3457)).thenReturn(Mono.just(List.of()));
         when(coreService.getTickData(3457)).thenReturn(Mono.empty()); // must not be empty
         StepVerifier.create(tickSync.sync())
-                .expectError(EmptyResultException.class)
-                .verify();
+                .verifyErrorMatches(err -> err instanceof EmptyResultException && err.getMessage().contains("tick transactions or data"));
+
+        when(coreService.getTickData(3457)).thenReturn(Mono.just(new TickData(1,2, Instant.now())));
+        when(eventService.getTickEvents(3457)).thenReturn(Mono.empty()); // must not be empty
+        StepVerifier.create(tickSync.sync())
+                .verifyErrorMatches(err -> err instanceof EmptyResultException && err.getMessage().contains("tick events"));
 
         verify(tickRepository, never()).addToProcessedTicks(anyLong());
     }
 
     @Test
-    void sync_givenEventsNotAvailable_thenSyncUntilFullyAvailableTick() {
-        when(eventService.getLastProcessedTick()).thenReturn(Mono.just(new EpochAndTick(1, 3457)));
+    void sync_givenEventsNotAvailable_thenSyncUntilFullyAvailableTickMinusOne() {
+        when(eventService.getLastProcessedTick()).thenReturn(Mono.just(new EpochAndTick(1, 3458)));
 
         Transaction tx = new Transaction("a", "b", "c", 0, 0, 6, 0, null, null);
 
@@ -103,15 +109,16 @@ class TickSyncJobTest {
         when(coreService.getTickData(anyLong())).thenReturn(Mono.just(new TickData(1, 1L, Instant.now())));
 
         when(eventService.getTickEvents(anyLong())).thenReturn(Mono.just(List.of()));
-        when(transactionProcessor.processQxTransactions(anyLong(), any(Instant.class), anyList(), anyList())).thenReturn(Mono.empty());
+        when(transactionProcessor.processQxTransaction(any(), anyList())).thenReturn(Mono.empty());
 
         StepVerifier.create(tickSync.sync())
+                .expectNext(3456L)
                 .expectNext(3457L)
                 .verifyComplete();
     }
 
     @Test
-    void sync_givenSeveralTicks_thenSyncAll() {
+    void sync_givenSeveralTicks_thenProcessAll() {
         Transaction tx = new Transaction("a", "b", "c", 0, 0, 6, 0, null, null);
 
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(false));
@@ -126,9 +133,11 @@ class TickSyncJobTest {
         when(coreService.getTickData(anyLong())).thenReturn(Mono.just(new TickData(1, 1L, Instant.now())));
 
         when(eventService.getTickEvents(anyLong())).thenReturn(Mono.just(List.of()));
-        when(transactionProcessor.processQxTransactions(anyLong(), any(Instant.class), anyList(), anyList())).thenReturn(Mono.empty());
+        when(transactionProcessor.processQxTransaction(any(), anyList())).thenReturn(Mono.empty());
 
         StepVerifier.create(tickSync.sync().log())
+                .expectNext(3456L)
+                .expectNext(3457L)
                 .expectNext(3458L)
                 .verifyComplete();
     }
@@ -138,15 +147,19 @@ class TickSyncJobTest {
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(true));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(0L));
 
-        TickInfo currentTickInfo = new TickInfo(1, 100, 90);
+        TickInfo currentTickInfo = new TickInfo(1, 100, 95);
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
 
         StepVerifier.create(tickSync.sync())
+                .expectNext(95L)
+                .expectNext(96L)
+                .expectNext(97L)
+                .expectNext(98L)
                 .expectNext(99L)
                 .verifyComplete();
 
         // include tick 90. exclude tick 100.
-        verify(tickRepository, times(10)).isProcessedTick(anyLong());
+        verify(tickRepository, times(5)).isProcessedTick(anyLong());
         verify(coreService, never()).getQxTransactions(anyLong());
         verifyNoInteractions(transactionProcessor);
     }

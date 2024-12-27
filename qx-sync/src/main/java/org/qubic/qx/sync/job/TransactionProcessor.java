@@ -1,76 +1,71 @@
 package org.qubic.qx.sync.job;
 
 import lombok.extern.slf4j.Slf4j;
-import org.qubic.qx.sync.assets.Asset;
+import org.apache.commons.collections4.CollectionUtils;
 import org.qubic.qx.sync.domain.*;
-import org.qubic.qx.sync.mapper.TransactionMapper;
 import org.qubic.qx.sync.repository.TradeRepository;
 import org.qubic.qx.sync.repository.TransactionRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class TransactionProcessor {
 
     private final TransactionRepository transactionRepository;
     private final TradeRepository tradeRepository;
-    private final TransactionMapper transactionMapper;
-
     private final EventsProcessor eventsProcessor;
-    private final OrderBookProcessor orderBookProcessor;
 
-
-    public TransactionProcessor(TransactionRepository transactionRepository, TradeRepository tradeRepository, TransactionMapper transactionMapper, EventsProcessor eventsProcessor, OrderBookProcessor orderBookProcessor) {
+    public TransactionProcessor(TransactionRepository transactionRepository, TradeRepository tradeRepository, EventsProcessor eventsProcessor) {
         this.transactionRepository = transactionRepository;
         this.tradeRepository = tradeRepository;
-        this.transactionMapper = transactionMapper;
         this.eventsProcessor = eventsProcessor;
-        this.orderBookProcessor = orderBookProcessor;
     }
 
-    public Mono<List<Trade>> processQxTransactions(long tickNumber, Instant tickTime, List<TransactionEvents> events, List<Transaction> txs) {
+    public Mono<?> processQxTransaction(TransactionWithTime transaction, List<TransactionEvent> events) {
 
-        // store all transactions
-        Flux<TransactionWithTime> storeTransactions = storeTransactions(txs, tickTime);
+        Mono<TransactionWithTime> storeTransactionMono = Mono.defer(() -> storeTransaction(transaction));
 
-        // process order transactions to detect trades
-        List<Transaction> orderTransactions = txs.stream()
-                .filter(tx -> tx.extraData() instanceof QxAssetOrderData)
-                .toList();
+        if (transaction.extraData() instanceof QxAssetOrderData orderData) {
 
-        Set<Asset> relevantAssets = orderTransactions.stream()
-                .map(tx -> (QxAssetOrderData) tx.extraData())
-                .map(extra -> new Asset(extra.issuer(), extra.name()))
-                .collect(Collectors.toSet());
+            List<Trade> trades = eventsProcessor.calculateTrades(transaction, events, orderData);
+            // if there is a trade the transaction and the trade should get stored
+            if (CollectionUtils.isNotEmpty(trades)) {
+                return storeTransactionMono
+                        .then(storeTrades(trades))
+                        .then(Mono.just(transaction));
+            } else {
+                log.info("No trades found for transaction [{}]. Clearing caches.", transaction.transactionHash());
+                // FIXME clear caches
+            }
 
-        Mono<List<Trade>> findTradesMono = events.isEmpty() // no events available
-                ? processWithOrderBooks(tickNumber, tickTime, relevantAssets, orderTransactions)
-                : processWithEvents(tickNumber, tickTime, events, relevantAssets, orderTransactions);
+        } else if (transaction.extraData() instanceof QxTransferAssetData) { // TODO add test
 
-        return storeTransactions
-                .then(findTradesMono)
-                .flatMap(this::storeTrades);
+            if (eventsProcessor.isAssetTransferred(events)) {
+                return storeTransactionMono
+                        .then(Mono.just(transaction));
+            } else {
+                log.info("No asset transferred with transaction [{}]", transaction.transactionHash());
+            }
+
+        } else if (transaction.extraData() instanceof QxIssueAssetData) { // TODO add test
+
+            if (eventsProcessor.isAssetIssued(events)) {
+                return storeTransactionMono
+                        .then(Mono.just(transaction));
+            } else {
+                log.info("No asset issued with transaction [{}]", transaction.transactionHash());
+            }
+
+        }
+
+        return Mono.just(transaction);
 
     }
 
-    private Mono<List<Trade>> processWithEvents(long tickNumber, Instant tickTime, List<TransactionEvents> events, Set<Asset> relevantAssets, List<Transaction> orderTransactions) {
-        return orderBookProcessor.updateCurrentOrderBooks(tickNumber, relevantAssets) // for following ticks
-                .then(Mono.defer(() -> Mono.just(eventsProcessor.calculateTrades(tickNumber, tickTime, events, orderTransactions))));
-    }
-
-    private Mono<List<Trade>> processWithOrderBooks(long tickNumber, Instant tickTime, Set<Asset> relevantAssets, List<Transaction> orderTransactions) {
-        return orderBookProcessor.calculateTrades(tickNumber, tickTime, relevantAssets, orderTransactions);
-    }
-
-    private Flux<TransactionWithTime> storeTransactions(List<Transaction> txs, Instant tickTime) {
-        return Flux.fromIterable(txs)
-                .map(tx -> transactionMapper.map(tx, tickTime.getEpochSecond()))
-                .flatMap(transactionRepository::putTransactionIntoQueue);
+    private Mono<TransactionWithTime> storeTransaction(TransactionWithTime tx) {
+        return transactionRepository.putTransactionIntoQueue(tx);
     }
 
     private Mono<List<Trade>> storeTrades(List<Trade> trades) {

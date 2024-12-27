@@ -70,7 +70,8 @@ public class IntegrationCoreApiService implements CoreApiService {
 
     @Override
     public Flux<Transaction> getQxTransactions(long tick) {
-        return Mono.zip(getTickTransactions(tick), getTickTransactionsStatus(tick))
+        // TODO remove querying money flew flag after full switch to events
+        return Mono.zip(getTickTransactions(tick), getTickTransactionsStatus(tick)) // errors if empty
                 .flatMapMany(tuple -> Flux.fromIterable(tuple.getT1().transactions())
                         .map(ilt -> Tuples.of(ilt, getMoneyFlewStatus(tuple, ilt))))
                 .filter(tuple -> isRelevantTransaction(tuple.getT1()))

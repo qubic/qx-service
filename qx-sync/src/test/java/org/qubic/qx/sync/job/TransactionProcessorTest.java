@@ -3,18 +3,17 @@ package org.qubic.qx.sync.job;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.Qx.OrderType;
-import org.qubic.qx.sync.assets.Asset;
-import org.qubic.qx.sync.domain.*;
-import org.qubic.qx.sync.mapper.TransactionMapper;
+import org.qubic.qx.sync.domain.QxAssetOrderData;
+import org.qubic.qx.sync.domain.Trade;
+import org.qubic.qx.sync.domain.TransactionEvent;
+import org.qubic.qx.sync.domain.TransactionWithTime;
 import org.qubic.qx.sync.repository.TradeRepository;
 import org.qubic.qx.sync.repository.TransactionRepository;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
@@ -22,92 +21,60 @@ class TransactionProcessorTest {
 
     private final TransactionRepository transactionRepository = mock();
     private final TradeRepository tradeRepository = mock();
-    private final TransactionMapper transactionMapper = mock();
     private final EventsProcessor eventsProcessor = mock();
-    private final OrderBookProcessor orderBookProcessor = mock();
-    private final TransactionProcessor transactionProcessor = new TransactionProcessor(transactionRepository, tradeRepository, transactionMapper, eventsProcessor, orderBookProcessor);
+    private final TransactionProcessor transactionProcessor = new TransactionProcessor(transactionRepository, tradeRepository, eventsProcessor);
 
 
     @BeforeEach
     void initMocks() {
         when(tradeRepository.putTradeIntoQueue(any(Trade.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-        TransactionWithTime storedTransaction = mock();
-        when(transactionMapper.map(any(Transaction.class), anyLong())).thenReturn(storedTransaction);
         when(transactionRepository.putTransactionIntoQueue(any(TransactionWithTime.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
     }
 
     @Test
     void processQxTransactions_thenPutTransactionIntoQueue() {
-        Transaction transaction = testTransaction();
-        when(orderBookProcessor.calculateTrades(anyLong(), any(), any(), any())).thenReturn(Mono.just(List.of()));
+        TransactionWithTime transaction = testTransaction();
+        TransactionEvent te = new TransactionEvent(null, 1, 2, "foo");
+        Trade trade = mock();
+        when(eventsProcessor.calculateTrades(eq(transaction), anyList(), any())).thenReturn(List.of(trade));
 
-        StepVerifier.create(transactionProcessor.processQxTransactions(42, Instant.EPOCH, List.of(), List.of(transaction)))
-                .expectNext(List.of())
+        StepVerifier.create(transactionProcessor.processQxTransaction(transaction, List.of(te)))
+                .expectNextCount(1)
                 .verifyComplete();
-
         verify(transactionRepository).putTransactionIntoQueue(any(TransactionWithTime.class));
     }
 
     @Test
     void processQxTransactions_thenStoreTrades() {
-        Transaction transaction = testTransaction();
+        TransactionWithTime transaction = testTransaction();
+        TransactionEvent te = new TransactionEvent(null, 1, 2, "foo");
         Trade trade = mock();
-        when(orderBookProcessor.calculateTrades(anyLong(), any(), any(), any())).thenReturn(Mono.just(List.of(trade)));
+        when(eventsProcessor.calculateTrades(eq(transaction), anyList(), any())).thenReturn(List.of(trade));
 
-        StepVerifier.create(transactionProcessor.processQxTransactions(42, Instant.EPOCH, List.of(), List.of(transaction)))
-                .expectNext(List.of(trade))
+        StepVerifier.create(transactionProcessor.processQxTransaction(transaction, List.of(te)))
+                .expectNextCount(1)
                 .verifyComplete();
 
         verify(tradeRepository).putTradeIntoQueue(trade);
     }
 
     @Test
-    void processQxTransactions_givenEvents_thenCallEventsProcessor() {
-        Transaction transaction = testTransaction();
-        TransactionEvents transactionEvents = mock();
+    void processTransactions_givenOrderTransactionWithoutTrade_thenDoNotStore() {
+        TransactionWithTime transaction = testTransaction();
+        when(eventsProcessor.calculateTrades(eq(transaction), anyList(), any())).thenReturn(List.of());
 
-        Trade trade = mock();
-        when(orderBookProcessor.updateCurrentOrderBooks(anyLong(), anySet())).thenReturn(Flux.empty());
-        when(eventsProcessor.calculateTrades(42, Instant.EPOCH, List.of(transactionEvents), List.of(transaction))).thenReturn(List.of(trade));
-
-        StepVerifier.create(transactionProcessor.processQxTransactions(42, Instant.EPOCH, List.of(transactionEvents), List.of(transaction)).log())
-                .expectNext(List.of(trade))
-                .verifyComplete();
-    }
-
-    @Test
-    void processQxTransactions_givenOtherThransactions_thenProcessOrdersOnly() {
-        Transaction transaction = testTransaction();
-        Transaction otherTransaction = new Transaction("other-hash", "source", "destination", 1, 42, OrderType.TRANSFER_SHARE.code, 0, new QxTransferAssetData("issuer", "asset", "new-owner", 1), null);
-        TransactionEvents transactionEvents = mock();
-
-        Trade trade = mock();
-        when(orderBookProcessor.updateCurrentOrderBooks(anyLong(), anySet())).thenReturn(Flux.empty());
-        when(eventsProcessor.calculateTrades(42, Instant.EPOCH, List.of(transactionEvents), List.of(transaction))).thenReturn(List.of(trade)); // only process order
-
-        StepVerifier.create(transactionProcessor.processQxTransactions(42, Instant.EPOCH, List.of(transactionEvents), List.of(transaction, otherTransaction)).log())
-                .expectNext(List.of(trade))
+        StepVerifier.create(transactionProcessor.processQxTransaction(transaction, List.of()))
+                .expectNextCount(1)
                 .verifyComplete();
 
-        verify(transactionRepository, times(2)).putTransactionIntoQueue(any(TransactionWithTime.class)); // store both transactions
+        verifyNoInteractions(tradeRepository);
+        verifyNoInteractions(transactionRepository);
     }
 
-    @Test
-    void processQxTransactions_givenNoEvents_thenCallOrderBookProcessor() {
-        Transaction transaction = testTransaction();
-
-        Trade trade = mock();
-        when(orderBookProcessor.calculateTrades(42, Instant.EPOCH, Set.of(new Asset("issuer", "asset")), List.of(transaction))).thenReturn(Mono.just(List.of(trade)));
-
-        StepVerifier.create(transactionProcessor.processQxTransactions(42, Instant.EPOCH, List.of(), List.of(transaction)).log())
-                .expectNext(List.of(trade))
-                .verifyComplete();
-    }
-
-    private Transaction testTransaction() {
+    private TransactionWithTime testTransaction() {
         OrderType orderType = OrderType.ADD_BID;
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 5, 5);
-        return new Transaction("hash", "sourceId", "destinationId", 123, 42, orderType.code, 0, orderData, null);
+        return new TransactionWithTime("hash", "sourceId", "destinationId", 123, 42, Instant.EPOCH.getEpochSecond(), orderType.code, 0, orderData, null);
     }
 
 }

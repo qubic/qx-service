@@ -18,7 +18,7 @@ class TransactionMapperTest {
     void mapTransactionWithTime_thenSetTimestamp() {
         QxAssetOrderData extr = new QxAssetOrderData("issuer", "name", 42, 43);
         Transaction transaction = new Transaction("hash", "source", "destination", 1, 2, 3, 4, extr, true);
-        TransactionWithTime mapped = mapper.map(transaction, Instant.EPOCH.getEpochSecond());
+        TransactionWithTime mapped = mapper.map(transaction, Instant.EPOCH);
         assertThat(mapped).isEqualTo(new TransactionWithTime(
                 "hash",
                 "source",

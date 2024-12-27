@@ -9,8 +9,7 @@ import java.time.Instant;
 @Mapper(componentModel = "spring")
 public interface TransactionMapper {
 
-    TransactionWithTime map(Transaction transaction, long timestamp);
-
+    TransactionWithTime map(Transaction transaction, Instant timestamp);
     default long map(Instant instant) { return instant.getEpochSecond(); }
 
 }

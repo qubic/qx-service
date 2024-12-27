@@ -5,14 +5,13 @@ import at.qubic.api.crypto.NoCrypto;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.EventApiService;
 import org.qubic.qx.sync.adapter.ExtraDataMapper;
-import org.qubic.qx.sync.adapter.QxApiService;
 import org.qubic.qx.sync.adapter.qubicj.mapping.DataTypeTranslator;
 import org.qubic.qx.sync.assets.Asset;
-import org.qubic.qx.sync.assets.AssetService;
 import org.qubic.qx.sync.assets.Assets;
-import org.qubic.qx.sync.job.*;
-import org.qubic.qx.sync.mapper.TransactionMapper;
-import org.qubic.qx.sync.repository.OrderBookRepository;
+import org.qubic.qx.sync.job.EventsProcessor;
+import org.qubic.qx.sync.job.TickSyncJob;
+import org.qubic.qx.sync.job.TickSyncJobRunner;
+import org.qubic.qx.sync.job.TransactionProcessor;
 import org.qubic.qx.sync.repository.TickRepository;
 import org.qubic.qx.sync.repository.TradeRepository;
 import org.qubic.qx.sync.repository.TransactionRepository;
@@ -56,36 +55,21 @@ public class QxServiceConfiguration {
     }
 
     @Bean
-    AssetService assetService(Assets assets, QxApiService qxApiService, OrderBookRepository orderBookRepository) {
-        return new AssetService(assets, qxApiService, orderBookRepository);
-    }
-
-    @Bean
-    OrderBookCalculator orderBookCalculator() {
-        return new OrderBookCalculator();
-    }
-
-    @Bean
-    OrderBookProcessor orderBookProcessor(CoreApiService coreService, AssetService assetService, OrderBookCalculator orderBookCalculator) {
-        return new OrderBookProcessor(coreService, assetService, orderBookCalculator);
-    }
-
-    @Bean
     EventsProcessor eventsProcessor(IdentityUtil identityUtil) {
         return new EventsProcessor(identityUtil);
     }
 
     @Bean
     TransactionProcessor transactionProcessor(TransactionRepository transactionRepository,
-                                              TradeRepository tradeRepository, TransactionMapper transactionMapper,
-                                              EventsProcessor eventsProcessor, OrderBookProcessor orderBookProcessor) {
-        return new TransactionProcessor(transactionRepository, tradeRepository, transactionMapper, eventsProcessor, orderBookProcessor);
+                                              TradeRepository tradeRepository,
+                                              EventsProcessor eventsProcessor) {
+        return new TransactionProcessor(transactionRepository, tradeRepository, eventsProcessor);
     }
 
     @Bean
-    TickSyncJob tickSyncJob(AssetService assetService, TickRepository tickRepository, CoreApiService coreService,
+    TickSyncJob tickSyncJob(TickRepository tickRepository, CoreApiService coreService,
                             EventApiService eventApiService, TransactionProcessor transactionProcessor) {
-        return new TickSyncJob(assetService, tickRepository, coreService, eventApiService, transactionProcessor);
+        return new TickSyncJob(tickRepository, coreService, eventApiService, transactionProcessor);
     }
 
     @Bean

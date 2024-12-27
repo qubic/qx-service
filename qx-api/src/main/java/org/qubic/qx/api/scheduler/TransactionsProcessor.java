@@ -39,14 +39,14 @@ public class TransactionsProcessor extends QueueProcessor<Transaction, Transacti
             qxCacheManager.evictOrderCacheForAsset(orderData.issuer(), orderData.name());
             qxCacheManager.evictOrderCacheForEntity(sourceDto.sourcePublicId());
         } else if (extraData instanceof QxTransferAssetData transferData) {
-            createAssetIfItDoesNotExist(transferData.issuer(), transferData.name(), sourceDto.moneyFlew());
+            createAssetIfItDoesNotExist(transferData.issuer(), transferData.name(), sourceDto.moneyFlew()); // TODO remove money flew dependency
             log.info("Evicting transfer caches.");
             qxCacheManager.evictTransferCache();
             qxCacheManager.evictTransferCacheForAsset(transferData.issuer(), transferData.name());
             qxCacheManager.evictTransferCacheForEntity(sourceDto.sourcePublicId());
             qxCacheManager.evictTransferCacheForEntity(transferData.newOwner());
         } else if (extraData instanceof QxIssueAssetData issueAssetData) {
-            createAssetIfItDoesNotExist(sourceDto.sourcePublicId(), issueAssetData.name(), sourceDto.moneyFlew());
+            createAssetIfItDoesNotExist(sourceDto.sourcePublicId(), issueAssetData.name(), sourceDto.moneyFlew()); // TODO remove money flew dependency
             qxCacheManager.evictAssetsCaches();
         }
     }

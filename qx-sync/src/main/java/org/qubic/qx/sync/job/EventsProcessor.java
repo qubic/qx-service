@@ -6,11 +6,9 @@ import at.qubic.api.domain.event.response.AssetChangeEvent;
 import at.qubic.api.domain.event.response.ContractInformationEvent;
 import at.qubic.api.domain.event.response.QxTradeMessageEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.sync.adapter.Qx;
 import org.qubic.qx.sync.domain.*;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -26,31 +24,32 @@ public class EventsProcessor {
         this.identityUtil = identityUtil;
     }
 
-    public List<Trade> calculateTrades(long tickNumber, Instant tickTime, List<TransactionEvents> events, List<Transaction> txs) {
+    public List<Trade> calculateTrades(TransactionWithTime tx,  List<TransactionEvent> events, QxAssetOrderData orderData) {
         List<Trade> trades = new ArrayList<>();
-        for (Transaction tx : txs) {
+        List<AssetChangeEvent> assetTransfers = getAssetTransfers(events);
+        List<QxTradeMessageEvent> qxTrades = getTrades(events);
 
-            if (tx.extraData() instanceof QxAssetOrderData orderData) {
+        log.info("Events for transaction [{}]: [{}] asset transfers, [{}] trades",
+                tx.transactionHash(),assetTransfers.size(), qxTrades.size());
 
-                List<TransactionEvent> relevantEvents = getEventsForTransaction(events, tx);
-                List<AssetChangeEvent> assetTransfers = getAssetTransfers(relevantEvents);
-                List<QxTradeMessageEvent> qxTrades = getTrades(relevantEvents);
+        for (int i = 0; i < qxTrades.size(); i++) {
+            QxTradeMessageEvent qxTrade = qxTrades.get(i);
 
-                log.info("Events for transaction [{}]: [{}] asset transfers, [{}] trades",
-                        tx.transactionHash(),assetTransfers.size(), qxTrades.size());
+            String maker = tryToInferMakerFromEvents(qxTrades, assetTransfers, isAskOrder(getOrderType(tx)), i);
+            Trade trade = new Trade(tx.tick(), tx.timestamp(), tx.transactionHash(), !isAskOrder(getOrderType(tx)), tx.sourcePublicId(), maker, orderData.issuer(), orderData.name(), qxTrade.getPrice(), qxTrade.getNumberOfShares());
+            log.info("Detected trade: {}", trade);
+            trades.add(trade);
 
-                for (int i = 0; i < qxTrades.size(); i++) {
-                    QxTradeMessageEvent qxTrade = qxTrades.get(i);
-
-                    String maker = tryToInferMakerFromEvents(qxTrades, assetTransfers, isAskOrder(getOrderType(tx)), i);
-                    Trade trade = new Trade(tickNumber, tickTime.getEpochSecond(), tx.transactionHash(), !isAskOrder(getOrderType(tx)), tx.sourcePublicId(), maker, orderData.issuer(), orderData.name(), qxTrade.getPrice(), qxTrade.getNumberOfShares());
-                    log.info("Detected trade: {}", trade);
-                    trades.add(trade);
-
-                }
-            }
         }
         return trades;
+    }
+
+    public boolean isAssetTransferred(List<TransactionEvent> events) {
+        return getAssetTransfers(events).isEmpty();
+    }
+
+    public boolean isAssetIssued(List<TransactionEvent> events) {
+        return events.stream().anyMatch(byTransactionEvent(EventType.ASSET_ISSUANCE));
     }
 
     private String tryToInferMakerFromEvents(List<QxTradeMessageEvent> qxTrades, List<AssetChangeEvent> assetTransfers, boolean isAskOrder, int i) {
@@ -88,13 +87,6 @@ public class EventsProcessor {
 
     }
 
-    private static List<TransactionEvent> getEventsForTransaction(List<TransactionEvents> events, Transaction tx) {
-        return events.stream()
-                .filter(event -> StringUtils.equals(event.txId(), tx.transactionHash()))
-                .flatMap(e -> e.events().stream())
-                .toList();
-    }
-
     private static List<QxTradeMessageEvent> getTrades(List<TransactionEvent> relevantEvents) {
         return relevantEvents.stream()
                 .filter(byTransactionEvent(EventType.CONTRACT_INFORMATION_MESSAGE))
@@ -117,7 +109,7 @@ public class EventsProcessor {
         return e -> e.eventType() == quTransfer.getCode();
     }
 
-    private static Qx.OrderType getOrderType(Transaction tx) {
+    private static Qx.OrderType getOrderType(TransactionWithTime tx) {
         Qx.OrderType orderType = Qx.OrderType.fromCode(tx.inputType());
         assert orderType == Qx.OrderType.ADD_BID || orderType == Qx.OrderType.ADD_ASK || orderType == Qx.OrderType.REMOVE_BID || orderType == Qx.OrderType.REMOVE_ASK;
         return orderType;
