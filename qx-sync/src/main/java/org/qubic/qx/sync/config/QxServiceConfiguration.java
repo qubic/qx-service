@@ -6,8 +6,6 @@ import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.EventApiService;
 import org.qubic.qx.sync.adapter.ExtraDataMapper;
 import org.qubic.qx.sync.adapter.qubicj.mapping.DataTypeTranslator;
-import org.qubic.qx.sync.assets.Asset;
-import org.qubic.qx.sync.assets.Assets;
 import org.qubic.qx.sync.job.EventsProcessor;
 import org.qubic.qx.sync.job.TickSyncJob;
 import org.qubic.qx.sync.job.TickSyncJobRunner;
@@ -18,7 +16,6 @@ import org.qubic.qx.sync.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 
 import java.time.Duration;
 
@@ -39,19 +36,6 @@ public class QxServiceConfiguration {
     @Bean
     DataTypeTranslator dataTypeTranslator(IdentityUtil identityUtil, ExtraDataMapper extraDataMapper) {
         return new DataTypeTranslator(identityUtil, extraDataMapper);
-    }
-
-    @Bean
-    Assets assets(Environment environment) {
-        String assetsKey = "assets";
-        String[] knownAssets = environment.getRequiredProperty(assetsKey, String[].class);
-        Assets assets = new Assets();
-        for (String name : knownAssets) {
-            String assetIssuer = environment.getRequiredProperty(String.format("%s.%s.issuer", assetsKey, name));
-            String assetName = environment.getRequiredProperty(String.format("%s.%s.name", assetsKey, name));
-            assets.add(new Asset(assetIssuer, assetName));
-        }
-        return assets;
     }
 
     @Bean
