@@ -1,6 +1,7 @@
 package org.qubic.qx.sync.job;
 
 import at.qubic.api.crypto.IdentityUtil;
+import at.qubic.api.domain.event.EventType;
 import org.bouncycastle.util.encoders.Base64;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.domain.*;
@@ -12,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("SpellCheckingInspection")
 class EventsProcessorTest {
 
     private final IdentityUtil identityUtil = mock(IdentityUtil.class);
@@ -21,13 +23,12 @@ class EventsProcessorTest {
     void calculateTrades() {
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 2, 3);
         TransactionWithTime transaction = new TransactionWithTime("hash", "source", "destination", 1, 42, Instant.EPOCH.getEpochSecond(), 6, 0, orderData, false);
-
         List<TransactionEvent> events = List.of(
                 new TransactionEvent(mock(), 2, 0, "0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv02EYTUnxm1rKM15TYeDdxsn6lv0WHZd47t7Tzvs+MeIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAABNTE0AAAAAAAAAAAAAAAA="),
                 new TransactionEvent(mock(), 6, 0, "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAcLrCwAAAAABAAAAAAAAAA==")
         );
-
         when(identityUtil.getIdentityFromPublicKey(Base64.decode("0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv0="))).thenReturn("maker");
+
         List<Trade> trades = processor.calculateTrades(transaction, events, orderData);
         assertThat(trades.size()).isOne();
         Trade trade = trades.getFirst();
@@ -43,7 +44,7 @@ class EventsProcessorTest {
     }
 
     @Test
-    void inferMaker_givenBid_thenSellerIsMaker() {
+    void calculateTrades_givenBid_thenSellerIsMaker() {
 
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 2, 3);
         TransactionWithTime transaction = new TransactionWithTime("hash", "buyer", "destination", 1, 2, Instant.EPOCH.getEpochSecond(), 6, 0, orderData, false); // add bid
@@ -65,7 +66,7 @@ class EventsProcessorTest {
     }
 
     @Test
-    void inferMaker_givenAsk_thenBuyerIsMaker() {
+    void calculateTrades_givenAsk_thenBuyerIsMaker() {
 
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 2, 3);
         TransactionWithTime transaction = new TransactionWithTime("hash", "seller", "destination", 1, 2, Instant.EPOCH.getEpochSecond(), 5, 0, orderData, false); // add bid
@@ -85,7 +86,54 @@ class EventsProcessorTest {
         assertThat(trade.price()).isEqualTo(3);
         assertThat(trade.maker()).isEqualTo("buyer");
         assertThat(trade.taker()).isEqualTo("seller");
+    }
 
+    @Test
+    void isAssetIssued_givenAssetIssuanceEvent_thenTrue() {
+        List<TransactionEvent> events = List.of(
+                new TransactionEvent(mock(), EventType.ASSET_ISSUANCE.getCode(), 123, "foo")
+        );
+        boolean issued = processor.isAssetIssued(events);
+        assertThat(issued).isTrue();
+    }
+
+    @Test
+    void isAssetIssued_givenOtherEvent_thenFalse() {
+        List<TransactionEvent> events = List.of(
+                new TransactionEvent(mock(), EventType.ASSET_OWNERSHIP_CHANGE.getCode(), 123, "foo")
+        );
+        boolean issued = processor.isAssetIssued(events);
+        assertThat(issued).isFalse();
+    }
+
+    @Test
+    void isAssetIssued_givenNoEvent_thenFalse() {
+        boolean issued = processor.isAssetIssued(List.of());
+        assertThat(issued).isFalse();
+    }
+
+    @Test
+    void isAssetTransferred_givenOwnershipChange_thenTrue() {
+        List<TransactionEvent> events = List.of(
+                new TransactionEvent(mock(), EventType.ASSET_OWNERSHIP_CHANGE.getCode(), 123, "foo")
+        );
+        boolean issued = processor.isAssetTransferred(events);
+        assertThat(issued).isTrue();
+    }
+
+    @Test
+    void isAssetTransferred_givenOtherEvent_thenFalse() {
+        List<TransactionEvent> events = List.of(
+                new TransactionEvent(mock(), EventType.QU_TRANSFER.getCode(), 123, "foo")
+        );
+        boolean issued = processor.isAssetTransferred(events);
+        assertThat(issued).isFalse();
+    }
+
+    @Test
+    void isAssetTransferred_givenNoEvent_thenFalse() {
+        boolean issued = processor.isAssetTransferred(List.of());
+        assertThat(issued).isFalse();
     }
 
 }

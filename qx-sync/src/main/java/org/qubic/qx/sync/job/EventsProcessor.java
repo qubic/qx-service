@@ -7,7 +7,10 @@ import at.qubic.api.domain.event.response.ContractInformationEvent;
 import at.qubic.api.domain.event.response.QxTradeMessageEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.sync.adapter.Qx;
-import org.qubic.qx.sync.domain.*;
+import org.qubic.qx.sync.domain.QxAssetOrderData;
+import org.qubic.qx.sync.domain.Trade;
+import org.qubic.qx.sync.domain.TransactionEvent;
+import org.qubic.qx.sync.domain.TransactionWithTime;
 
 import java.util.ArrayList;
 import java.util.Base64;
@@ -25,6 +28,7 @@ public class EventsProcessor {
     }
 
     public List<Trade> calculateTrades(TransactionWithTime tx,  List<TransactionEvent> events, QxAssetOrderData orderData) {
+
         List<Trade> trades = new ArrayList<>();
         List<AssetChangeEvent> assetTransfers = getAssetTransfers(events);
         List<QxTradeMessageEvent> qxTrades = getTrades(events);
@@ -45,11 +49,11 @@ public class EventsProcessor {
     }
 
     public boolean isAssetTransferred(List<TransactionEvent> events) {
-        return getAssetTransfers(events).isEmpty();
+        return events != null && events.stream().anyMatch(byTransactionEvent(EventType.ASSET_OWNERSHIP_CHANGE));
     }
 
     public boolean isAssetIssued(List<TransactionEvent> events) {
-        return events.stream().anyMatch(byTransactionEvent(EventType.ASSET_ISSUANCE));
+        return events != null && events.stream().anyMatch(byTransactionEvent(EventType.ASSET_ISSUANCE));
     }
 
     private String tryToInferMakerFromEvents(List<QxTradeMessageEvent> qxTrades, List<AssetChangeEvent> assetTransfers, boolean isAskOrder, int i) {

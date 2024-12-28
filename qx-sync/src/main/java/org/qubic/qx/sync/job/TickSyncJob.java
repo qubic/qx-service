@@ -18,6 +18,7 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -102,14 +103,14 @@ public class TickSyncJob {
         Mono<TickData> tickDataMono = coreService.getTickData(tickNumber); // never empty
         Mono<List<Transaction>> qxTransactionsListMono = coreService.getQxTransactions(tickNumber)
                 .doOnNext(tx -> log.info("[{}] Received [{}] transaction.", tx.transactionHash(), Qx.OrderType.fromCode(tx.inputType())))
-                .collectList(); // empyt list if empty flux
+                .collectList(); // empty list, if empty flux
 
         return Mono.zip(tickDataMono, qxTransactionsListMono)
-                .switchIfEmpty(Mono.error(new EmptyResultException(String.format("Could not get tick transactions or data for tick [%s].", tickNumber))))
-                .map(tuple -> tuple.getT2().stream().map(tx -> transactionMapper.map(tx, tuple.getT1().timestamp())))
+                .switchIfEmpty(emptyResult(String.format("Could not get tick transactions or data for tick [%s].", tickNumber)))
+                .map(mapToTransactionWithTime())
                 .zipWith(tickEventsMono)
-                .switchIfEmpty(Mono.error(new EmptyResultException(String.format("Could not get tick events for tick [%s].", tickNumber))))
-                .map(tuple -> tuple.getT1().map(tx -> new TransactionWithEvents(tx, getEventsForTransaction(tuple, tx))).toList())
+                .switchIfEmpty(emptyResult(String.format("Could not get tick events for tick [%s].", tickNumber)))
+                .map(tuple -> mapToTransactionWithEvents(tuple).toList())
                 .flatMap(list -> processTransactions(tickNumber, list))
                 .map(x -> tickNumber)
                 .doOnNext(tno -> log.debug("Synced tick [{}].", tno))
@@ -137,50 +138,16 @@ public class TickSyncJob {
         }
     }
 
-//    private Mono<?> processTransaction(List<TransactionWithEvents> transactionsWithEvents) {
-//
-//        for (TransactionWithEvents transactionWithEvent : transactionsWithEvents) {
-//
-//            TransactionWithTime transaction = transactionWithEvent.transaction();
-//
-//            if (transaction.extraData() instanceof QxAssetOrderData) {
-//
-//            } else if (transaction.extraData() instanceof QxTransferAssetData) {
-//
-//            } else if (transaction.extraData() instanceof QxIssueAssetData) {
-//
-//            } else {
-//
-//            }
-//
-//
-//        }
-//
-//
-//    }
+    private static Stream<TransactionWithEvents> mapToTransactionWithEvents(Tuple2<Stream<TransactionWithTime>, List<TransactionEvents>> tuple) {
+        return tuple.getT1().map(tx -> new TransactionWithEvents(tx, getEventsForTransaction(tuple, tx)));
+    }
 
-//    private Mono<Boolean> processTransactionsOLD(Long tickNumber, List<Transaction> txs) {
-//        Mono<Long> storeTickNumberMono = Mono.defer(() -> tickRepository.addToProcessedTicks(tickNumber));
-//        if (CollectionUtils.isEmpty(txs)) {
-//            return storeTickNumberMono.then(Mono.just(false));
-//        } else {
-//            Mono<List<TransactionEvents>> eventsMono = eventService.getTickEvents(tickNumber); // TODO move up
-//            Mono<TickData> tickDataMono = coreService.getTickData(tickNumber); // TODO move up
-//            return Mono.zip(eventsMono, tickDataMono)
-//                    .switchIfEmpty(Mono.error(new EmptyResultException(String.format("Could not get events or tick data for tick [%s].", tickNumber))))
-//                    .doFirst(() -> log.info("Tick [{}]: processing [{}] qx orders.", tickNumber, txs.size()))
-//                    .flatMap(tuple -> transactionProcessor.processQxTransactions(tickNumber,
-//                            tuple.getT2().timestamp(), // tick data
-//                            tuple.getT1(), // transaction events
-//                            txs))
-//                    .then(storeTickNumberMono)
-//                    .then(Mono.just(true));
-//
-//        }
-//    }
+    private Function<Tuple2<TickData, List<Transaction>>, Stream<TransactionWithTime>> mapToTransactionWithTime() {
+        return tuple -> tuple.getT2().stream().map(tx -> transactionMapper.map(tx, tuple.getT1().timestamp()));
+    }
 
-    // minor helper methods
-
-
+    private <T> Mono<T> emptyResult(String message) {
+        return Mono.error(new EmptyResultException(message));
+    }
 
 }

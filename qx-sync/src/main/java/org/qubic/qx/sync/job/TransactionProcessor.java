@@ -30,14 +30,20 @@ public class TransactionProcessor {
         if (transaction.extraData() instanceof QxAssetOrderData orderData) {
 
             List<Trade> trades = eventsProcessor.calculateTrades(transaction, events, orderData);
-            // if there is a trade the transaction and the trade should get stored
+
             if (CollectionUtils.isNotEmpty(trades)) {
+
+                // if there is a trade the transaction and the trade should get stored
                 return storeTransactionMono
                         .then(storeTrades(trades))
                         .then(Mono.just(transaction));
+
             } else {
-                log.info("No trades found for transaction [{}]. Clearing caches.", transaction.transactionHash());
-                // FIXME clear caches
+
+                // don't store anything but notify that there was a transaction (for clearing caches)
+                log.info("No trades found for transaction [{}].", transaction.transactionHash());
+                // FIXME inform about unsuccessful transaction
+
             }
 
         } else if (transaction.extraData() instanceof QxTransferAssetData) { // TODO add test
