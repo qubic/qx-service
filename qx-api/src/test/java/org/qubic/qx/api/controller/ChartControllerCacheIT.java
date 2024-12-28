@@ -38,6 +38,7 @@ class ChartControllerCacheIT extends AbstractSpringIntegrationTest {
 
     @Test
     void getAveragePriceForAsset_givenCacheEvicted_thenHitServiceAgain() {
+        qxCacheManager.evictChartCachesForAsset(ISSUER, "ASSET");
         controller.getAveragePriceForAsset(ISSUER, "ASSET");
         controller.getAveragePriceForAsset(ISSUER, "ASSET");
         qxCacheManager.evictChartCachesForAsset(ISSUER, "ASSET");
