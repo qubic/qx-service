@@ -42,7 +42,6 @@ class IlCoreMapperIT {
         assertThat(transaction.tick()).isEqualTo(12345);
         assertThat(transaction.inputType()).isEqualTo(5);
         assertThat(transaction.inputSize()).isEqualTo(56);
-        assertThat(transaction.moneyFlew()).isTrue();
         // QxAssetOrderData[issuer=CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL, name=CFB, price=3, numberOfShares=9]
         assertThat(transaction.extraData()).isInstanceOf(QxAssetOrderData.class);
         QxAssetOrderData extraData = (QxAssetOrderData) transaction.extraData();

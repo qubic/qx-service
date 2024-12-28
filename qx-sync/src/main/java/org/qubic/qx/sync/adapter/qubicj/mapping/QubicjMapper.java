@@ -4,9 +4,9 @@ import at.qubic.api.domain.std.SignedTransaction;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.qubic.qx.sync.domain.AssetOrder;
+import org.qubic.qx.sync.domain.Transaction;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
-import org.qubic.qx.sync.domain.Transaction;
 
 import java.util.List;
 
@@ -25,7 +25,6 @@ public interface QubicjMapper {
     @Mapping(target = "inputType", source = "transaction.inputType", qualifiedBy = UnsignedShortMapping.class)
     @Mapping(target = "inputSize", source = "transaction.inputSize", qualifiedBy = UnsignedShortMapping.class)
     @Mapping(target = "extraData", source = "transaction", qualifiedBy = ExtraDataMapping.class)
-    @Mapping(target = "moneyFlew", ignore = true)
     Transaction map(SignedTransaction source);
 
     @Mapping(target = "epoch", qualifiedBy = UnsignedShortMapping.class)

@@ -8,6 +8,5 @@ public record Transaction(
         long tick,
         int inputType, // operation type
         int inputSize, // extra data size
-        ExtraData extraData, // hex
-        Boolean moneyFlew
+        ExtraData extraData // hex
 ) { }

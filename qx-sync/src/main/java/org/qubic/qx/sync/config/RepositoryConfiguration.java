@@ -2,10 +2,10 @@ package org.qubic.qx.sync.config;
 
 import org.qubic.qx.sync.domain.AssetOrder;
 import org.qubic.qx.sync.domain.Trade;
-import org.qubic.qx.sync.domain.TransactionWithTime;
 import org.qubic.qx.sync.repository.TickRepository;
 import org.qubic.qx.sync.repository.TradeRepository;
 import org.qubic.qx.sync.repository.TransactionRepository;
+import org.qubic.qx.sync.repository.domain.TransactionMessage;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,11 +20,11 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RepositoryConfiguration {
 
     @Bean
-    public ReactiveRedisTemplate<String, TransactionWithTime> transactionRedisTemplate(ReactiveRedisConnectionFactory connectionFactory) {
-        Jackson2JsonRedisSerializer<TransactionWithTime> serializer = new Jackson2JsonRedisSerializer<>(TransactionWithTime.class);
-        RedisSerializationContext.RedisSerializationContextBuilder<String, TransactionWithTime> builder =
+    public ReactiveRedisTemplate<String, TransactionMessage> transactionRedisTemplate(ReactiveRedisConnectionFactory connectionFactory) {
+        Jackson2JsonRedisSerializer<TransactionMessage> serializer = new Jackson2JsonRedisSerializer<>(TransactionMessage.class);
+        RedisSerializationContext.RedisSerializationContextBuilder<String, TransactionMessage> builder =
                 RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
-        RedisSerializationContext<String, TransactionWithTime> context = builder
+        RedisSerializationContext<String, TransactionMessage> context = builder
                 .value(serializer)
                 .hashValue(serializer)
                 .build();
@@ -54,7 +54,7 @@ public class RepositoryConfiguration {
     }
 
     @Bean
-    TransactionRepository transactionRepository(ReactiveRedisTemplate<String, TransactionWithTime> redisTransactionTemplate) {
+    TransactionRepository transactionRepository(ReactiveRedisTemplate<String, TransactionMessage> redisTransactionTemplate) {
         return new TransactionRepository(redisTransactionTemplate);
     }
 

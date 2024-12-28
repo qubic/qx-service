@@ -26,6 +26,6 @@ public class Transaction {
     private int inputType;
     private int inputSize;
     private ExtraData extraData;
-    private Boolean moneyFlew; // can be null (unknown)
+    private Boolean moneyFlew; // TODO remove not used anymore
 
 }

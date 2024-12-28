@@ -1,15 +1,11 @@
 package org.qubic.qx.sync.adapter.il;
 
 import io.micrometer.core.instrument.util.IOUtils;
-import okhttp3.mockwebserver.Dispatcher;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.il.domain.IlTransaction;
 import org.qubic.qx.sync.domain.QxAssetOrderData;
 import org.qubic.qx.sync.domain.TickData;
-import org.qubic.qx.sync.domain.TickTransactionsStatus;
 import org.qubic.qx.sync.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -19,7 +15,6 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Map;
 import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +46,6 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
                 .verifyComplete();
 
         assertRequest("/v1/core/getTickInfo");
-
     }
 
     @Test
@@ -80,7 +74,13 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
 
     @Test
     void getTickQxTransactions() {
-        mockQxTransactionResponses();
+        String body = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
+                "/testdata/il/get-tick-transactions-response.json")), StandardCharsets.UTF_8);
+
+        prepareResponse(response -> response
+                .setResponseCode(HttpStatus.OK.value())
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setBody(body));
 
         Transaction expected = new Transaction("naadpiyzgqfhdcygtucgiewovdzgqhfulymzvwvblgpaivwgtdkmlggcvngi",
                 "EYEFDKGKDIWFUFIVYNXUKJNWWLUAKGYFTXMQDPJEVFIDEOAMNMROUYNAIQDG",
@@ -92,41 +92,12 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
                 new QxAssetOrderData("CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL",
                         "CFB",
                         3,
-                        9)
-                ,null);
+                        9));
 
         StepVerifier.create(apiService.getQxTransactions(123L).log())
                 .expectNext(expected)
                 .verifyComplete();
 
-    }
-
-    private void mockQxTransactionResponses() {
-        String statusBody = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
-                "/testdata/il/get-tick-transactions-status-response.json"
-        )), StandardCharsets.UTF_8);
-
-        String body = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
-                "/testdata/il/get-tick-transactions-response.json")), StandardCharsets.UTF_8);
-
-        // dispatch responses base on url as we call different urls asynchronously
-        final Dispatcher dispatcher = new Dispatcher() {
-            @Override
-            public MockResponse dispatch (RecordedRequest request) {
-                return switch (Objects.requireNonNull(request.getPath())) {
-                    case "/v1/core/getTickTransactions" -> new MockResponse()
-                            .setResponseCode(HttpStatus.OK.value())
-                            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                            .setBody(body);
-                    case "/v1/core/getTickTransactionsStatus"  -> new MockResponse()
-                            .setResponseCode(HttpStatus.OK.value())
-                            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                            .setBody(statusBody);
-                    default -> new MockResponse().setResponseCode(404);
-                };
-            }
-        };
-        integrationLayer.setDispatcher(dispatcher);
     }
 
     @Test
@@ -153,30 +124,6 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
                 .verifyComplete();
 
         assertRequest("/v1/core/getTickTransactions");
-    }
-
-    @Test
-    void getTickTransactionsStatus() {
-
-        String body = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
-                "/testdata/il/get-tick-transactions-status-response.json"
-        )), StandardCharsets.UTF_8);
-        prepareResponse(response -> response
-                .setResponseCode(HttpStatus.OK.value())
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(body));
-
-        Map<String, Boolean> stringBooleanMap = new java.util.HashMap<>();
-        stringBooleanMap.put("dlooclqhsdwsidmawyfbjuebpmsddrfrozkrbpswicrjuahmtkbtbibfomva", false);
-        stringBooleanMap.put("obzmnvbtyjgnzanwjokywwgzofydfynnlqtoutzwaeacroctebcbkrobawwo", true);
-        stringBooleanMap.put("test", null);
-        TickTransactionsStatus expected = new TickTransactionsStatus(16510807, 2, stringBooleanMap);
-
-        StepVerifier.create(apiService.getTickTransactionsStatus(16510807))
-                .expectNext(expected)
-                .verifyComplete();
-
-        assertRequest("/v1/core/getTickTransactionsStatus");
     }
 
 }

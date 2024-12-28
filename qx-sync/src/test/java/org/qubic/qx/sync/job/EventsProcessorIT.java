@@ -50,16 +50,16 @@ class EventsProcessorIT {
         String destinationId = "BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARMID";
         String issuer = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB";
         QxAssetOrderData orderData = new QxAssetOrderData(issuer, "MLM", 1, 2);
-        TransactionWithTime transaction = new TransactionWithTime(transactionHash,
+        Transaction tx = new Transaction(transactionHash,
                 sourceId,
-                destinationId, 1, 16585576, Instant.EPOCH.getEpochSecond(), 5, 0,
-                orderData,
-                null);
-
+                destinationId, 1, 16585576,5, 0,
+                orderData
+        );
         List<TransactionEvents> transactionEventList = Arrays.asList(JsonUtil.fromJson(responseJson, TransactionEvents[].class));
         List<TransactionEvent> events = transactionEventList.stream().filter(te -> StringUtils.equals(te.txId(), transactionHash)).findAny().orElseThrow().events();
+        TransactionWithMeta transaction = TransactionWithMeta.builder().transaction(tx).events(events).time(Instant.EPOCH).build();
 
-        List<Trade> trades = processor.calculateTrades(transaction, events, orderData);
+        List<Trade> trades = processor.calculateTrades(transaction, orderData);
         assertThat(trades.size()).isEqualTo(2);
 
 

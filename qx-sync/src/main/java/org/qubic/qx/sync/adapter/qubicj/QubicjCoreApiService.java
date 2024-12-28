@@ -10,16 +10,14 @@ import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.Qx;
 import org.qubic.qx.sync.adapter.exception.EmptyResultException;
 import org.qubic.qx.sync.adapter.qubicj.mapping.QubicjMapper;
+import org.qubic.qx.sync.domain.Transaction;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
-import org.qubic.qx.sync.domain.TickTransactionsStatus;
-import org.qubic.qx.sync.domain.Transaction;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -38,12 +36,6 @@ public class QubicjCoreApiService implements CoreApiService {
     public QubicjCoreApiService(ComputorService computorService, QubicjMapper mapper) {
         this.computorService = computorService;
         this.mapper = mapper;
-    }
-
-    @Override
-    public Mono<TickTransactionsStatus> getTickTransactionsStatus(long tick) {
-        log.debug("Getting tick transactions status not implemented for qubicj.");
-        return Mono.just(new TickTransactionsStatus(tick, 0, Map.of()));
     }
 
     @Override

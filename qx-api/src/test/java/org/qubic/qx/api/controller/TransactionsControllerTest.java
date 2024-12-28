@@ -118,30 +118,30 @@ class TransactionsControllerTest {
         ExtraData extraData;
         if (inputType == 1) {
             extraData = new QxIssueAssetData(
-                    RandomStringUtils.random(7),
+                    RandomStringUtils.insecure().nextAlphabetic(7),
                     (long) (Math.random() * 10000),
                     "01010100",
                     (byte) 20
             );
         } else if (inputType == 2) {
             extraData = new QxTransferAssetData(
-              RandomStringUtils.random(32),
-              RandomStringUtils.random(7),
-              RandomStringUtils.random(32),
+              RandomStringUtils.insecure().nextAlphabetic(32),
+              RandomStringUtils.insecure().nextAlphabetic(7),
+              RandomStringUtils.insecure().nextAlphabetic(32),
               42
             );
         } else {
             extraData = new QxAssetOrderData(
-              RandomStringUtils.random(32),
-              RandomStringUtils.random(32),
+              RandomStringUtils.insecure().nextAlphabetic(32),
+              RandomStringUtils.insecure().nextAlphabetic(32),
               123,
                     42
             );
         }
         return new TransactionDto(
                 Instant.now(),
-                RandomStringUtils.random(32),
-                RandomStringUtils.random(32),
+                RandomStringUtils.insecure().nextAlphabetic(32),
+                RandomStringUtils.insecure().nextAlphabetic(32),
                 42,
                 123,
                 inputType,

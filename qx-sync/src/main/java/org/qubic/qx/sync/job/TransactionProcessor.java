@@ -5,6 +5,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.qubic.qx.sync.domain.*;
 import org.qubic.qx.sync.repository.TradeRepository;
 import org.qubic.qx.sync.repository.TransactionRepository;
+import org.qubic.qx.sync.repository.domain.TransactionMessage;
+import org.qubic.qx.sync.repository.mapper.TransactionMessageMapper;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -16,6 +18,7 @@ public class TransactionProcessor {
     private final TransactionRepository transactionRepository;
     private final TradeRepository tradeRepository;
     private final EventsProcessor eventsProcessor;
+    private final TransactionMessageMapper transactionMessageMapper = new TransactionMessageMapper();
 
     public TransactionProcessor(TransactionRepository transactionRepository, TradeRepository tradeRepository, EventsProcessor eventsProcessor) {
         this.transactionRepository = transactionRepository;
@@ -23,55 +26,47 @@ public class TransactionProcessor {
         this.eventsProcessor = eventsProcessor;
     }
 
-    public Mono<?> processQxTransaction(TransactionWithTime transaction, List<TransactionEvent> events) {
-
-        Mono<TransactionWithTime> storeTransactionMono = Mono.defer(() -> storeTransaction(transaction));
+    public Mono<?> processQxTransaction(TransactionWithMeta transaction) {
 
         if (transaction.extraData() instanceof QxAssetOrderData orderData) {
 
-            List<Trade> trades = eventsProcessor.calculateTrades(transaction, events, orderData);
-
+            List<Trade> trades = eventsProcessor.calculateTrades(transaction, orderData);
             if (CollectionUtils.isNotEmpty(trades)) {
-
-                // if there is a trade the transaction and the trade should get stored
-                return storeTransactionMono
-                        .then(storeTrades(trades))
-                        .then(Mono.just(transaction));
-
+                // store transaction and trades
+                return storeTransaction(transaction, true)
+                        .then(storeTrades(trades));
             } else {
-
-                // don't store anything but notify that there was a transaction (for clearing caches)
+                // no relevant events but notify
                 log.info("No trades found for transaction [{}].", transaction.transactionHash());
-                // FIXME inform about unsuccessful transaction
+                return storeTransaction(transaction, false);
 
             }
 
         } else if (transaction.extraData() instanceof QxTransferAssetData) { // TODO add test
 
-            if (eventsProcessor.isAssetTransferred(events)) {
-                return storeTransactionMono
-                        .then(Mono.just(transaction));
+            if (eventsProcessor.isAssetTransferred(transaction.getEvents())) {
+                return storeTransaction(transaction, true);
             } else {
                 log.info("No asset transferred with transaction [{}]", transaction.transactionHash());
             }
 
         } else if (transaction.extraData() instanceof QxIssueAssetData) { // TODO add test
 
-            if (eventsProcessor.isAssetIssued(events)) {
-                return storeTransactionMono
-                        .then(Mono.just(transaction));
+            if (eventsProcessor.isAssetIssued(transaction.getEvents())) {
+                return storeTransaction(transaction, true);
             } else {
                 log.info("No asset issued with transaction [{}]", transaction.transactionHash());
             }
 
         }
 
-        return Mono.just(transaction);
+        return Mono.empty();
 
     }
 
-    private Mono<TransactionWithTime> storeTransaction(TransactionWithTime tx) {
-        return transactionRepository.putTransactionIntoQueue(tx);
+    private Mono<TransactionMessage> storeTransaction(TransactionWithMeta tx, boolean relevantEvents) {
+        TransactionMessage transactionMessage = transactionMessageMapper.map(tx.getTransaction(), tx.getTime(), relevantEvents);
+        return transactionRepository.putTransactionIntoQueue(transactionMessage);
     }
 
     private Mono<List<Trade>> storeTrades(List<Trade> trades) {

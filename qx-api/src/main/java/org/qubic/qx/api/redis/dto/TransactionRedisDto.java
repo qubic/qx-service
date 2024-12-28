@@ -12,5 +12,5 @@ public record TransactionRedisDto(
         int inputType,
         int inputSize,
         ExtraData extraData, // compatible with domain object
-        Boolean moneyFlew
+        Boolean moneyFlew // FIXME removed
 ) { }
