@@ -23,6 +23,6 @@ public class QubicjEventApiService implements EventApiService {
 
     private static <T> Mono<T> notSupported() {
         log.warn("Event api not supported by qubicj.");
-        return Mono.empty();
+        return Mono.error(UnsupportedOperationException::new);
     }
 }
