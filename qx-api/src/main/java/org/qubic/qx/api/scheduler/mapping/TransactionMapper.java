@@ -15,6 +15,7 @@ public interface TransactionMapper extends RedisToDomainMapper<Transaction, Tran
     @Mapping(target = "hash", source = "transactionHash")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "tickTime", source = "timestamp")
+    @Mapping(target = "moneyFlew", ignore = true)
     Transaction map(TransactionRedisDto source);
 
     default Instant map(long timestamp) {

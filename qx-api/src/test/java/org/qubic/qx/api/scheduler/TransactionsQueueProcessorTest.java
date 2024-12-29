@@ -2,6 +2,7 @@ package org.qubic.qx.api.scheduler;
 
 import at.qubic.api.crypto.IdentityUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.db.AssetsRepository;
 import org.qubic.qx.api.db.TransactionsRepository;
 import org.qubic.qx.api.db.domain.Transaction;
@@ -10,7 +11,10 @@ import org.qubic.qx.api.redis.dto.TransactionRedisDto;
 import org.qubic.qx.api.redis.repository.TransactionsRedisRepository;
 import org.qubic.qx.api.scheduler.mapping.TransactionMapper;
 
-import static org.mockito.Mockito.mock;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @Slf4j
 class TransactionsQueueProcessorTest extends QueueProcessorTest<Transaction, TransactionRedisDto> {
@@ -25,6 +29,16 @@ class TransactionsQueueProcessorTest extends QueueProcessorTest<Transaction, Tra
         processor = new TransactionsProcessor(redisRepository, repository, mapper, identityUtil, assetsRepository, qxCacheManager);
     }
 
+    @Test
+    void process_givenNoRelevantEvents_thenDoNotStore() {
+        TransactionRedisDto source = createSourceMock();
+        when(source.relevantEvents()).thenReturn(false);
+        Optional<Transaction> transaction = processor.process(source);
+        assertThat(transaction).isEmpty();
+        verifyNoInteractions(repository);
+        verifyNoInteractions(mapper);
+    }
+
     @Override
     protected Transaction createTargetMock() {
         return mock();
@@ -32,7 +46,10 @@ class TransactionsQueueProcessorTest extends QueueProcessorTest<Transaction, Tra
 
     @Override
     protected TransactionRedisDto createSourceMock() {
-        return mock();
+        TransactionRedisDto dto = mock();
+        when(dto.transactionHash()).thenReturn("foo");
+        when(dto.relevantEvents()).thenReturn(true);
+        return dto;
     }
 
 }

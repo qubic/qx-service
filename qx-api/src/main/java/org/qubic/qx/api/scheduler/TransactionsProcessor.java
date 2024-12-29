@@ -1,9 +1,7 @@
 package org.qubic.qx.api.scheduler;
 
 import at.qubic.api.crypto.IdentityUtil;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.api.db.AssetsRepository;
 import org.qubic.qx.api.db.domain.*;
@@ -30,31 +28,41 @@ public class TransactionsProcessor extends QueueProcessor<Transaction, Transacti
     }
 
     @Override
-    protected void postProcess(@NonNull Transaction targetDto, @NonNull TransactionRedisDto sourceDto) {
+    protected Optional<Transaction> mapAndSave(TransactionRedisDto sourceDto) {
+        if (sourceDto.relevantEvents()) {
+            return super.mapAndSave(sourceDto);
+        } else {
+            log.info("Not storing transaction [{}]. No relevant events.", sourceDto.transactionHash());
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    protected void postProcess(TransactionRedisDto sourceDto) {
         ExtraData extraData = sourceDto.extraData();
         if (extraData instanceof QxAssetOrderData orderData) {
-            // Attention: we don't add assets for simple orders currently.
+            // TODO remove these caches and corresponding endpoints. They are not used.
+            // we ignore unknown assets here
             log.info("Evicting order caches.");
             qxCacheManager.evictOrdersCache();
             qxCacheManager.evictOrderCacheForAsset(orderData.issuer(), orderData.name());
             qxCacheManager.evictOrderCacheForEntity(sourceDto.sourcePublicId());
         } else if (extraData instanceof QxTransferAssetData transferData) {
-            createAssetIfItDoesNotExist(transferData.issuer(), transferData.name(), sourceDto.moneyFlew()); // TODO remove money flew dependency
+            createAssetIfItDoesNotExist(transferData.issuer(), transferData.name());
             log.info("Evicting transfer caches.");
             qxCacheManager.evictTransferCache();
             qxCacheManager.evictTransferCacheForAsset(transferData.issuer(), transferData.name());
             qxCacheManager.evictTransferCacheForEntity(sourceDto.sourcePublicId());
             qxCacheManager.evictTransferCacheForEntity(transferData.newOwner());
         } else if (extraData instanceof QxIssueAssetData issueAssetData) {
-            createAssetIfItDoesNotExist(sourceDto.sourcePublicId(), issueAssetData.name(), sourceDto.moneyFlew()); // TODO remove money flew dependency
+            createAssetIfItDoesNotExist(sourceDto.sourcePublicId(), issueAssetData.name());
             qxCacheManager.evictAssetsCaches();
         }
     }
 
-    private void createAssetIfItDoesNotExist(String issuer, String name, Boolean moneyFlew) {
+    private void createAssetIfItDoesNotExist(String issuer, String name) {
         try {
-            if (BooleanUtils.isTrue(moneyFlew)
-                    && identityUtil.isValidIdentity(issuer)
+            if (identityUtil.isValidIdentity(issuer)
                     && StringUtils.isNotBlank(name)
                     && StringUtils.length(name) < 8) {
                 assetsRepository.findByIssuerAndName(issuer, name)

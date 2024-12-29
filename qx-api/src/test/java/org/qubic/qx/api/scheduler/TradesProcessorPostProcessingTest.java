@@ -18,7 +18,7 @@ class TradesProcessorPostProcessingTest {
         when(sourceDto.assetName()).thenReturn("ASSET");
         when(sourceDto.maker()).thenReturn("MAKER");
         when(sourceDto.taker()).thenReturn("TAKER");
-        processor.postProcess(mock(), sourceDto);
+        processor.postProcess(sourceDto);
 
         verify(qxCacheManager).evictTradesCache();
         verify(qxCacheManager).evictTradeCacheForAsset("ISSUER", "ASSET");

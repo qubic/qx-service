@@ -32,7 +32,7 @@ class TransactionsProcessorPostProcessingTest {
         when(orderData.name()).thenReturn("ASSET");
         when(source.sourcePublicId()).thenReturn("SOURCE_IDENTITY");
 
-        processor.postProcess(mock(), source);
+        processor.postProcess(source);
 
         qxCacheManager.evictOrdersCache();
         qxCacheManager.evictOrderCacheForAsset("ISSUER", "ASSET");
@@ -48,7 +48,7 @@ class TransactionsProcessorPostProcessingTest {
         when(source.extraData()).thenReturn(transferAssetData);
         when(source.sourcePublicId()).thenReturn("SOURCE_IDENTITY");
 
-        processor.postProcess(mock(), source);
+        processor.postProcess(source);
 
         qxCacheManager.evictTransferCache();
         qxCacheManager.evictTransferCacheForAsset("ISSUER", "ASSET");
@@ -63,11 +63,10 @@ class TransactionsProcessorPostProcessingTest {
                 "ISSUER", "ASSET", "NEW_OWNER", 42
         );
         when(source.extraData()).thenReturn(transferAssetData);
-        when(source.moneyFlew()).thenReturn(true);
         when(identityUtil.isValidIdentity(anyString())).thenReturn(true);
         when(assetsRepository.findByIssuerAndName("ISSUER", "ASSET")).thenReturn(Optional.of(mock()));
 
-        processor.postProcess(mock(), source);
+        processor.postProcess(source);
         verify(assetsRepository, never()).save(any(Asset.class));
     }
 
@@ -78,11 +77,10 @@ class TransactionsProcessorPostProcessingTest {
                 "ISSUER", "ASSET", "NEW_OWNER", 42
         );
         when(source.extraData()).thenReturn(transferAssetData);
-        when(source.moneyFlew()).thenReturn(true);
         when(identityUtil.isValidIdentity(anyString())).thenReturn(true);
         when(assetsRepository.save(any(Asset.class))).then(args -> args.getArgument(0));
 
-        processor.postProcess(mock(), source);
+        processor.postProcess(source);
         verify(assetsRepository).save(Asset.builder().issuer("ISSUER").name("ASSET").verified(false).build());
     }
 
@@ -93,7 +91,7 @@ class TransactionsProcessorPostProcessingTest {
                 "ISSUER", "ASSET_NAME_TOO_LONG", "NEW_OWNER", 42
         );
         when(source.extraData()).thenReturn(transferAssetData);
-        processor.postProcess(mock(), source);
+        processor.postProcess(source);
         verifyNoInteractions(assetsRepository);
     }
 
@@ -104,10 +102,9 @@ class TransactionsProcessorPostProcessingTest {
                 "ISSUER", "ASSET", "NEW_OWNER", 42
         );
         when(source.extraData()).thenReturn(transferAssetData);
-        when(source.moneyFlew()).thenReturn(true);
         when(identityUtil.isValidIdentity(anyString())).thenThrow(new RuntimeException("test"));
 
-        Assertions.assertDoesNotThrow(() -> processor.postProcess(mock(), source));
+        Assertions.assertDoesNotThrow(() -> processor.postProcess(source));
         verifyNoInteractions(assetsRepository);
     }
 
@@ -118,14 +115,14 @@ class TransactionsProcessorPostProcessingTest {
         when(identityUtil.isValidIdentity(anyString())).thenReturn(true);
         when(assetsRepository.save(any(Asset.class))).then(args -> args.getArgument(0));
 
-        processor.postProcess(mock(), source);
+        processor.postProcess(source);
         verify(assetsRepository).save(Asset.builder().issuer("ISSUER").name("NAME").verified(false).build());
     }
 
     @Test
     void postProcess_givenIssueAsset_thenEvictCache() {
         TransactionRedisDto source = createIssueAssetTransaction();
-        processor.postProcess(mock(), source);
+        processor.postProcess(source);
         verify(qxCacheManager).evictAssetsCaches();
     }
 
@@ -136,7 +133,6 @@ class TransactionsProcessorPostProcessingTest {
         );
         when(source.extraData()).thenReturn(issueAsset);
         when(source.sourcePublicId()).thenReturn("ISSUER");
-        when(source.moneyFlew()).thenReturn(true);
         return source;
     }
 

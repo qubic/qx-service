@@ -13,9 +13,9 @@ import java.util.Optional;
 @Slf4j
 public abstract class QueueProcessor<T, S> {
 
-    private final QueueProcessingRepository<S> redisRepository;
-    private final CrudRepository<T, Long> repository;
-    private final RedisToDomainMapper<T, S> mapper;
+    protected final QueueProcessingRepository<S> redisRepository;
+    protected final CrudRepository<T, Long> repository;
+    protected final RedisToDomainMapper<T, S> mapper;
 
     public QueueProcessor(QueueProcessingRepository<S> redisRepository, CrudRepository<T, Long> repository, RedisToDomainMapper<T, S> mapper) {
         this.redisRepository = redisRepository;
@@ -43,12 +43,10 @@ public abstract class QueueProcessor<T, S> {
 
     protected Optional<T> process(@NonNull S sourceDto) {
         try {
-            T targetDto = mapper.map(sourceDto);
-            targetDto = repository.save(targetDto);
-            log.info("Saved to database: {}", targetDto);
-            postProcess(targetDto, sourceDto);
+            Optional<T> targetDto = mapAndSave(sourceDto);
+            postProcess(sourceDto);
             removeFromProcessingQueue(sourceDto);
-            return Optional.of(targetDto);
+            return targetDto;
         } catch (RuntimeException e) {
             log.error("Error processing redis message {}.", sourceDto, e);
             Long length = redisRepository.pushIntoErrorsQueue(sourceDto);
@@ -58,7 +56,19 @@ public abstract class QueueProcessor<T, S> {
         }
     }
 
-    protected void postProcess(@NonNull final T targetDto, @NonNull final S sourceDto) {
+    protected Optional<T> mapAndSave(S sourceDto) {
+        T targetDto = mapper.map(sourceDto);
+        targetDto = saveToDatabase(targetDto);
+        return Optional.of(targetDto);
+    }
+
+    private T saveToDatabase(T targetDto) {
+        targetDto = repository.save(targetDto);
+        log.info("Saved to database: {}", targetDto);
+        return targetDto;
+    }
+
+    protected void postProcess(final S sourceDto) {
     }
 
     protected void removeFromProcessingQueue(S sourceDto) {

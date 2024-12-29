@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TransactionMapperSpringIT extends AbstractSpringIntegrationTest { // new identities are saved to the db
 
     private static final String TEST_TRANSACTION_DATA = """
-            {"transactionHash":"kgmteqsciuhikcqrvqzfnlryywpgtnvtvaphbvgbucqgiqdkwfqtgfbezjto","sourcePublicId":"VFWIEWBYSIMPBDHBXYFJVMLGKCCABZKRYFLQJVZTRBUOYSUHOODPVAHHKXPJ","destinationPublicId":"BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARMID","amount":1000000,"tick":16519142,"timestamp":1728818707,"inputType":2,"inputSize":80,"extraData":{"@class":".QxTransferAssetData","issuer":"CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL","name":"CFB","newOwner":"JEJDVYSXKRBJJEFTHXJBNDYBIKVABKLIYHWGOFXAPGJYBRUVXHCLUMBFTOFB","numberOfShares":8239152},"moneyFlew":true}""";
+            {"transactionHash":"kgmteqsciuhikcqrvqzfnlryywpgtnvtvaphbvgbucqgiqdkwfqtgfbezjto","sourcePublicId":"VFWIEWBYSIMPBDHBXYFJVMLGKCCABZKRYFLQJVZTRBUOYSUHOODPVAHHKXPJ","destinationPublicId":"BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARMID","amount":1000000,"tick":16519142,"timestamp":1728818707,"inputType":2,"inputSize":80,"extraData":{"@class":".QxTransferAssetData","issuer":"CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL","name":"CFB","newOwner":"JEJDVYSXKRBJJEFTHXJBNDYBIKVABKLIYHWGOFXAPGJYBRUVXHCLUMBFTOFB","numberOfShares":8239152},"relevantEvents":true}""";
 
     @Autowired
     private TransactionMapper transactionMapper;
@@ -35,7 +35,7 @@ class TransactionMapperSpringIT extends AbstractSpringIntegrationTest { // new i
         assertThat(mapped.getAmount()).isEqualTo(dto.amount());
         assertThat(mapped.getInputSize()).isEqualTo(dto.inputSize());
         assertThat(mapped.getExtraData()).isEqualTo(dto.extraData());
-        assertThat(mapped.getMoneyFlew()).isEqualTo(dto.moneyFlew());
+        assertThat(mapped.getMoneyFlew()).isNull();
     }
 
 }
