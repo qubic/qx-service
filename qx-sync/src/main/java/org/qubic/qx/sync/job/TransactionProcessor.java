@@ -42,7 +42,7 @@ public class TransactionProcessor {
 
             }
 
-        } else if (transaction.extraData() instanceof QxTransferAssetData) { // TODO add test
+        } else if (transaction.extraData() instanceof QxTransferAssetData) {
 
             if (eventsProcessor.isAssetTransferred(transaction.getEvents())) {
                 return storeTransaction(transaction, true);
@@ -50,7 +50,7 @@ public class TransactionProcessor {
                 log.info("No asset transferred with transaction [{}]", transaction.transactionHash());
             }
 
-        } else if (transaction.extraData() instanceof QxIssueAssetData) { // TODO add test
+        } else if (transaction.extraData() instanceof QxIssueAssetData) {
 
             if (eventsProcessor.isAssetIssued(transaction.getEvents())) {
                 return storeTransaction(transaction, true);

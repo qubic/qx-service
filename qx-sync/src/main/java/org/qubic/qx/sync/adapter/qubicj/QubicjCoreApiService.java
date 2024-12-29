@@ -67,9 +67,7 @@ public class QubicjCoreApiService implements CoreApiService {
                 .transformDeferred(BulkheadOperator.of(bulkhead))
                 .retryWhen(Retry.backoff(RETRIES, Duration.ofSeconds(1)))
                 .doOnError(t -> log.error("Failed to get transactions for tick: [{}].", tick))
-                .switchIfEmpty(computorService.getTickTransactions((int) tick).transformDeferred(BulkheadOperator.of(bulkhead))) // FIXME fix in qubicj
-                .switchIfEmpty(computorService.getTickTransactions((int) tick).transformDeferred(BulkheadOperator.of(bulkhead))) // FIXME fix in qubicj
-                .switchIfEmpty( // log a warning. That shouldn't happen often. // FIXME fix in qubicj
+                .switchIfEmpty( // log a warning. That shouldn't happen often.
                         Mono.just(String.format("Received no transactions for tick [%d].", tick))
                                 .doOnNext(log::warn)
                                 .thenMany(Flux.empty())
