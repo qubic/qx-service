@@ -35,7 +35,7 @@ class TransactionMapperSpringIT extends AbstractSpringIntegrationTest { // new i
         assertThat(mapped.getAmount()).isEqualTo(dto.amount());
         assertThat(mapped.getInputSize()).isEqualTo(dto.inputSize());
         assertThat(mapped.getExtraData()).isEqualTo(dto.extraData());
-        assertThat(mapped.getMoneyFlew()).isNull();
+        assertThat(mapped.getMoneyFlew()).isTrue();
     }
 
 }
