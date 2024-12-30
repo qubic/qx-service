@@ -1,7 +1,7 @@
 package org.qubic.qx.api.controller;
 
 import jakarta.validation.constraints.Size;
-import org.qubic.qx.api.controller.domain.AvgPriceData;
+import org.qubic.qx.api.db.dto.AvgPriceData;
 import org.qubic.qx.api.controller.service.ChartService;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;

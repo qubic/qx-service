@@ -1,6 +1,6 @@
 package org.qubic.qx.api.db;
 
-import org.qubic.qx.api.controller.domain.TransactionDto;
+import org.qubic.qx.api.db.dto.TransactionDto;
 import org.qubic.qx.api.db.domain.Transaction;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jdbc.repository.query.Query;

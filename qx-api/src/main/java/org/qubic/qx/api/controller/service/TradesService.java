@@ -1,6 +1,6 @@
 package org.qubic.qx.api.controller.service;
 
-import org.qubic.qx.api.controller.domain.TradeDto;
+import org.qubic.qx.api.db.dto.TradeDto;
 import org.qubic.qx.api.db.TradesRepository;
 
 import java.util.List;

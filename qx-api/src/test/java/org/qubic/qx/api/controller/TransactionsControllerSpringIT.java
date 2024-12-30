@@ -3,7 +3,7 @@ package org.qubic.qx.api.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.AbstractSpringIntegrationTest;
-import org.qubic.qx.api.controller.domain.TransactionDto;
+import org.qubic.qx.api.db.dto.TransactionDto;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
 import org.springframework.web.context.WebApplicationContext;

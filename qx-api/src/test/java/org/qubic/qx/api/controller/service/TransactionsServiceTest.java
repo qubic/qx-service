@@ -1,7 +1,7 @@
 package org.qubic.qx.api.controller.service;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.api.controller.domain.TransactionDto;
+import org.qubic.qx.api.db.dto.TransactionDto;
 import org.qubic.qx.api.db.TransactionsRepository;
 
 import java.util.List;

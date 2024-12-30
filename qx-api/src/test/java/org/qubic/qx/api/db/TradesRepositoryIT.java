@@ -1,8 +1,8 @@
 package org.qubic.qx.api.db;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.api.controller.domain.AvgPriceData;
-import org.qubic.qx.api.controller.domain.TradeDto;
+import org.qubic.qx.api.db.dto.AvgPriceData;
+import org.qubic.qx.api.db.dto.TradeDto;
 import org.qubic.qx.api.db.domain.Asset;
 import org.qubic.qx.api.db.domain.Entity;
 import org.qubic.qx.api.db.domain.Trade;

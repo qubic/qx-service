@@ -3,7 +3,7 @@ package org.qubic.qx.api.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.AbstractSpringIntegrationTest;
-import org.qubic.qx.api.controller.domain.AvgPriceData;
+import org.qubic.qx.api.db.dto.AvgPriceData;
 import org.qubic.qx.api.controller.service.ChartService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;

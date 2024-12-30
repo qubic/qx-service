@@ -1,7 +1,7 @@
 package org.qubic.qx.api.db;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.api.controller.domain.TransactionDto;
+import org.qubic.qx.api.db.dto.TransactionDto;
 import org.qubic.qx.api.db.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;

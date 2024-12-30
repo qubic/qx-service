@@ -1,4 +1,4 @@
-package org.qubic.qx.api.controller.domain;
+package org.qubic.qx.api.db.dto;
 
 import java.io.Serializable;
 import java.time.LocalDate;

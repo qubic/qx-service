@@ -1,7 +1,7 @@
 package org.qubic.qx.api.db;
 
-import org.qubic.qx.api.controller.domain.AvgPriceData;
-import org.qubic.qx.api.controller.domain.TradeDto;
+import org.qubic.qx.api.db.dto.AvgPriceData;
+import org.qubic.qx.api.db.dto.TradeDto;
 import org.qubic.qx.api.db.domain.Trade;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;

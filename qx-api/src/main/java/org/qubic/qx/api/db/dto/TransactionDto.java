@@ -1,4 +1,4 @@
-package org.qubic.qx.api.controller.domain;
+package org.qubic.qx.api.db.dto;
 
 import org.qubic.qx.api.db.domain.ExtraData;
 

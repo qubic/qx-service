@@ -1,7 +1,7 @@
 package org.qubic.qx.api.controller.service;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.api.controller.domain.AvgPriceData;
+import org.qubic.qx.api.db.dto.AvgPriceData;
 import org.qubic.qx.api.db.TradesRepository;
 
 import java.time.Instant;

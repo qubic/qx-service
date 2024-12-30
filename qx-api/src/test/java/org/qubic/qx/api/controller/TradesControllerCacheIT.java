@@ -3,7 +3,7 @@ package org.qubic.qx.api.controller;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.AbstractSpringIntegrationTest;
-import org.qubic.qx.api.controller.domain.TradeDto;
+import org.qubic.qx.api.db.dto.TradeDto;
 import org.qubic.qx.api.controller.service.TradesService;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.springframework.beans.factory.annotation.Autowired;

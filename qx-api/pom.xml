@@ -108,6 +108,14 @@
             <artifactId>testcontainers-redis</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+        </dependency>
         <!-- upgrade commons compress because of vulnerability -->
         <dependency>
             <groupId>org.apache.commons</groupId>

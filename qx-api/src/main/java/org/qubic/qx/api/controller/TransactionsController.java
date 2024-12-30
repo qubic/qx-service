@@ -1,7 +1,7 @@
 package org.qubic.qx.api.controller;
 
 import jakarta.validation.constraints.Size;
-import org.qubic.qx.api.controller.domain.TransactionDto;
+import org.qubic.qx.api.db.dto.TransactionDto;
 import org.qubic.qx.api.controller.service.TransactionsService;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
