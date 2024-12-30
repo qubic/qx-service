@@ -55,27 +55,5 @@ public class TransactionsController {
         return transactionsService.getTransferTransactionsForEntity(identity);
     }
 
-    // orders
-
-    @Cacheable(CACHE_NAME_ORDERS)
-    @GetMapping("/orders")
-    public List<TransactionDto> getOrderTransactions() {
-        return transactionsService.getOrderTransactions();
-    }
-
-    @Cacheable(cacheNames = CACHE_NAME_ORDERS_ASSET, key = CACHE_KEY_ASSET)
-    @GetMapping("/issuer/{issuer}/asset/{asset}/orders")
-    public List<TransactionDto> getOrderTransactionsForAsset(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
-                                                             @PathVariable("asset") @Size(min = 1, max = 7) String asset) {
-        return transactionsService.getOrderTransactionsForAsset(issuer, asset);
-    }
-
-    @Cacheable(CACHE_NAME_ORDERS_ENTITY)
-    @GetMapping("/entity/{identity}/orders")
-    public List<TransactionDto> getOrderTransactionsForEntity(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
-        return transactionsService.getOrderTransactionsForEntity(identity);
-    }
-
-
 
 }

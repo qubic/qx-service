@@ -38,29 +38,6 @@ class TransactionsServiceTest {
         assertThat(transactionsService.getTransferTransactionsForEntity("identity")).isEqualTo(expected);
     }
 
-    // orders
-
-    @Test
-    void getOrderTransactions() {
-        List<TransactionDto> expected = List.of(mock(), mock());
-        when(transactionsRepository.findByInputTypesOrdered(ORDER_INPUT_TYPES, LIMIT)).thenReturn(expected);
-        assertThat(transactionsService.getOrderTransactions()).isEqualTo(expected);
-    }
-
-    @Test
-    void getOrderTransactionsForAsset() {
-        List<TransactionDto> expected = List.of(mock(), mock());
-        when(transactionsRepository.findByAssetOrdered("issuer", "asset", ORDER_INPUT_TYPES, LIMIT)).thenReturn(expected);
-        assertThat(transactionsService.getOrderTransactionsForAsset("issuer", "asset")).isEqualTo(expected);
-    }
-
-    @Test
-    void getOrderTransactionsForEntity() {
-        List<TransactionDto> expected = List.of(mock(), mock());
-        when(transactionsRepository.findBySourceEntityOrdered("identity", ORDER_INPUT_TYPES, LIMIT)).thenReturn(expected);
-        assertThat(transactionsService.getOrderTransactionsForEntity("identity")).isEqualTo(expected);
-    }
-
     // issued assets
 
     @Test

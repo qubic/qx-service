@@ -41,10 +41,8 @@ public class TransactionsProcessor extends QueueProcessor<Transaction, Transacti
     protected void postProcess(TransactionRedisDto sourceDto) {
         ExtraData extraData = sourceDto.extraData();
         if (extraData instanceof QxAssetOrderData orderData) {
-            // TODO remove these caches and corresponding endpoints. They are not used.
             // we ignore unknown assets here
             log.info("Evicting order caches.");
-            qxCacheManager.evictOrdersCache();
             qxCacheManager.evictOrderCacheForAsset(orderData.issuer(), orderData.name());
             qxCacheManager.evictOrderCacheForEntity(sourceDto.sourcePublicId());
         } else if (extraData instanceof QxTransferAssetData transferData) {

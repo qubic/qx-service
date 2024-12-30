@@ -65,44 +65,6 @@ class TransactionsControllerTest {
     }
 
     @Test
-    void getOrderTransactions() {
-        TransactionDto transaction = transaction(5);
-        when(service.getOrderTransactions()).thenReturn(List.of(transaction, transaction));
-        client.get().uri("/orders")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(TransactionDto.class)
-                .hasSize(2)
-                .contains(transaction, transaction);
-    }
-
-    @Test
-    void getOrderTransactionsForAsset() {
-        TransactionDto transaction = transaction(6);
-        when(service.getOrderTransactionsForAsset("ISSUER", "ASSET"))
-                .thenReturn(List.of(transaction, transaction));
-        client.get().uri("/issuer/ISSUER/asset/ASSET/orders")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(TransactionDto.class)
-                .hasSize(2)
-                .contains(transaction, transaction);
-    }
-
-    @Test
-    void getOrderTransactionsForEntity() {
-        TransactionDto transaction = transaction(7);
-        when(service.getOrderTransactionsForEntity("IDENTITY"))
-                .thenReturn(List.of(transaction, transaction));
-        client.get().uri("/entity/IDENTITY/orders")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(TransactionDto.class)
-                .hasSize(2)
-                .contains(transaction, transaction);
-    }
-
-    @Test
     void getIssuedAssets() {
         TransactionDto transaction = transaction(1);
         when(service.getIssuedAssets()).thenReturn(List.of(transaction));

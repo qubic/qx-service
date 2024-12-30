@@ -34,7 +34,6 @@ class TransactionsProcessorPostProcessingTest {
 
         processor.postProcess(source);
 
-        qxCacheManager.evictOrdersCache();
         qxCacheManager.evictOrderCacheForAsset("ISSUER", "ASSET");
         qxCacheManager.evictOrderCacheForEntity("SOURCE_IDENTITY");
     }

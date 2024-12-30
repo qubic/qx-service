@@ -38,31 +38,21 @@ class QxCacheManagerTest {
     }
 
     @Test
-    void evictOrdersCache() {
-        Cache cache = mock();
-        when(redisCacheManager.getCache(CACHE_NAME_ORDERS)).thenReturn(cache);
-        cacheManager.evictOrdersCache();
-        verify(cache).clear();
-    }
-
-    @Test
     void evictOrderCacheForEntity() {
         Cache cache = mock();
-        when(redisCacheManager.getCache(CACHE_NAME_ORDERS_ENTITY)).thenReturn(cache);
         when(redisCacheManager.getCache(CACHE_NAME_ENTITY_BIDS)).thenReturn(cache);
         when(redisCacheManager.getCache(CACHE_NAME_ENTITY_ASKS)).thenReturn(cache);
         cacheManager.evictOrderCacheForEntity("foo");
-        verify(cache, times(3)).evict("foo");
+        verify(cache, times(2)).evict("foo");
     }
 
     @Test
     void evictOrderCacheForAsset() {
         Cache cache = mock();
-        when(redisCacheManager.getCache(CACHE_NAME_ORDERS_ASSET)).thenReturn(cache);
         when(redisCacheManager.getCache(CACHE_NAME_ASSET_BIDS)).thenReturn(cache);
         when(redisCacheManager.getCache(CACHE_NAME_ASSET_ASKS)).thenReturn(cache);
         cacheManager.evictOrderCacheForAsset("foo", "bar");
-        verify(cache, times(3)).evict("foo:bar");
+        verify(cache, times(2)).evict("foo:bar");
     }
 
     @Test

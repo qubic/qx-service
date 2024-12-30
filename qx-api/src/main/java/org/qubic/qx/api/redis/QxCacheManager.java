@@ -28,10 +28,6 @@ public class QxCacheManager {
     public static final String CACHE_NAME_TRANSFERS_ASSET = "cache:transfersAsset";
     public static final String CACHE_NAME_TRANSFERS_ENTITY = "cache:transfersEntity";
 
-    public static final String CACHE_NAME_ORDERS = "cache:orders";
-    public static final String CACHE_NAME_ORDERS_ASSET = "cache:ordersAsset";
-    public static final String CACHE_NAME_ORDERS_ENTITY = "cache:ordersEntity";
-
     public static final String CACHE_KEY_ASSET = "#issuer + ':' + #asset";
 
     public static final String CACHE_NAME_CHART_AVG_PRICE = "cache:chartAvgPrice";
@@ -55,23 +51,16 @@ public class QxCacheManager {
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_TRADES)).evict(String.format("%s:%s", issuer, name));
     }
 
-    public void evictOrdersCache() {
-        log.debug("Clear general oder transaction cache.");
-        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ORDERS)).clear();
-    }
-
     public void evictOrderCacheForEntity(String identity) {
         log.debug("Evicting oder cache for entity [{}].", identity);
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ENTITY_ASKS)).evict(identity);
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ENTITY_BIDS)).evict(identity);
-        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ORDERS_ENTITY)).evict(identity);
     }
 
     public void evictOrderCacheForAsset(String issuer, String name) {
         log.debug("Evicting oder cache for asset for issuer [{}] and name [{}].", issuer, name);
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_ASKS)).evict(String.format("%s:%s", issuer, name));
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_BIDS)).evict(String.format("%s:%s", issuer, name));
-        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ORDERS_ASSET)).evict(String.format("%s:%s", issuer, name));
     }
 
     public void evictTransferCache() {

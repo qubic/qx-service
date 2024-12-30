@@ -50,30 +50,6 @@ class TransactionsControllerSpringIT extends AbstractSpringIntegrationTest {
     }
 
     @Test
-    void getOrderTransactions() {
-        client.get().uri("/orders")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(TransactionDto.class);
-    }
-
-    @Test
-    void getOrderTransactionsForAsset() {
-        client.get().uri("/issuer/{:issuer}/asset/TEST/orders", ISSUER)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(TransactionDto.class);
-    }
-
-    @Test
-    void getOrderTransactionsForEntity() {
-        client.get().uri("/entity/{:identity}/orders", IDENTITY)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(TransactionDto.class);
-    }
-
-    @Test
     void getIssuedAssets() {
         client.get().uri("/issued-assets")
                 .exchange()
