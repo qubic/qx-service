@@ -46,6 +46,9 @@ public class TransactionsProcessor extends QueueProcessor<Transaction, Transacti
             qxCacheManager.evictOrderCacheForAsset(orderData.issuer(), orderData.name());
             qxCacheManager.evictOrderCacheForEntity(sourceDto.sourcePublicId());
         } else if (extraData instanceof QxTransferAssetData transferData) {
+
+            // TODO update asset_owners table (amount +/-) and remove entries with zero amount
+
             createAssetIfItDoesNotExist(transferData.issuer(), transferData.name());
             log.info("Evicting transfer caches.");
             qxCacheManager.evictTransferCache();
