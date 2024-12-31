@@ -42,6 +42,8 @@ public class UniverseCsvImporter {
 
     public List<AssetOwner> importAssetOwners(Reader input) throws IOException {
         CSVParser parser = readCsvFile(input);
+        // at the moment we hold and return all objects in memory. Consider more memory efficient implementation in case
+        // file gets too large.
         List<AssetOwner> assetOwners = parseCsvFile(parser);
         log.info("Parsed [{}] asset owners.", assetOwners.size());
 
@@ -60,6 +62,10 @@ public class UniverseCsvImporter {
 
         assetOwnersRepository.saveAll(assetOwners);
         log.info("Saved new asset owner records.");
+
+        // if we want to make the db completely clean we could delete unused entities here
+        // these entities can result from asset ownership changes on import if transaction history
+        // is not complete. But it's not necessary to handle this atm.
     }
 
     private List<AssetOwner> parseCsvFile(CSVParser parser) {
