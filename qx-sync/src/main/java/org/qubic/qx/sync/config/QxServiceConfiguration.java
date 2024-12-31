@@ -57,8 +57,10 @@ public class QxServiceConfiguration {
     }
 
     @Bean
-    TickSyncJobRunner tickSyncJobRunner(TickSyncJob tickSyncJob, @Value("${sync.interval}") Duration syncInterval) {
-        return new TickSyncJobRunner(tickSyncJob, syncInterval);
+    TickSyncJobRunner tickSyncJobRunner(TickSyncJob tickSyncJob,
+                                        @Value("${sync.interval}") Duration syncInterval,
+                                        @Value("${sync.retry-interval}") Duration retryDuration) {
+        return new TickSyncJobRunner(tickSyncJob, syncInterval, retryDuration);
     }
 
 }
