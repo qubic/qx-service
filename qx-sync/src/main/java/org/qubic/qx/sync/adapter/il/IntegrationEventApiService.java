@@ -18,7 +18,7 @@ import java.util.List;
 @Slf4j
 public class IntegrationEventApiService implements EventApiService {
 
-    private static final int NUM_RETRIES = 1;
+    private static final int NUM_RETRIES = 3;
     private static final String BASE_PATH = "/v1/events";
     private final WebClient webClient;
 

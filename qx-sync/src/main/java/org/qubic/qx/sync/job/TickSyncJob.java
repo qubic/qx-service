@@ -98,7 +98,7 @@ public class TickSyncJob {
                 .flatMap(list -> processTransactions(tickNumber, list))
                 .map(x -> tickNumber)
                 .doOnNext(tno -> log.debug("Synced tick [{}].", tno))
-                .doOnError(err -> log.error("Error processing tick [{}]: {}", tickNumber, err.toString()));
+                .doOnError(err -> log.error("Error processing tick [{}]: {}", tickNumber, err.getMessage()));
     }
 
     private Mono<List<TransactionWithMeta>> queryTransactionsWithMetadata(long tickNumber) {

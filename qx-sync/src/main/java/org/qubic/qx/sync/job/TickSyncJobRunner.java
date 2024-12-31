@@ -1,6 +1,7 @@
 package org.qubic.qx.sync.job;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -9,6 +10,7 @@ import reactor.util.retry.RetryBackoffSpec;
 import java.io.Serializable;
 import java.time.Duration;
 import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 
 @Slf4j
 public class TickSyncJobRunner {
@@ -31,7 +33,7 @@ public class TickSyncJobRunner {
         Flux<? extends Serializable> syncLoop = runSyncJobMono()
                 .flatMap(syncJob::updateLatestSyncedTick)
                 .doOnNext(tick -> log.debug("Sync to [{}] completed.", tick))
-                .doOnError(t -> log.error("Error running sync job.", t))
+                .doOnError(logError())
                 .retryWhen(getRetrySpec())
                 .doOnTerminate(() -> log.debug("Sync run finished. Next run in [{}].", sleepDuration))
                 .repeatWhen(repeat -> repeat.delayElements(sleepDuration));
@@ -42,6 +44,16 @@ public class TickSyncJobRunner {
                         () -> log.debug("Completed sync loop.")
                 );
 
+    }
+
+    private static Consumer<Throwable> logError() {
+        return t -> {
+            if (reactor.core.Exceptions.isRetryExhausted(t) && t.getCause() instanceof WebClientResponseException wce) {
+                log.error("Error running sync job: {}. Cause: {}", t.getMessage(), wce.getMessage());
+            } else {
+                log.error("Error running sync job.", t);
+            }
+        };
     }
 
     private RetryBackoffSpec getRetrySpec() {

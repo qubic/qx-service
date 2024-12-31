@@ -20,7 +20,7 @@ import java.util.function.Function;
 @Slf4j
 public class IntegrationQxApiService implements QxApiService {
 
-    private static final int NUM_RETRIES = 1;
+    private static final int NUM_RETRIES = 3;
     private static final String QX_BASE_PATH_V1 = "/v1/qx";
     private final WebClient webClient;
     private final IlQxMapper qxMapper;
