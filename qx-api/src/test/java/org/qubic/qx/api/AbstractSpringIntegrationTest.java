@@ -48,7 +48,7 @@ public abstract class AbstractSpringIntegrationTest {
 
     // caching
     @Autowired
-    private CacheManager cacheManager;
+    protected CacheManager cacheManager;
 
     protected void evictAllCaches() {
         for(String name : cacheManager.getCacheNames()){
@@ -80,9 +80,8 @@ public abstract class AbstractSpringIntegrationTest {
 
     @AfterEach
     protected void tearDown() throws Exception {
+        log.info("Shutting down integration layer.");
         integrationLayer.shutdown();
     }
-
-
 
 }

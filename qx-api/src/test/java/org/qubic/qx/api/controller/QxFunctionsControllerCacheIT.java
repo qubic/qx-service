@@ -13,9 +13,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import static org.qubic.qx.api.redis.QxCacheManager.CACHE_NAME_FEES;
 
 @SpringBootTest(properties = """
     spring.cache.type=redis
@@ -38,6 +40,8 @@ class QxFunctionsControllerCacheIT extends AbstractSpringIntegrationTest {
 
     @Test
     void getFees_thenHitChache() {
+        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_FEES)).clear();
+
         Fees expected = new Fees(1, 2, 3);
         when(qxService.getFees()).thenReturn(expected);
 

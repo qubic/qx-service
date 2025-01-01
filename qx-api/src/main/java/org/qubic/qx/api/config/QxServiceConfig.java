@@ -51,6 +51,11 @@ public class QxServiceConfig {
     }
 
     @Bean
+    AssetOwnersService assetOwnersService(AssetOwnersRepository assetOwnersRepository) {
+        return new AssetOwnersService(assetOwnersRepository);
+    }
+
+    @Bean
     TransferAssetService transferAssetService(AssetsDbService assetsRepository, EntitiesDbService entitiesRepository, AssetOwnersRepository assetOwnersRepository, ValidationUtility validationUtility) {
         return new TransferAssetService(assetsRepository, entitiesRepository, assetOwnersRepository, validationUtility);
     }

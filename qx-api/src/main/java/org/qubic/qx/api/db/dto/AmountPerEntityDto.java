@@ -4,5 +4,6 @@ import java.io.Serializable;
 import java.math.BigInteger;
 
 public record AmountPerEntityDto(
-        String identity, BigInteger amount
+        String identity,
+        BigInteger amount
 ) implements Serializable { }

@@ -1,6 +1,7 @@
 package org.qubic.qx.api.controller;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.AbstractSpringIntegrationTest;
 import org.qubic.qx.api.controller.service.AssetsService;
@@ -10,9 +11,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import static org.qubic.qx.api.redis.QxCacheManager.CACHE_NAME_ASSETS;
 
 @SpringBootTest(properties = """
     spring.cache.type=redis
@@ -44,9 +47,10 @@ class AssetsControllerCacheIT extends AbstractSpringIntegrationTest {
         assertThat(result1).isEqualTo(result2);
     }
 
+    @BeforeEach
     @AfterEach
     void clearCache() {
-        evictAllCaches();
+        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSETS)).clear();
     }
 
 }

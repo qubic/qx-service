@@ -28,6 +28,8 @@ public class QxCacheManager {
     public static final String CACHE_NAME_TRANSFERS_ASSET = "cache:transfersAsset";
     public static final String CACHE_NAME_TRANSFERS_ENTITY = "cache:transfersEntity";
 
+    public static final String CACHE_NAME_ASSET_OWNERS = "cache:assetOwners";
+
     public static final String CACHE_NAME_GET_OR_CREATE_ASSET =  "cache:getOrCreateAsset";
 
     public static final String CACHE_KEY_ASSET = "#issuer + ':' + #asset";
