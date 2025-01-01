@@ -65,8 +65,10 @@ public class TickSyncJob {
         long endTick = startAndEndTick.getT2(); // we could do +1 here because end tick is exclusive but we better wait one tick
         int numberOfTicks = (int) (endTick - startTick); // we don't sync the latest tick (integration api might still be behind)
         if (numberOfTicks > 0) {
-            if (numberOfTicks > 2) {
-                log.info("Syncing from tick [{}] (incl) to [{}] (excl). Number of ticks: [{}].", startTick, endTick, numberOfTicks);
+            if (numberOfTicks > 1) {
+                if (numberOfTicks > 5) {
+                    log.info("Syncing range from tick [{}] (incl) to [{}] (excl). Number of ticks: [{}].", startTick, endTick, numberOfTicks);
+                }
                 return Flux.range(0, numberOfTicks).map(counter -> startTick + counter);
             } else {
                 return Flux.just(startTick);
