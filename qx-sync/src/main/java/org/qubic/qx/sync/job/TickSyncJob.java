@@ -53,7 +53,7 @@ public class TickSyncJob {
         return Mono.zip(coreService.getTickInfo(), eventService.getLastProcessedTick())
                 .doOnNext(tuple -> {
                     // log if there is a 'larger' gap between current tick and event service
-                    if (Math.abs(tuple.getT1().tick() - tuple.getT2().tickNumber()) > 3) {
+                    if (Math.abs(tuple.getT1().tick() - tuple.getT2().tickNumber()) > 5) {
                         log.info("Current tick: [{}]. Events are available until tick [{}].",
                                 tuple.getT1().tick(), tuple.getT2().tickNumber());
                     }
@@ -65,7 +65,7 @@ public class TickSyncJob {
         long endTick = startAndEndTick.getT2(); // we could do +1 here because end tick is exclusive but we better wait one tick
         int numberOfTicks = (int) (endTick - startTick); // we don't sync the latest tick (integration api might still be behind)
         if (numberOfTicks > 0) {
-            if (numberOfTicks > 1) {
+            if (numberOfTicks > 2) {
                 log.info("Syncing from tick [{}] (incl) to [{}] (excl). Number of ticks: [{}].", startTick, endTick, numberOfTicks);
                 return Flux.range(0, numberOfTicks).map(counter -> startTick + counter);
             } else {
