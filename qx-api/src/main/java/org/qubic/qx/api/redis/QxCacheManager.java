@@ -53,6 +53,7 @@ public class QxCacheManager {
     public void evictTradeCacheForAsset(String issuer, String name) {
         log.debug("Evicting cache for asset with issuer [{}] and name [{}].", issuer, name);
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_TRADES)).evict(String.format("%s:%s", issuer, name));
+        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_OWNERS)).evict(String.format("%s:%s", issuer, name));
     }
 
     public void evictOrderCacheForEntity(String identity) {
@@ -80,6 +81,7 @@ public class QxCacheManager {
     public void evictTransferCacheForAsset(String issuer, String name) {
         log.debug("Evicting transfer cache for asset for issuer [{}] and name [{}].", issuer, name);
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRANSFERS_ASSET)).evict(String.format("%s:%s", issuer, name));
+        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_OWNERS)).evict(String.format("%s:%s", issuer, name));
     }
 
     public void evictChartCachesForAsset(String issuer, String name) {
