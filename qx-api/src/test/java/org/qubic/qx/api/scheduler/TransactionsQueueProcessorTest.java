@@ -1,14 +1,13 @@
 package org.qubic.qx.api.scheduler;
 
-import at.qubic.api.crypto.IdentityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.api.db.AssetsRepository;
 import org.qubic.qx.api.db.TransactionsRepository;
 import org.qubic.qx.api.db.domain.Transaction;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.qubic.qx.api.redis.dto.TransactionRedisDto;
 import org.qubic.qx.api.redis.repository.TransactionsRedisRepository;
+import org.qubic.qx.api.richlist.TransferAssetService;
 import org.qubic.qx.api.scheduler.mapping.TransactionMapper;
 
 import java.util.Optional;
@@ -23,10 +22,9 @@ class TransactionsQueueProcessorTest extends QueueProcessorTest<Transaction, Tra
         this.redisRepository = mock(TransactionsRedisRepository.class);
         this.repository = mock(TransactionsRepository.class);
         this.mapper = mock(TransactionMapper.class);
-        IdentityUtil identityUtil = mock();
-        AssetsRepository assetsRepository = mock();
+        TransferAssetService transferAssetService = mock();
         QxCacheManager qxCacheManager = mock();
-        processor = new TransactionsProcessor(redisRepository, repository, mapper, identityUtil, assetsRepository, qxCacheManager);
+        processor = new TransactionsProcessor(redisRepository, repository, mapper,  transferAssetService, qxCacheManager);
     }
 
     @Test

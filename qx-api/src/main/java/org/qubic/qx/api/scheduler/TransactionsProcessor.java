@@ -1,13 +1,11 @@
 package org.qubic.qx.api.scheduler;
 
-import at.qubic.api.crypto.IdentityUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.qubic.qx.api.db.AssetsRepository;
 import org.qubic.qx.api.db.domain.*;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.qubic.qx.api.redis.dto.TransactionRedisDto;
 import org.qubic.qx.api.redis.repository.QueueProcessingRepository;
+import org.qubic.qx.api.richlist.TransferAssetService;
 import org.qubic.qx.api.scheduler.mapping.RedisToDomainMapper;
 import org.springframework.data.repository.CrudRepository;
 
@@ -16,14 +14,12 @@ import java.util.Optional;
 @Slf4j
 public class TransactionsProcessor extends QueueProcessor<Transaction, TransactionRedisDto> {
 
-    private final IdentityUtil identityUtil;
-    private final AssetsRepository assetsRepository;
+    private final TransferAssetService transferAssetService;
     private final QxCacheManager qxCacheManager;
 
-    public TransactionsProcessor(QueueProcessingRepository<TransactionRedisDto> redisRepository, CrudRepository<Transaction, Long> repository, RedisToDomainMapper<Transaction, TransactionRedisDto> mapper, IdentityUtil identityUtil, AssetsRepository assetsRepository, QxCacheManager qxCacheManager) {
+    public TransactionsProcessor(QueueProcessingRepository<TransactionRedisDto> redisRepository, CrudRepository<Transaction, Long> repository, RedisToDomainMapper<Transaction, TransactionRedisDto> mapper, TransferAssetService transferAssetService, QxCacheManager qxCacheManager) {
         super(redisRepository, repository, mapper);
-        this.identityUtil = identityUtil;
-        this.assetsRepository = assetsRepository;
+        this.transferAssetService = transferAssetService;
         this.qxCacheManager = qxCacheManager;
     }
 
@@ -41,47 +37,33 @@ public class TransactionsProcessor extends QueueProcessor<Transaction, Transacti
     protected void postProcess(TransactionRedisDto sourceDto) {
         ExtraData extraData = sourceDto.extraData();
         if (extraData instanceof QxAssetOrderData orderData) {
+
             // we ignore unknown assets here
             log.info("Evicting order caches.");
             qxCacheManager.evictOrderCacheForAsset(orderData.issuer(), orderData.name());
             qxCacheManager.evictOrderCacheForEntity(sourceDto.sourcePublicId());
+
         } else if (extraData instanceof QxTransferAssetData transferData) {
 
-            // TODO update asset_owners table (amount +/-) and remove entries with zero amount
+            String issuer = transferData.issuer();
+            String assetName = transferData.name();
+            String from = sourceDto.sourcePublicId();
+            String to = transferData.newOwner();
+            transferAssetService.transfer(from, to, issuer, assetName, transferData.numberOfShares());
 
-            createAssetIfItDoesNotExist(transferData.issuer(), transferData.name());
             log.info("Evicting transfer caches.");
             qxCacheManager.evictTransferCache();
-            qxCacheManager.evictTransferCacheForAsset(transferData.issuer(), transferData.name());
-            qxCacheManager.evictTransferCacheForEntity(sourceDto.sourcePublicId());
-            qxCacheManager.evictTransferCacheForEntity(transferData.newOwner());
+            qxCacheManager.evictTransferCacheForAsset(issuer, assetName);
+            qxCacheManager.evictTransferCacheForEntity(from);
+            qxCacheManager.evictTransferCacheForEntity(to);
+
         } else if (extraData instanceof QxIssueAssetData issueAssetData) {
-            createAssetIfItDoesNotExist(sourceDto.sourcePublicId(), issueAssetData.name());
+
+            String issuer = sourceDto.sourcePublicId();
+            transferAssetService.issueAsset(issuer, issueAssetData.name(), issueAssetData.numberOfShares());
             qxCacheManager.evictAssetsCaches();
-        }
-    }
 
-    private void createAssetIfItDoesNotExist(String issuer, String name) {
-        try {
-            if (identityUtil.isValidIdentity(issuer)
-                    && StringUtils.isNotBlank(name)
-                    && StringUtils.length(name) < 8) {
-                assetsRepository.findByIssuerAndName(issuer, name)
-                        .or(() -> createNewAsset(issuer, name));
-            }
-        } catch (Exception e) {
-            String message = String.format("Error verifying asset information issuer [%s] and name [%s].", issuer, name);
-            log.error(message, e);
         }
-    }
-
-    private Optional<Asset> createNewAsset(String issuer, String name) {
-        log.warn("Creating new asset with issuer [{}] and name [{}].", issuer, name);
-        return Optional.of(assetsRepository.save(Asset.builder()
-                .issuer(issuer)
-                .name(name)
-                .verified(false)
-                .build()));
     }
 
 }

@@ -1,15 +1,16 @@
 package org.qubic.qx.api.richlist;
 
-import at.qubic.api.crypto.IdentityUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.db.AssetOwnersRepository;
-import org.qubic.qx.api.db.AssetsRepository;
-import org.qubic.qx.api.db.EntitiesRepository;
+import org.qubic.qx.api.db.AssetsDbService;
+import org.qubic.qx.api.db.EntitiesDbService;
 import org.qubic.qx.api.db.domain.Asset;
 import org.qubic.qx.api.db.domain.AssetOwner;
 import org.qubic.qx.api.db.domain.Entity;
 import org.qubic.qx.api.richlist.exception.CsvImportException;
+import org.qubic.qx.api.validation.ValidationError;
+import org.qubic.qx.api.validation.ValidationUtility;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -18,27 +19,32 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class UniverseCsvImporterTest {
 
-    private final IdentityUtil identityUtil = mock();
-    private final EntitiesRepository entitiesRepository = mock();
-    private final AssetsRepository assetsRepository = mock();
+    private final ValidationUtility validationUtility = mock();
+    private final EntitiesDbService entitiesDbService = mock();
+    private final AssetsDbService assetsDbService = mock();
     private final AssetOwnersRepository assetOwnersRepository = mock();
-    private final UniverseCsvImporter importer = new UniverseCsvImporter(identityUtil, entitiesRepository, assetsRepository, assetOwnersRepository);
+    private final UniverseCsvImporter importer = new UniverseCsvImporter(validationUtility, entitiesDbService, assetsDbService, assetOwnersRepository);
 
     @BeforeEach
     void initMocks() {
-        when(identityUtil.isValidIdentity(anyString())).thenReturn(true);
-        when(assetsRepository.findByIssuerAndName(anyString(), anyString())).thenReturn(Optional.of(Asset.builder()
+        when(validationUtility.validateIdentity(anyString())).thenReturn(Optional.empty());
+        when(validationUtility.validateAmount(any(BigInteger.class))).thenReturn(Optional.empty());
+        when(validationUtility.validateAssetName(anyString())).thenReturn(Optional.empty());
+        when(assetsDbService.getOrCreateAsset(anyString(), anyString())).thenAnswer(args -> Asset.builder()
+                .issuer(args.getArgument(0))
+                .name(args.getArgument(1))
                 .id(42L)
-                .build()));
-        when(entitiesRepository.findByIdentity(anyString())).thenAnswer(args -> Optional.of(Entity.builder()
+                .build());
+        when(entitiesDbService.getOrCreateEntity(anyString())).thenAnswer(args -> Entity.builder()
                 .id(123L)
                 .identity(args.getArgument(0))
-                .build()));
+                .build());
     }
 
     @Test
@@ -64,8 +70,8 @@ class UniverseCsvImporterTest {
                 AssetOwner.builder().assetId(42).entityId(123).amount(BigInteger.valueOf(184)).build()
         );
 
-        verify(entitiesRepository, times(3)).findByIdentity(anyString());
-        verify(assetsRepository, times(1)).findByIssuerAndName(anyString(), anyString()); // cached
+        verify(entitiesDbService, times(3)).getOrCreateEntity(anyString());
+        verify(assetsDbService, times(3)).getOrCreateAsset(anyString(), anyString()); // cached
         verify(assetOwnersRepository).deleteAll();
         verify(assetOwnersRepository).saveAll(anyList());
     }
@@ -78,18 +84,19 @@ class UniverseCsvImporterTest {
                 2147003,OWNERSHIP,%s,2147003,1,%s,%s,%s
             """.formatted("SOMEID", "NAMETOOLONG", "ISSUER", "-3"));
 
-        when(identityUtil.isValidIdentity("SOMEID")).thenReturn(false);
-        when(identityUtil.isValidIdentity("ISSUER")).thenReturn(false);
+        when(validationUtility.validateIdentity(anyString())).thenReturn(Optional.of(new ValidationError("invalid identity")));
+        when(validationUtility.validateAmount(any(BigInteger.class))).thenReturn(Optional.of(new ValidationError("invalid amount")));
+        when(validationUtility.validateAssetName(anyString())).thenReturn(Optional.of(new ValidationError("invalid asset name")));
 
         assertThatThrownBy(() -> importer.importAssetOwners(input))
                 .isInstanceOf(CsvImportException.class)
-                .hasMessageContainingAll("invalid amount [-3]",
-                        "invalid identity [SOMEID]",
-                        "invalid identity [ISSUER]",
-                        "invalid asset name [NAMETOOLONG]");
+                .hasMessageContainingAll("invalid amount",
+                        "invalid identity",
+                        "invalid identity",
+                        "invalid asset name");
 
-        verifyNoInteractions(entitiesRepository);
-        verifyNoInteractions(assetsRepository);
+        verifyNoInteractions(entitiesDbService);
+        verifyNoInteractions(assetsDbService);
         verifyNoInteractions(assetOwnersRepository);
     }
 

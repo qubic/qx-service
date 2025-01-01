@@ -1,42 +1,38 @@
 package org.qubic.qx.api.richlist;
 
-import at.qubic.api.crypto.IdentityUtil;
-import com.fasterxml.jackson.databind.util.LRUMap;
-import com.fasterxml.jackson.databind.util.LookupCache;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.api.db.AssetOwnersRepository;
-import org.qubic.qx.api.db.AssetsRepository;
-import org.qubic.qx.api.db.EntitiesRepository;
-import org.qubic.qx.api.db.domain.Asset;
+import org.qubic.qx.api.db.AssetsDbService;
+import org.qubic.qx.api.db.EntitiesDbService;
 import org.qubic.qx.api.db.domain.AssetOwner;
 import org.qubic.qx.api.db.domain.Entity;
 import org.qubic.qx.api.richlist.exception.CsvImportException;
+import org.qubic.qx.api.validation.ValidationError;
+import org.qubic.qx.api.validation.ValidationUtility;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class UniverseCsvImporter {
 
-    private final IdentityUtil identityUtil;
-    private final EntitiesRepository entitiesRepository;
-    private final AssetsRepository assetsRepository;
+    private final ValidationUtility validationUtility;
+    private final EntitiesDbService entitiesDbService;
+    private final AssetsDbService assetsDbService;
     private final AssetOwnersRepository assetOwnersRepository;
-    private final LookupCache<String, Long> assetsCache = new LRUMap<>(100, 100);
 
-    public UniverseCsvImporter(IdentityUtil identityUtil, EntitiesRepository entitiesRepository, AssetsRepository assetsRepository, AssetOwnersRepository assetOwnersRepository) {
-        this.identityUtil = identityUtil;
-        this.entitiesRepository = entitiesRepository;
-        this.assetsRepository = assetsRepository;
+    public UniverseCsvImporter(ValidationUtility validationUtility, EntitiesDbService entitiesDbService, AssetsDbService assetsDbService, AssetOwnersRepository assetOwnersRepository) {
+        this.validationUtility = validationUtility;
+        this.entitiesDbService = entitiesDbService;
+        this.assetsDbService = assetsDbService;
         this.assetOwnersRepository = assetOwnersRepository;
     }
 
@@ -78,24 +74,27 @@ public class UniverseCsvImporter {
                 long recordNumber = csvRecord.getRecordNumber();
 
                 String identity = csvRecord.get("ID"); // validate
-                validateIdentity(identity, recordNumber).map(validationErrors::add);
+                validationUtility.validateIdentity(identity).map(validationErrors::add);
 
                 String assetName = csvRecord.get("AssetName");
-                validateAssetName(assetName, recordNumber).map(validationErrors::add);
+                validationUtility.validateAssetName(assetName).map(validationErrors::add);
 
                 String assetIssuer = csvRecord.get("AssetIssuer");
-                validateIdentity(assetIssuer, recordNumber).map(validationErrors::add);
+                validationUtility.validateIdentity(assetIssuer).map(validationErrors::add);
 
                 BigInteger amount = new BigInteger(csvRecord.get("Amount"));
-                validateAmount(amount, recordNumber).map(validationErrors::add);
+                validationUtility.validateAmount(amount).map(validationErrors::add);
 
                 if (!validationErrors.isEmpty()) {
-                    throw new CsvImportException("Validation failed: " +  validationErrors.stream().map(err -> err.message)
-                            .collect(Collectors.joining(",", "[", "]")));
+                    String message = String.format("Csv import: Invalid record [%d]: %s", recordNumber,
+                            validationErrors.stream()
+                                    .map(ValidationError::message)
+                                    .collect(Collectors.joining(",", "[", "]")));
+                    throw new CsvImportException(message);
                 }
 
-                Entity entity = getOrCreateEntity(identity);
-                long assetId = getOrCreateAssetId(assetIssuer, assetName);
+                Entity entity = entitiesDbService.getOrCreateEntity(identity);
+                long assetId = assetsDbService.getOrCreateAsset(assetIssuer, assetName).getId();
                 AssetOwner assetOwner = AssetOwner.builder()
                         .assetId(assetId)
                         .entityId(entity.getId())
@@ -114,61 +113,6 @@ public class UniverseCsvImporter {
         return assetOwners;
     }
 
-    private long getOrCreateAssetId(String assetIssuer, String assetName) {
-        String assetCacheKeyFormat = "%s/%s";
-        Long assetId = assetsCache.get(String.format(assetCacheKeyFormat, assetIssuer, assetName));
-        if (assetId == null) {
-            Long id = assetsRepository.findByIssuerAndName(assetIssuer, assetName)
-                    .orElseGet(() -> {
-                        log.info("Creating asset with issuer [{}] and name [{}].", assetIssuer, assetName);
-                        return assetsRepository.save(Asset.builder().issuer(assetIssuer).name(assetName).build());
-                    }).getId();
-            assetsCache.put(String.format(assetCacheKeyFormat, assetIssuer, assetName), id);
-            return id;
-        } else {
-            return assetId;
-        }
-    }
-
-    private Entity getOrCreateEntity(String identity) {
-        return entitiesRepository.findByIdentity(identity)
-                .orElseGet(() -> {
-                    log.info("Creating entity with identity [{}].", identity);
-                    return entitiesRepository.save(Entity.builder().identity(identity).build());
-                });
-    }
-
-    private Optional<ValidationError> validateAmount(BigInteger amount, long recordNumber) {
-        ValidationError error = null;
-        if (amount.signum() <= 0) {
-            String message = String.format("Csv record [%s]: invalid amount [%d].", recordNumber, amount);
-            log.warn(message);
-            error = new ValidationError(message);
-        }
-        return Optional.ofNullable(error);
-    }
-
-    private Optional<ValidationError> validateIdentity(String identity, long recordNumber) {
-        ValidationError error = null;
-        if (!identityUtil.isValidIdentity(identity)) {
-            String message = String.format("Csv record [%s]: invalid identity [%s]", recordNumber, identity);
-            log.warn(message);
-            error = new ValidationError(message);
-        }
-        return Optional.ofNullable(error);
-    }
-
-    private Optional<ValidationError> validateAssetName(String name, long recordNumber) {
-        ValidationError error = null;
-
-        if (StringUtils.isBlank(name) || StringUtils.length(name) > 7) {
-            String message = String.format("Csv record [%s]: invalid asset name [%s]", recordNumber, name);
-            log.warn(message);
-            error = new ValidationError(message);
-        }
-        return Optional.ofNullable(error);
-    }
-
     private static CSVParser readCsvFile(Reader input) throws IOException {
         CSVFormat csvFormat = CSVFormat.Builder.create()
                 .setHeader()
@@ -178,7 +122,5 @@ public class UniverseCsvImporter {
                 .build();
         return csvFormat.parse(input);
     }
-
-    private record ValidationError(String message) { }
 
 }

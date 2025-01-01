@@ -10,6 +10,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -75,6 +76,17 @@ class AssetOwnersRepositoryIT extends AbstractPostgresJdbcTest {
 
         assertThat(repository.findOwnersByAsset("FOO", "BAR", 1)).isEmpty();
 
+    }
+
+    @Sql(scripts = "/testdata/db/setup-asset_owners-repository-test.sql")
+    @Test
+    void findByAssetIdAAndEntityId() {
+        Entity entity = entitiesRepository.findByIdentity("ID1").orElseThrow();
+        Asset asset = assetsRepository.findByIssuerAndName("ISSUER1", "ASSET1").orElseThrow();
+        Optional<AssetOwner> assetOwner = repository.findByAssetIdAndEntityId(asset.getId(), entity.getId());
+
+        assertThat(assetOwner).isNotEmpty();
+        assertThat(assetOwner.get().getAmount()).isEqualTo(BigInteger.valueOf(12345));
     }
 
 }

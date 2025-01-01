@@ -1,27 +1,21 @@
 package org.qubic.qx.api.scheduler;
 
-import at.qubic.api.crypto.IdentityUtil;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.api.db.AssetsRepository;
-import org.qubic.qx.api.db.domain.Asset;
 import org.qubic.qx.api.db.domain.QxAssetOrderData;
 import org.qubic.qx.api.db.domain.QxIssueAssetData;
 import org.qubic.qx.api.db.domain.QxTransferAssetData;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.qubic.qx.api.redis.dto.TransactionRedisDto;
-
-import java.util.Optional;
+import org.qubic.qx.api.richlist.TransferAssetService;
 
 import static org.mockito.Mockito.*;
 
 class TransactionsProcessorPostProcessingTest {
 
-    private final IdentityUtil identityUtil = mock();
-    private final AssetsRepository assetsRepository = mock();
+    private final TransferAssetService transferAssetService = mock();
     private final QxCacheManager qxCacheManager = mock();
     private final TransactionsProcessor processor = new TransactionsProcessor(null, null, null,
-            identityUtil, assetsRepository, qxCacheManager);
+            transferAssetService, qxCacheManager);
 
     @Test
     void postProcess_givenAssetOrderData_thenEvictOrderCaches() {
@@ -56,66 +50,23 @@ class TransactionsProcessorPostProcessingTest {
     }
 
     @Test
-    void postProcess_givenAssetExists_thenDoNothing() {
+    void postProcess_givenTransfer_thenCallTransferService() {
         TransactionRedisDto source = mock();
+        when(source.sourcePublicId()).thenReturn("SOURCE_IDENTITY");
         QxTransferAssetData transferAssetData = new QxTransferAssetData(
                 "ISSUER", "ASSET", "NEW_OWNER", 42
         );
         when(source.extraData()).thenReturn(transferAssetData);
-        when(identityUtil.isValidIdentity(anyString())).thenReturn(true);
-        when(assetsRepository.findByIssuerAndName("ISSUER", "ASSET")).thenReturn(Optional.of(mock()));
 
         processor.postProcess(source);
-        verify(assetsRepository, never()).save(any(Asset.class));
+        verify(transferAssetService).transfer("SOURCE_IDENTITY", "NEW_OWNER", "ISSUER", "ASSET", 42);
     }
 
     @Test
-    void postProcess_givenTransferWithNewAsset_thenCreate() {
-        TransactionRedisDto source = mock();
-        QxTransferAssetData transferAssetData = new QxTransferAssetData(
-                "ISSUER", "ASSET", "NEW_OWNER", 42
-        );
-        when(source.extraData()).thenReturn(transferAssetData);
-        when(identityUtil.isValidIdentity(anyString())).thenReturn(true);
-        when(assetsRepository.save(any(Asset.class))).then(args -> args.getArgument(0));
-
-        processor.postProcess(source);
-        verify(assetsRepository).save(Asset.builder().issuer("ISSUER").name("ASSET").verified(false).build());
-    }
-
-    @Test
-    void postProcess_givenInvalidAsset_thenDoNotCreate() {
-        TransactionRedisDto source = mock();
-        QxTransferAssetData transferAssetData = new QxTransferAssetData(
-                "ISSUER", "ASSET_NAME_TOO_LONG", "NEW_OWNER", 42
-        );
-        when(source.extraData()).thenReturn(transferAssetData);
-        processor.postProcess(source);
-        verifyNoInteractions(assetsRepository);
-    }
-
-    @Test
-    void postProcess_givenErrorOnAssetCheck_thenDoNotThrow() {
-        TransactionRedisDto source = mock();
-        QxTransferAssetData transferAssetData = new QxTransferAssetData(
-                "ISSUER", "ASSET", "NEW_OWNER", 42
-        );
-        when(source.extraData()).thenReturn(transferAssetData);
-        when(identityUtil.isValidIdentity(anyString())).thenThrow(new RuntimeException("test"));
-
-        Assertions.assertDoesNotThrow(() -> processor.postProcess(source));
-        verifyNoInteractions(assetsRepository);
-    }
-
-
-    @Test
-    void postProcess_givenIssueAsset_thenCreate() {
+    void postProcess_givenIssueAsset_thenCallTransferService() {
         TransactionRedisDto source = createIssueAssetTransaction();
-        when(identityUtil.isValidIdentity(anyString())).thenReturn(true);
-        when(assetsRepository.save(any(Asset.class))).then(args -> args.getArgument(0));
-
         processor.postProcess(source);
-        verify(assetsRepository).save(Asset.builder().issuer("ISSUER").name("NAME").verified(false).build());
+        verify(transferAssetService).issueAsset("ISSUER", "NAME", 42);
     }
 
     @Test

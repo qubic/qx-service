@@ -1,6 +1,5 @@
 package org.qubic.qx.api.config;
 
-import at.qubic.api.crypto.IdentityUtil;
 import org.qubic.qx.api.adapter.CoreArchiveApiService;
 import org.qubic.qx.api.db.*;
 import org.qubic.qx.api.db.domain.Trade;
@@ -10,11 +9,13 @@ import org.qubic.qx.api.redis.dto.TradeRedisDto;
 import org.qubic.qx.api.redis.dto.TransactionRedisDto;
 import org.qubic.qx.api.redis.repository.TradesRedisRepository;
 import org.qubic.qx.api.redis.repository.TransactionsRedisRepository;
+import org.qubic.qx.api.richlist.TransferAssetService;
 import org.qubic.qx.api.richlist.UniverseCsvImporter;
 import org.qubic.qx.api.scheduler.*;
 import org.qubic.qx.api.scheduler.mapping.DatabaseMappings;
 import org.qubic.qx.api.scheduler.mapping.TradeMapper;
 import org.qubic.qx.api.scheduler.mapping.TransactionMapper;
+import org.qubic.qx.api.validation.ValidationUtility;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -36,16 +37,16 @@ public class SchedulerConfiguration {
     TransactionsProcessor transactionsProcessor(TransactionsRedisRepository transactionsRedisRepository,
                                                 TransactionsRepository transactionsRepository,
                                                 TransactionMapper transactionMapper,
-                                                AssetsRepository assetsRepository, IdentityUtil identityUtil,
+                                                TransferAssetService transferAssetService,
                                                 QxCacheManager qxCacheManager) {
         return new TransactionsProcessor(transactionsRedisRepository, transactionsRepository, transactionMapper,
-                identityUtil, assetsRepository, qxCacheManager);
+                transferAssetService, qxCacheManager);
     }
 
     @Bean
     TradesProcessor tradesProcessor(TradesRedisRepository tradesRedisRepository, TradesRepository tradesRepository,
-                                    TradeMapper tradeMapper, QxCacheManager qxCacheManager) {
-        return new TradesProcessor(tradesRedisRepository, tradesRepository, tradeMapper, qxCacheManager);
+                                    TradeMapper tradeMapper, TransferAssetService transferAssetService, QxCacheManager qxCacheManager) {
+        return new TradesProcessor(tradesRedisRepository, tradesRepository, tradeMapper, transferAssetService, qxCacheManager);
     }
 
     @Bean
@@ -59,8 +60,8 @@ public class SchedulerConfiguration {
     }
 
     @Bean
-    UniverseCsvImporter universeCsvImporter(IdentityUtil identityUtil, EntitiesRepository entitiesRepository, AssetsRepository assetsRepository, AssetOwnersRepository assetOwnersRepository) {
-        return new UniverseCsvImporter(identityUtil, entitiesRepository, assetsRepository, assetOwnersRepository);
+    UniverseCsvImporter universeCsvImporter(ValidationUtility validationUtility, EntitiesDbService entitiesDbService, AssetsDbService assetsDbService, AssetOwnersRepository assetOwnersRepository) {
+        return new UniverseCsvImporter(validationUtility, entitiesDbService, assetsDbService, assetOwnersRepository);
     }
 
     @Bean

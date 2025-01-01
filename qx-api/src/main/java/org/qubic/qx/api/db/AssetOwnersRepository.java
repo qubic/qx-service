@@ -6,6 +6,7 @@ import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface AssetOwnersRepository extends CrudRepository<AssetOwner, Long> {
 
@@ -19,5 +20,7 @@ public interface AssetOwnersRepository extends CrudRepository<AssetOwner, Long> 
         limit :limit
     """)
     List<AmountPerEntityDto> findOwnersByAsset(String issuer, String name, long limit);
+
+    Optional<AssetOwner> findByAssetIdAndEntityId(long assetId, long entityId);
 
 }
