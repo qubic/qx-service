@@ -14,9 +14,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("/login").permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/service/v1/qx/**").permitAll()
+                        .requestMatchers("/login").permitAll() // unsecured for logging in
+                        .requestMatchers("/error/**").permitAll() // unsecured for returning correct error codes
+                        .requestMatchers("/actuator/health").permitAll() // unsecured for health check
+                        .requestMatchers("/service/v1/qx/**").permitAll() // unsecured for service/UI users
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())
