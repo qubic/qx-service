@@ -27,7 +27,7 @@
         <!-- generates open api specification -->
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -177,6 +177,7 @@
                     <configFiles>src/main/resources/db/flyway.conf</configFiles>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 

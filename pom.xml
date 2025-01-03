@@ -36,7 +36,7 @@
         <okhttp3-mockserver.version>4.12.0</okhttp3-mockserver.version>
         <qubicj.version>1.3.1-SNAPSHOT</qubicj.version>
         <resilience4j.version>2.2.0</resilience4j.version>
-        <springdoc.version>2.5.0</springdoc.version>
+        <springdoc.version>2.7.0</springdoc.version>
         <testcontainers-redis.version>2.2.2</testcontainers-redis.version>
     </properties>
 
@@ -54,6 +54,11 @@
                 <version>${qubicj.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
