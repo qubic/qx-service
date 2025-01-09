@@ -1,15 +1,17 @@
 package org.qubic.qx.api.controller;
 
-import jakarta.validation.constraints.Size;
 import org.qubic.qx.api.controller.service.AssetOwnersService;
 import org.qubic.qx.api.db.dto.AmountPerEntityDto;
+import org.qubic.qx.api.validation.AssetName;
+import org.qubic.qx.api.validation.Identity;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static org.qubic.qx.api.redis.QxCacheManager.*;
+import static org.qubic.qx.api.redis.QxCacheManager.CACHE_KEY_ASSET;
+import static org.qubic.qx.api.redis.QxCacheManager.CACHE_NAME_ASSET_OWNERS;
 
 @CrossOrigin
 @Validated
@@ -25,8 +27,8 @@ public class AssetOwnersController {
 
     @Cacheable(cacheNames = CACHE_NAME_ASSET_OWNERS, key = CACHE_KEY_ASSET)
     @GetMapping("/issuer/{issuer}/asset/{asset}/owners")
-    public List<AmountPerEntityDto> getTopAssetOwners(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
-                                                      @PathVariable("asset") @Size(min = 1, max = 7) String asset) {
+    public List<AmountPerEntityDto> getTopAssetOwners(@PathVariable("issuer") @Identity String issuer,
+                                                      @PathVariable("asset") @AssetName String asset) {
         return assetOwnersService.getTopAssetOwners(issuer, asset);
     }
 

@@ -19,9 +19,9 @@ import static org.mockito.Mockito.*;
 """)
 class TransactionsControllerCacheIT extends AbstractSpringIntegrationTest {
 
-    private static final String TEST_ISSUER = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGH";
+    private static final String TEST_ISSUER = "ISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISPXHC";
     private static final String TEST_ASSET_NAME = "FOO";
-    private static final String TEST_IDENTITY = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHI";
+    private static final String TEST_IDENTITY = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEOPXN";
 
     @Autowired
     private QxCacheManager qxCacheManager;

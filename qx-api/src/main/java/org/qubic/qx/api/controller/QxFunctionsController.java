@@ -1,10 +1,11 @@
 package org.qubic.qx.api.controller;
 
-import jakarta.validation.constraints.Size;
 import org.qubic.qx.api.controller.domain.AssetOrder;
 import org.qubic.qx.api.controller.domain.EntityOrder;
 import org.qubic.qx.api.controller.domain.Fees;
 import org.qubic.qx.api.controller.service.QxService;
+import org.qubic.qx.api.validation.AssetName;
+import org.qubic.qx.api.validation.Identity;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -33,27 +34,27 @@ public class QxFunctionsController {
 
     @Cacheable(cacheNames = CACHE_NAME_ASSET_ASKS, key = CACHE_KEY_ASSET)
     @GetMapping("/issuer/{issuer}/asset/{asset}/asks")
-    public List<AssetOrder> getAssetAskOrders(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
-                                              @PathVariable("asset") @Size(min=1, max=7) String asset) {
+    public List<AssetOrder> getAssetAskOrders(@PathVariable("issuer") @Identity String issuer,
+                                              @PathVariable("asset") @AssetName String asset) {
         return qxService.getAssetAskOrders(issuer, asset);
     }
 
     @Cacheable(cacheNames = CACHE_NAME_ASSET_BIDS, key = CACHE_KEY_ASSET)
     @GetMapping("/issuer/{issuer}/asset/{asset}/bids")
-    public List<AssetOrder> getAssetBidOrders(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
-                                              @PathVariable("asset") @Size(min=1, max=7) String asset) {
+    public List<AssetOrder> getAssetBidOrders(@PathVariable("issuer") @Identity String issuer,
+                                              @PathVariable("asset") @AssetName String asset) {
         return qxService.getAssetBidOrders(issuer, asset);
     }
 
     @Cacheable(CACHE_NAME_ENTITY_ASKS)
     @GetMapping("/entity/{identity}/asks")
-    public List<EntityOrder> getEntityAskOrders(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
+    public List<EntityOrder> getEntityAskOrders(@PathVariable("identity") @Identity String identity) {
         return qxService.getEntityAskOrders(identity);
     }
 
     @Cacheable(CACHE_NAME_ENTITY_BIDS)
     @GetMapping("/entity/{identity}/bids")
-    public List<EntityOrder> getEntityBidOrders(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
+    public List<EntityOrder> getEntityBidOrders(@PathVariable("identity") @Identity String identity) {
         return qxService.getEntityBidOrders(identity);
     }
 

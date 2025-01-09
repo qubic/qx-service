@@ -10,8 +10,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 class TransactionsControllerSpringIT extends AbstractSpringIntegrationTest {
 
-    private static final String ISSUER = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGH";
-    private static final String IDENTITY = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHA";
+    private static final String ISSUER = "ISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISPXHC";
+    private static final String IDENTITY = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEOPXN";
 
     private WebTestClient client;
 

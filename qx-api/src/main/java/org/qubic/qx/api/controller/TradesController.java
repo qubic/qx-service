@@ -1,8 +1,9 @@
 package org.qubic.qx.api.controller;
 
-import jakarta.validation.constraints.Size;
-import org.qubic.qx.api.db.dto.TradeDto;
 import org.qubic.qx.api.controller.service.TradesService;
+import org.qubic.qx.api.db.dto.TradeDto;
+import org.qubic.qx.api.validation.AssetName;
+import org.qubic.qx.api.validation.Identity;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -31,14 +32,14 @@ public class TradesController {
 
     @Cacheable(cacheNames = CACHE_NAME_ASSET_TRADES, key = CACHE_KEY_ASSET)
     @GetMapping("/issuer/{issuer}/asset/{asset}/trades")
-    public List<TradeDto> getAssetTrades(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
-                                         @PathVariable("asset") @Size(min = 1, max = 7) String asset) {
+    public List<TradeDto> getAssetTrades(@PathVariable("issuer") @Identity String issuer,
+                                         @PathVariable("asset") @AssetName String asset) {
         return tradesService.getAssetTrades(issuer, asset);
     }
 
     @Cacheable(CACHE_NAME_ENTITY_TRADES)
     @GetMapping("/entity/{identity}/trades")
-    public List<TradeDto>  getEntityTrades(@PathVariable("identity") @Size(min = 60, max = 60) String identity) {
+    public List<TradeDto>  getEntityTrades(@PathVariable("identity") @Identity String identity) {
         return tradesService.getEntityTrades(identity);
     }
 

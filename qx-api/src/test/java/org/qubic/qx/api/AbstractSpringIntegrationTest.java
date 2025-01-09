@@ -32,6 +32,9 @@ import static org.assertj.core.api.Assertions.assertThat;
     il.archive.client.scheme=http
     il.archive.client.host=localhost
     il.archive.client.port=1234
+    il.core.client.scheme=http
+    il.core.client.host=localhost
+    il.core.client.port=1234
     spring.data.redis.port=26379
     spring.cache.type=NONE
 """)

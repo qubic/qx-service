@@ -1,8 +1,9 @@
 package org.qubic.qx.api.controller;
 
-import jakarta.validation.constraints.Size;
 import org.qubic.qx.api.db.dto.AvgPriceData;
 import org.qubic.qx.api.controller.service.ChartService;
+import org.qubic.qx.api.validation.AssetName;
+import org.qubic.qx.api.validation.Identity;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,8 +27,8 @@ public class ChartController {
 
     @Cacheable(cacheNames = CACHE_NAME_CHART_AVG_PRICE, key = CACHE_KEY_ASSET)
     @GetMapping("/issuer/{issuer}/asset/{asset}/chart/average-price")
-    public List<AvgPriceData> getAveragePriceForAsset(@PathVariable("issuer") @Size(min = 60, max = 60) String issuer,
-                                                      @PathVariable("asset") @Size(min = 1, max = 7) String asset) {
+    public List<AvgPriceData> getAveragePriceForAsset(@PathVariable("issuer") @Identity String issuer,
+                                                      @PathVariable("asset") @AssetName String asset) {
         return chartService.getAveragePriceForAsset(issuer, asset);
     }
 

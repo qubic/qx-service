@@ -3,10 +3,12 @@ package org.qubic.qx.api.config;
 import at.qubic.api.crypto.IdentityUtil;
 import at.qubic.api.crypto.NoCrypto;
 import lombok.extern.slf4j.Slf4j;
+import org.qubic.qx.api.adapter.CoreApiService;
 import org.qubic.qx.api.adapter.QxApiService;
 import org.qubic.qx.api.controller.service.*;
 import org.qubic.qx.api.db.*;
 import org.qubic.qx.api.richlist.TransferAssetService;
+import org.qubic.qx.api.validation.IdentityValidator;
 import org.qubic.qx.api.validation.ValidationUtility;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +25,11 @@ public class QxServiceConfig {
     @Bean
     ValidationUtility validationUtility(IdentityUtil identityUtil) {
         return new ValidationUtility(identityUtil);
+    }
+
+    @Bean
+    IdentityValidator identityValidator() {
+        return new IdentityValidator(identityUtil());
     }
 
     @Bean
@@ -58,6 +65,11 @@ public class QxServiceConfig {
     @Bean
     TransferAssetService transferAssetService(AssetsDbService assetsRepository, EntitiesDbService entitiesRepository, AssetOwnersRepository assetOwnersRepository, ValidationUtility validationUtility) {
         return new TransferAssetService(assetsRepository, entitiesRepository, assetOwnersRepository, validationUtility);
+    }
+
+    @Bean
+    QxOrderService qxOrderService(CoreApiService coreApiService, IdentityUtil identityUtil) {
+        return new QxOrderService(coreApiService, identityUtil);
     }
 
 }

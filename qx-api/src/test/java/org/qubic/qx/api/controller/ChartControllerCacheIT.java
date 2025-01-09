@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 """)
 class ChartControllerCacheIT extends AbstractSpringIntegrationTest {
 
-    private static final String ISSUER = "ISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUER";
+    private static final String ISSUER = "ISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISPXHC";
 
     @MockitoBean
     private ChartService chartService;

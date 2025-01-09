@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
 
-    private static final String ISSUER = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGH";
+    private static final String ISSUER = "ISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISPXHC";
     private static final String ID = ISSUER;
 
     private WebTestClient client;
