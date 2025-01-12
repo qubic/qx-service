@@ -83,9 +83,8 @@ public abstract class AbstractSpringIntegrationTest {
 
     @AfterEach
     protected void tearDown() throws Exception {
-        log.info("Shutting down integration layer.");
         integrationLayer.shutdown();
-        log.info("Integration layer shut down.");
+        log.info("Mock integration layer shut down.");
     }
 
 }
