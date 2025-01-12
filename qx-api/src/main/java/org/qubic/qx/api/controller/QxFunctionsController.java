@@ -1,5 +1,6 @@
 package org.qubic.qx.api.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.controller.domain.AssetOrder;
 import org.qubic.qx.api.controller.domain.EntityOrder;
 import org.qubic.qx.api.controller.domain.Fees;
@@ -14,6 +15,7 @@ import java.util.List;
 
 import static org.qubic.qx.api.redis.QxCacheManager.*;
 
+@Slf4j
 @CrossOrigin
 @Validated
 @RestController
@@ -32,18 +34,24 @@ public class QxFunctionsController {
         return qxService.getFees();
     }
 
-    @Cacheable(cacheNames = CACHE_NAME_ASSET_ASKS, key = CACHE_KEY_ASSET)
+    @Cacheable(cacheNames = CACHE_NAME_ASSET_ASKS, key = CACHE_KEY_ASSET_AGGREGATED)
     @GetMapping("/issuer/{issuer}/asset/{asset}/asks")
     public List<AssetOrder> getAssetAskOrders(@PathVariable("issuer") @Identity String issuer,
-                                              @PathVariable("asset") @AssetName String asset) {
-        return qxService.getAssetAskOrders(issuer, asset);
+                                              @PathVariable("asset") @AssetName String asset,
+                                              @RequestParam(value = "aggregated", defaultValue = "false") boolean aggregated) {
+        return aggregated
+                ? qxService.getAggregatedAssetAskOrders(issuer, asset)
+                : qxService.getAssetAskOrders(issuer, asset);
     }
 
-    @Cacheable(cacheNames = CACHE_NAME_ASSET_BIDS, key = CACHE_KEY_ASSET)
+    @Cacheable(cacheNames = CACHE_NAME_ASSET_BIDS, key = CACHE_KEY_ASSET_AGGREGATED)
     @GetMapping("/issuer/{issuer}/asset/{asset}/bids")
     public List<AssetOrder> getAssetBidOrders(@PathVariable("issuer") @Identity String issuer,
-                                              @PathVariable("asset") @AssetName String asset) {
-        return qxService.getAssetBidOrders(issuer, asset);
+                                              @PathVariable("asset") @AssetName String asset,
+                                              @RequestParam(value = "aggregated", defaultValue = "false") boolean aggregated) {
+        return aggregated
+                ? qxService.getAggregatedAssetBidOrders(issuer, asset)
+                : qxService.getAssetBidOrders(issuer, asset);
     }
 
     @Cacheable(CACHE_NAME_ENTITY_ASKS)

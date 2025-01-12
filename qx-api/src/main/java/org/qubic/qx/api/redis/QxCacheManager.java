@@ -33,6 +33,7 @@ public class QxCacheManager {
     public static final String CACHE_NAME_GET_OR_CREATE_ASSET =  "cache:getOrCreateAsset";
 
     public static final String CACHE_KEY_ASSET = "#issuer + ':' + #asset";
+    public static final String CACHE_KEY_ASSET_AGGREGATED = "#issuer + ':' + #asset + ':' + #aggregated";
 
     public static final String CACHE_NAME_CHART_AVG_PRICE = "cache:chartAvgPrice";
 
@@ -64,8 +65,10 @@ public class QxCacheManager {
 
     public void evictOrderCacheForAsset(String issuer, String name) {
         log.debug("Evicting oder cache for asset for issuer [{}] and name [{}].", issuer, name);
-        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_ASKS)).evict(String.format("%s:%s", issuer, name));
-        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_BIDS)).evict(String.format("%s:%s", issuer, name));
+        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_ASKS)).evict(String.format("%s:%s:true", issuer, name));
+        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_ASKS)).evict(String.format("%s:%s:false", issuer, name));
+        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_BIDS)).evict(String.format("%s:%s:true", issuer, name));
+        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_BIDS)).evict(String.format("%s:%s:false", issuer, name));
     }
 
     public void evictTransferCache() {

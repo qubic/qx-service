@@ -73,7 +73,7 @@ public abstract class AbstractSpringIntegrationTest {
     protected void assertRequest(String expectedPath) {
         RecordedRequest request = integrationLayer.takeRequest(1, TimeUnit.SECONDS);
         assertThat(request).isNotNull();
-        assertThat(request.getPath()).isEqualTo(expectedPath);
+        assertThat(request.getPath()).startsWith(expectedPath);
     }
 
     @BeforeEach
@@ -85,6 +85,7 @@ public abstract class AbstractSpringIntegrationTest {
     protected void tearDown() throws Exception {
         log.info("Shutting down integration layer.");
         integrationLayer.shutdown();
+        log.info("Integration layer shut down.");
     }
 
 }

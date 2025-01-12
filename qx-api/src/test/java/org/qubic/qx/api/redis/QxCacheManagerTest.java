@@ -53,7 +53,8 @@ class QxCacheManagerTest {
         when(redisCacheManager.getCache(CACHE_NAME_ASSET_BIDS)).thenReturn(cache);
         when(redisCacheManager.getCache(CACHE_NAME_ASSET_ASKS)).thenReturn(cache);
         cacheManager.evictOrderCacheForAsset("foo", "bar");
-        verify(cache, times(2)).evict("foo:bar");
+        verify(cache, times(2)).evict("foo:bar:true");
+        verify(cache, times(2)).evict("foo:bar:false");
     }
 
     @Test

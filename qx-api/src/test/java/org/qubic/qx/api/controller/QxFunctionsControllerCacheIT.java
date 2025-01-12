@@ -2,6 +2,8 @@ package org.qubic.qx.api.controller;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.qubic.qx.api.AbstractSpringIntegrationTest;
 import org.qubic.qx.api.controller.domain.AssetOrder;
 import org.qubic.qx.api.controller.domain.EntityOrder;
@@ -54,70 +56,108 @@ class QxFunctionsControllerCacheIT extends AbstractSpringIntegrationTest {
         verify(qxService, times(1)).getFees();
     }
 
-    @Test
-    void getAssetAskOrders_thenHitChache() {
-        verifyThatGetAssetAskOrdersAreCached();
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void getAssetAskOrders_thenHitChache(boolean aggregated) {
+        verifyThatGetAssetAskOrdersAreCached(aggregated);
     }
 
-    @Test
-    void getAssetAskOrders_givenOtherParams_thenCallService() {
-        verifyThatGetAssetAskOrdersAreCached();
-        controller.getAssetAskOrders(TEST_ISSUER, "OTHER");
-        verify(qxService).getAssetAskOrders(TEST_ISSUER, "OTHER");
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void getAssetAskOrders_givenOtherParams_thenCallService(boolean aggregated) {
+        verifyThatGetAssetAskOrdersAreCached(aggregated);
+        controller.getAssetAskOrders(TEST_ISSUER, "OTHER", aggregated);
+        if (aggregated) {
+            verify(qxService).getAggregatedAssetAskOrders(TEST_ISSUER, "OTHER");
+        } else {
+            verify(qxService).getAssetAskOrders(TEST_ISSUER, "OTHER");
+        }
     }
 
-    @Test
-    void getAssetAskOrders_givenCacheEvicted_thenCallServiceAgain() {
-        verifyThatGetAssetAskOrdersAreCached();
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void getAssetAskOrders_givenCacheEvicted_thenCallServiceAgain(boolean aggregated) {
+        verifyThatGetAssetAskOrdersAreCached(aggregated);
         qxCacheManager.evictOrderCacheForAsset(TEST_ISSUER, TEST_ASSET_NAME);
-        controller.getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME);
-        verify(qxService, times(2)).getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        controller.getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME, aggregated);
+        if (aggregated) {
+            verify(qxService, times(2)).getAggregatedAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        } else {
+            verify(qxService, times(2)).getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        }
     }
 
-    private void verifyThatGetAssetAskOrdersAreCached() {
+    private void verifyThatGetAssetAskOrdersAreCached(boolean aggregated) {
         List<AssetOrder> expected = List.of(new AssetOrder("entity", 1, 2));
-        when(qxService.getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME)).thenReturn(expected);
+        if (aggregated) {
+            when(qxService.getAggregatedAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME)).thenReturn(expected);
+        } else {
+            when(qxService.getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME)).thenReturn(expected);
+        }
 
-        List<AssetOrder> result = controller.getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME);
-        List<AssetOrder> cached = controller.getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        List<AssetOrder> result = controller.getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME, aggregated);
+        List<AssetOrder> cached = controller.getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME, aggregated);
 
         assertThat(result).isEqualTo(expected);
         assertThat(cached).isEqualTo(result);
 
-        verify(qxService, times(1)).getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        if (aggregated) {
+            verify(qxService, times(1)).getAggregatedAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        } else {
+            verify(qxService, times(1)).getAssetAskOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        }
     }
 
-    @Test
-    void getAssetBidOrders_thenHitChache() {
-        verifyThatGetAssetBidOrdersAreCached();
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void getAssetBidOrders_thenHitChache(boolean aggregated) {
+        verifyThatGetAssetBidOrdersAreCached(aggregated);
     }
 
-    @Test
-    void getAssetBidOrders_givenOtherParams_thenCallService() {
-        verifyThatGetAssetBidOrdersAreCached();
-        controller.getAssetBidOrders(TEST_ISSUER, "OTHER");
-        verify(qxService).getAssetBidOrders(TEST_ISSUER, "OTHER");
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void getAssetBidOrders_givenOtherParams_thenCallService(boolean aggregated) {
+        verifyThatGetAssetBidOrdersAreCached(aggregated);
+        controller.getAssetBidOrders(TEST_ISSUER, "OTHER", aggregated);
+        if (aggregated) {
+            verify(qxService).getAggregatedAssetBidOrders(TEST_ISSUER, "OTHER");
+        } else {
+            verify(qxService).getAssetBidOrders(TEST_ISSUER, "OTHER");
+        }
     }
 
-    @Test
-    void getAssetBidOrders_givenCacheEvicted_thenCallServiceAgain() {
-        verifyThatGetAssetBidOrdersAreCached();
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void getAssetBidOrders_givenCacheEvicted_thenCallServiceAgain(boolean aggregated) {
+        verifyThatGetAssetBidOrdersAreCached(aggregated);
         qxCacheManager.evictOrderCacheForAsset(TEST_ISSUER, TEST_ASSET_NAME);
-        controller.getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME);
-        verify(qxService, times(2)).getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        controller.getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME, aggregated);
+        if (aggregated) {
+            verify(qxService, times(2)).getAggregatedAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        } else {
+            verify(qxService, times(2)).getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        }
     }
 
-    private void verifyThatGetAssetBidOrdersAreCached() {
+    private void verifyThatGetAssetBidOrdersAreCached(boolean aggregated) {
         List<AssetOrder> expected = List.of(new AssetOrder("entity", 1, 2));
-        when(qxService.getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME)).thenReturn(expected);
+        if (aggregated) {
+            when(qxService.getAggregatedAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME)).thenReturn(expected);
+        } else {
+            when(qxService.getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME)).thenReturn(expected);
+        }
 
-        List<AssetOrder> result = controller.getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME);
-        List<AssetOrder> cached = controller.getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        List<AssetOrder> result = controller.getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME, aggregated);
+        List<AssetOrder> cached = controller.getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME, aggregated);
 
         assertThat(result).isEqualTo(expected);
         assertThat(cached).isEqualTo(result);
 
-        verify(qxService, times(1)).getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        if (aggregated) {
+            verify(qxService, times(1)).getAggregatedAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        } else {
+            verify(qxService, times(1)).getAssetBidOrders(TEST_ISSUER, TEST_ASSET_NAME);
+        }
     }
 
     @Test

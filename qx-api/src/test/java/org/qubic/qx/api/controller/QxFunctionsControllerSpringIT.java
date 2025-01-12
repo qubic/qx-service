@@ -15,9 +15,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Duration;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
 
@@ -31,6 +30,7 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
         client = MockMvcWebTestClient
                 .bindToApplicationContext(context)
                 .configureClient()
+                .responseTimeout(Duration.ofSeconds(1))
                 .baseUrl("/service/v1/qx")
                 .build();
     }
@@ -48,12 +48,15 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .expectStatus().isOk()
                 .expectBody(Fees.class)
                 .isEqualTo(new Fees(1L, 2L, 3L));
+
+        assertRequest("/v1/qx/getFees");
     }
 
     @Test
-    void getAssetAskOrders() throws Exception {
+    void getAssetAskOrders() {
         IlAssetOrder assetOrder = new IlAssetOrder("entity", "1", "2");
         IlAssetOrders assetOrders = new IlAssetOrders(List.of(assetOrder));
+
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -65,11 +68,11 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .expectBodyList(AssetOrder.class)
                 .isEqualTo(List.of(new AssetOrder("entity", 1L, 2L)));
 
-        assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getAssetAskOrders");
+        assertRequest("/v1/qx/getAssetAskOrders");
     }
 
     @Test
-    void getAssetBidOrders() throws Exception {
+    void getAssetBidOrders() {
         IlAssetOrder assetOrder = new IlAssetOrder("entity", "1", "2");
         IlAssetOrders assetOrders = new IlAssetOrders(List.of(assetOrder));
         prepareResponse(response -> response
@@ -83,11 +86,11 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .expectBodyList(AssetOrder.class)
                 .isEqualTo(List.of(new AssetOrder("entity", 1L, 2L)));
 
-        assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getAssetBidOrders");
+        assertRequest("/v1/qx/getAssetBidOrders");
     }
 
     @Test
-    void getEntityAskOrders() throws Exception {
+    void getEntityAskOrders() {
         IlEntityOrder entityOrder = new IlEntityOrder("issuer", "asset", "1", "2");
         IlEntityOrders entityOrders = new IlEntityOrders(List.of(entityOrder));
         prepareResponse(response -> response
@@ -101,11 +104,11 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .expectBodyList(EntityOrder.class)
                 .isEqualTo(List.of(new EntityOrder("issuer", "asset", 1, 2)));
 
-        assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getEntityAskOrders?entityId=" + ID);
+        assertRequest("/v1/qx/getEntityAskOrders?entityId=" + ID);
     }
 
     @Test
-    void getEntityBidOrders() throws Exception {
+    void getEntityBidOrders() {
         IlEntityOrder entityOrder = new IlEntityOrder("issuer", "asset", "1", "2");
         IlEntityOrders entityOrders = new IlEntityOrders(List.of(entityOrder));
         prepareResponse(response -> response
@@ -119,7 +122,7 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .expectBodyList(EntityOrder.class)
                 .isEqualTo(List.of(new EntityOrder("issuer", "asset", 1, 2)));
 
-        assertThat(integrationLayer.takeRequest().getPath()).contains("/v1/qx/getEntityBidOrders?entityId=" + ID);
+        assertRequest("/v1/qx/getEntityBidOrders?entityId=" + ID);
     }
 
 }

@@ -49,11 +49,35 @@ class QxFunctionsControllerTest {
     }
 
     @Test
+    void getAggregatedAssetAskOrders() {
+        List<AssetOrder> expected = List.of(new AssetOrder("entity", 1, 2));
+        when(qxService.getAggregatedAssetAskOrders("issuerId", "assetName")).thenReturn(expected);
+
+        client.get().uri("/issuer/issuerId/asset/assetName/asks?aggregated=true")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(AssetOrder.class)
+                .isEqualTo(expected);
+    }
+
+    @Test
     void getAssetBidOrders() {
         List<AssetOrder> expected = List.of(new AssetOrder("entity", 1, 2));
         when(qxService.getAssetBidOrders("issuerId", "assetName")).thenReturn(expected);
 
         client.get().uri("/issuer/issuerId/asset/assetName/bids")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(AssetOrder.class)
+                .isEqualTo(expected);
+    }
+
+    @Test
+    void getAggregatedAssetBidOrders() {
+        List<AssetOrder> expected = List.of(new AssetOrder("entity", 1, 2));
+        when(qxService.getAggregatedAssetBidOrders("issuerId", "assetName")).thenReturn(expected);
+
+        client.get().uri("/issuer/issuerId/asset/assetName/bids?aggregated=true")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(AssetOrder.class)
