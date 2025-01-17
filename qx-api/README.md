@@ -60,15 +60,15 @@ spring.flyway.password=...
 
 ### Schedulers
 
-Schedulers can be configured with cron syntax or disabled with `-`. Both schedulers are disable by default.
+Schedulers can be configured with cron syntax or disabled with `-`. Schedulers are disable by default.
 
 ```properties
-scheduler.sync.cron=* * * * * *
-scheduler.migrate.cron=-
+scheduler.sync.cron=*/15 * * * * * # sync every 15 seconds
+scheduler.migrate.cron=- # disabled
 ```
 
-The sync scheduler checks the redis queue every second by default. 
-The migration scheduler is only necessary if you have old transactions without timestamp stored in your database.
+The migration scheduler is only necessary if you have old transactions without timestamp stored in your database. Leave
+it disabled for new installations.
 
 ### Endpoints
 
