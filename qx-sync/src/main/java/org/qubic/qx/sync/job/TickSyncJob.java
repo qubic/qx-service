@@ -42,6 +42,7 @@ public class TickSyncJob {
     }
 
     public Mono<Long> updateLatestSyncedTick(long syncedTick) {
+        // only update if it increased
         return tickRepository.getLatestSyncedTick()
                 .flatMap(latest -> latest >= syncedTick
                         ? Mono.just(false)

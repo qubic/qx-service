@@ -12,7 +12,6 @@ import org.springframework.core.env.Environment;
 @SpringBootApplication
 public class QxSyncApplication implements ApplicationRunner {
 
-
     private final Environment environment;
     private final TickSyncJobRunner tickSyncJobRunner;
 
