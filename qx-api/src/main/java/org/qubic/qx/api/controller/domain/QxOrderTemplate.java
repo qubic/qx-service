@@ -2,7 +2,7 @@ package org.qubic.qx.api.controller.domain;
 
 import java.math.BigInteger;
 
-public record QxOrderResponse(
+public record QxOrderTemplate(
         BigInteger currentTick,
         String from,
         String to,
