@@ -69,7 +69,7 @@ public class IntegrationCoreApiService implements CoreApiService {
         return getTickTransactions(tick)
                 .flatMapMany(txs -> Flux.fromIterable(txs.transactions()))
                 .filter(this::isRelevantTransaction)
-                .map(tx -> mapper.mapTransaction(tx, null))
+                .map(mapper::mapTransaction)
                 .doOnError(e -> log.error("Error getting qx transactions: {}", e.getMessage()));
     }
 

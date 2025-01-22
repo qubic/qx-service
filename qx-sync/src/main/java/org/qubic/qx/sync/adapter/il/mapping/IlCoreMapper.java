@@ -27,7 +27,7 @@ public abstract class IlCoreMapper {
     @Mapping(target = "sourcePublicId", source = "source.sourceId")
     @Mapping(target = "destinationPublicId", source = "source.destId")
     @Mapping(target = "extraData", source = "source")
-    public abstract Transaction mapTransaction(IlTransaction source, Boolean moneyFlew);
+    public abstract Transaction mapTransaction(IlTransaction source);
 
     @Mapping(target = "initialTick", source= "initialTickOfEpoch")
     public abstract TickInfo map(IlTickInfo source);

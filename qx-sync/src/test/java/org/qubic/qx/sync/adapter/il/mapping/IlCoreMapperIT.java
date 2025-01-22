@@ -32,7 +32,7 @@ class IlCoreMapperIT {
                 "CDC7Y799XhZKyMvThoBjD/dnCh6/OfchC0C83KJT0F9DRkIAAAAAAAMAAAAAAAAACQAAAAAAAAA=",
                 "transaction-id"
         );
-        Transaction transaction = mapper.mapTransaction(ilTransaction, true);
+        Transaction transaction = mapper.mapTransaction(ilTransaction);
 
         assertThat(transaction).isNotNull();
         assertThat(transaction.transactionHash()).isEqualTo("transaction-id");
