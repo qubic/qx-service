@@ -14,7 +14,6 @@ public class TradeRepository {
 
     public TradeRepository(ReactiveRedisTemplate<String, Trade> redisTradeTemplate) {
         this.redisTradeTemplate = redisTradeTemplate;
-        log.info(redisTradeTemplate.getClass().toString());
     }
 
     public Mono<Trade> putTradeIntoQueue(Trade trade) {
