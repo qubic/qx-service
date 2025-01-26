@@ -6,8 +6,8 @@ It's logically located above integration layer and below UI layer.
 
 There are two modules:
 
-* qx-api ... provides the endpoints for retrieving data.
-* qx-sync ... job that collects data from nodes and/or integration layer.
+* [qx-api](./qx-api/README.md) ... provides the endpoints for retrieving data.
+* [qx-sync](./qx-sync/README.md) ... job that collects data from nodes and/or integration layer.
 
 ## Prequisites
 
