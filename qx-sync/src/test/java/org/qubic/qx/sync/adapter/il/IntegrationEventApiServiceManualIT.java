@@ -32,12 +32,12 @@ class IntegrationEventApiServiceManualIT {
     @Test
     void getTickEventsForQxTransaction() {
 
-        long tickNumber = 16585576;
+        long tickNumber = 18699147;
         List<TransactionEvents> transactionEvents = apiClient.getTickEvents(tickNumber).block();
-        // log.info(JsonUtil.toJson(transactionEvents));
         log.trace("Transaction events: {}", transactionEvents);
+        assertThat(transactionEvents).isNotNull();
+        transactionEvents.forEach(transactionEvent -> log.info("Transaction: {}", transactionEvent.txId()));
         assertThat(transactionEvents).isNotEmpty();
-
         List<TransactionEvent> events = transactionEvents.stream().flatMap(e -> e.events().stream()).toList();
 
         for (TransactionEvent transactionEvent : events) {
