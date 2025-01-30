@@ -26,16 +26,14 @@ class QxCacheManagerTest {
         when(redisCacheManager.getCache(CACHE_NAME_ENTITY_TRADES)).thenReturn(cache);
         cacheManager.evictTradeCacheForEntity("foo");
         verify(cache).evict("foo");
-
     }
 
     @Test
     void evictTradeCacheForAsset() {
         Cache cache = mock();
         when(redisCacheManager.getCache(CACHE_NAME_ASSET_TRADES)).thenReturn(cache);
-        when(redisCacheManager.getCache(CACHE_NAME_ASSET_OWNERS)).thenReturn(cache);
         cacheManager.evictTradeCacheForAsset("foo", "bar");
-        verify(cache, times(2)).evict("foo:bar");
+        verify(cache, times(1)).evict("foo:bar");
     }
 
     @Test
@@ -77,8 +75,7 @@ class QxCacheManagerTest {
     void evictTransferCacheForAsset() {
         Cache cache = mock();
         when(redisCacheManager.getCache(CACHE_NAME_TRANSFERS_ASSET)).thenReturn(cache);
-        when(redisCacheManager.getCache(CACHE_NAME_ASSET_OWNERS)).thenReturn(cache);
         cacheManager.evictTransferCacheForAsset("foo", "bar");
-        verify(cache, times(2)).evict("foo:bar");
+        verify(cache, times(1)).evict("foo:bar");
     }
 }
