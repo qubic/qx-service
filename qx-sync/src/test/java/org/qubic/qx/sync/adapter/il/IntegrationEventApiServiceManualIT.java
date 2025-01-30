@@ -32,7 +32,7 @@ class IntegrationEventApiServiceManualIT {
     @Test
     void getTickEventsForQxTransaction() {
 
-        long tickNumber = 18699147;
+        long tickNumber = 18766607;
         List<TransactionEvents> transactionEvents = apiClient.getTickEvents(tickNumber).block();
         log.trace("Transaction events: {}", transactionEvents);
         assertThat(transactionEvents).isNotNull();
