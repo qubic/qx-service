@@ -19,6 +19,8 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest(properties = """
     backend=qubicj
+    use-public-peers=false
+    computor.hosts=localhost
 """)
 class QubicjMapperSpringIT {
 
