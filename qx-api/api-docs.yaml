@@ -6,6 +6,128 @@ servers:
   - url: http://localhost:8081
     description: Generated server url
 paths:
+  /service/v1/qx/issuer/{issuer}/asset/{asset}/remove-bid:
+    post:
+      tags:
+        - qx-order-controller
+      operationId: createRemoveBidOrderTemplate
+      parameters:
+        - name: issuer
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            pattern: "^[A-Z0-9]{1,7}$"
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QxOrderRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/QxOrderTemplate"
+  /service/v1/qx/issuer/{issuer}/asset/{asset}/remove-ask:
+    post:
+      tags:
+        - qx-order-controller
+      operationId: createRemoveAskOrderTemplate
+      parameters:
+        - name: issuer
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            maxLength: 7
+            minLength: 1
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QxOrderRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/QxOrderTemplate"
+  /service/v1/qx/issuer/{issuer}/asset/{asset}/add-bid:
+    post:
+      tags:
+        - qx-order-controller
+      operationId: createAddBidOrderTemplate
+      parameters:
+        - name: issuer
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            pattern: "^[A-Z0-9]{1,7}$"
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QxOrderRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/QxOrderTemplate"
+  /service/v1/qx/issuer/{issuer}/asset/{asset}/add-ask:
+    post:
+      tags:
+        - qx-order-controller
+      operationId: createAddAskOrderTemplate
+      parameters:
+        - name: issuer
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            maxLength: 7
+            minLength: 1
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QxOrderRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/QxOrderTemplate"
   /service/v1/qx/transfers:
     get:
       tags:
@@ -44,15 +166,12 @@ paths:
           in: path
           required: true
           schema:
-            maxLength: 60
-            minLength: 60
             type: string
         - name: asset
           in: path
           required: true
           schema:
-            maxLength: 7
-            minLength: 1
+            pattern: "^[A-Z0-9]{1,7}$"
             type: string
       responses:
         "200":
@@ -73,15 +192,12 @@ paths:
           in: path
           required: true
           schema:
-            maxLength: 60
-            minLength: 60
             type: string
         - name: asset
           in: path
           required: true
           schema:
-            maxLength: 7
-            minLength: 1
+            pattern: "^[A-Z0-9]{1,7}$"
             type: string
       responses:
         "200":
@@ -92,35 +208,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TradeDto"
-  /service/v1/qx/issuer/{issuer}/asset/{asset}/owners:
-    get:
-      tags:
-        - asset-owners-controller
-      operationId: getTopAssetOwners
-      parameters:
-        - name: issuer
-          in: path
-          required: true
-          schema:
-            maxLength: 60
-            minLength: 60
-            type: string
-        - name: asset
-          in: path
-          required: true
-          schema:
-            maxLength: 7
-            minLength: 1
-            type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/AmountPerEntityDto"
   /service/v1/qx/issuer/{issuer}/asset/{asset}/chart/average-price:
     get:
       tags:
@@ -131,15 +218,12 @@ paths:
           in: path
           required: true
           schema:
-            maxLength: 60
-            minLength: 60
             type: string
         - name: asset
           in: path
           required: true
           schema:
-            maxLength: 7
-            minLength: 1
+            pattern: "^[A-Z0-9]{1,7}$"
             type: string
       responses:
         "200":
@@ -160,16 +244,19 @@ paths:
           in: path
           required: true
           schema:
-            maxLength: 60
-            minLength: 60
             type: string
         - name: asset
           in: path
           required: true
           schema:
-            maxLength: 7
-            minLength: 1
+            pattern: "^[A-Z0-9]{1,7}$"
             type: string
+        - name: aggregated
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: OK
@@ -189,16 +276,19 @@ paths:
           in: path
           required: true
           schema:
-            maxLength: 60
-            minLength: 60
             type: string
         - name: asset
           in: path
           required: true
           schema:
-            maxLength: 7
-            minLength: 1
+            pattern: "^[A-Z0-9]{1,7}$"
             type: string
+        - name: aggregated
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: OK
@@ -244,8 +334,6 @@ paths:
           in: path
           required: true
           schema:
-            maxLength: 60
-            minLength: 60
             type: string
       responses:
         "200":
@@ -266,8 +354,6 @@ paths:
           in: path
           required: true
           schema:
-            maxLength: 60
-            minLength: 60
             type: string
       responses:
         "200":
@@ -288,8 +374,6 @@ paths:
           in: path
           required: true
           schema:
-            maxLength: 60
-            minLength: 60
             type: string
       responses:
         "200":
@@ -310,8 +394,6 @@ paths:
           in: path
           required: true
           schema:
-            maxLength: 60
-            minLength: 60
             type: string
       responses:
         "200":
@@ -338,6 +420,34 @@ paths:
                   $ref: "#/components/schemas/Asset"
 components:
   schemas:
+    QxOrderRequest:
+      required:
+        - numberOfShares
+        - pricePerShare
+      type: object
+      properties:
+        from:
+          type: string
+        numberOfShares:
+          type: integer
+        pricePerShare:
+          type: integer
+    QxOrderTemplate:
+      type: object
+      properties:
+        currentTick:
+          type: integer
+        from:
+          type: string
+        to:
+          type: string
+        inputType:
+          type: integer
+          format: int32
+        amount:
+          type: integer
+        extraData:
+          type: string
     ExtraData:
       required:
         - '@class'
@@ -394,13 +504,6 @@ components:
         numberOfShares:
           type: integer
           format: int64
-    AmountPerEntityDto:
-      type: object
-      properties:
-        identity:
-          type: string
-        amount:
-          type: integer
     AvgPriceData:
       type: object
       properties:
