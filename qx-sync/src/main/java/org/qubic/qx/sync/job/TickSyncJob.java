@@ -54,7 +54,7 @@ public class TickSyncJob {
         return Mono.zip(coreService.getTickInfo(), eventService.getLastProcessedTick())
                 .doOnNext(tuple -> {
                     // log if there is a 'larger' gap between current tick and event service
-                    if (Math.abs(tuple.getT1().tick() - tuple.getT2().tickNumber()) > 5) {
+                    if (Math.abs(tuple.getT1().tick() - tuple.getT2().tickNumber()) > 10) {
                         log.info("Current tick: [{}]. Events are available until tick [{}].",
                                 tuple.getT1().tick(), tuple.getT2().tickNumber());
                     }

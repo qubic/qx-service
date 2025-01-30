@@ -62,13 +62,10 @@ public class RedisConfiguration {
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
         String[] caches = environment.getProperty("qx.caches", String[].class, new String[0]);
         for (String cache : caches) {
-            Duration ttl = environment.getProperty(String.format("qx.cache.%s.ttl", cache), Duration.class);
-            if (ttl == null) {
-                log.warn("Missing cache configuration for [{}]", cache);
-            } else {
-                log.info("Overriding defaults for cache [{}]. TTL: [{}]", cache, ttl);
-                cacheConfigurations.put(cache, RedisCacheConfiguration.defaultCacheConfig().entryTtl(ttl));
-            }
+            Duration customTtl = environment.getRequiredProperty(String.format("qx.cache.%s.ttl", cache), Duration.class);
+            String cacheName = environment.getRequiredProperty(String.format("qx.cache.%s.name", cache), String.class);
+            log.info("Overriding defaults for cache [{}]. TTL: [{}]", cacheName, customTtl);
+            cacheConfigurations.put(cacheName, RedisCacheConfiguration.defaultCacheConfig().entryTtl(customTtl));
         }
 
         Duration defaultTtl = environment.getRequiredProperty("qx.cache.default.ttl", Duration.class);
