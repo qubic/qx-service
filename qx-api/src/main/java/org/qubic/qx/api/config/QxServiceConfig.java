@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.adapter.CoreApiService;
 import org.qubic.qx.api.adapter.QxApiService;
 import org.qubic.qx.api.controller.service.*;
-import org.qubic.qx.api.db.AssetOwnersRepository;
 import org.qubic.qx.api.db.AssetsRepository;
 import org.qubic.qx.api.db.TradesRepository;
 import org.qubic.qx.api.db.TransactionsRepository;
@@ -57,11 +56,6 @@ public class QxServiceConfig {
     @Bean
     TransactionsService transactionsService(TransactionsRepository transactionsRepository) {
         return new TransactionsService(transactionsRepository);
-    }
-
-    @Bean
-    AssetOwnersService assetOwnersService(AssetOwnersRepository assetOwnersRepository) {
-        return new AssetOwnersService(assetOwnersRepository);
     }
 
     @Bean
