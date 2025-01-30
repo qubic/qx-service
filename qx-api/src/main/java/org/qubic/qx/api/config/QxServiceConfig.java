@@ -6,8 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.adapter.CoreApiService;
 import org.qubic.qx.api.adapter.QxApiService;
 import org.qubic.qx.api.controller.service.*;
-import org.qubic.qx.api.db.*;
-import org.qubic.qx.api.richlist.TransferAssetService;
+import org.qubic.qx.api.db.AssetOwnersRepository;
+import org.qubic.qx.api.db.AssetsRepository;
+import org.qubic.qx.api.db.TradesRepository;
+import org.qubic.qx.api.db.TransactionsRepository;
 import org.qubic.qx.api.validation.IdentityValidator;
 import org.qubic.qx.api.validation.ValidationUtility;
 import org.springframework.context.annotation.Bean;
@@ -60,11 +62,6 @@ public class QxServiceConfig {
     @Bean
     AssetOwnersService assetOwnersService(AssetOwnersRepository assetOwnersRepository) {
         return new AssetOwnersService(assetOwnersRepository);
-    }
-
-    @Bean
-    TransferAssetService transferAssetService(AssetsDbService assetsRepository, EntitiesDbService entitiesRepository, AssetOwnersRepository assetOwnersRepository, ValidationUtility validationUtility) {
-        return new TransferAssetService(assetsRepository, entitiesRepository, assetOwnersRepository, validationUtility);
     }
 
     @Bean

@@ -7,7 +7,6 @@ import org.qubic.qx.api.db.domain.Transaction;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.qubic.qx.api.redis.dto.TransactionRedisDto;
 import org.qubic.qx.api.redis.repository.TransactionsRedisRepository;
-import org.qubic.qx.api.richlist.TransferAssetService;
 import org.qubic.qx.api.scheduler.mapping.TransactionMapper;
 
 import java.util.Optional;
@@ -22,9 +21,8 @@ class TransactionsQueueProcessorTest extends QueueProcessorTest<Transaction, Tra
         this.redisRepository = mock(TransactionsRedisRepository.class);
         this.repository = mock(TransactionsRepository.class);
         this.mapper = mock(TransactionMapper.class);
-        TransferAssetService transferAssetService = mock();
         QxCacheManager qxCacheManager = mock();
-        processor = new TransactionsProcessor(redisRepository, repository, mapper,  transferAssetService, qxCacheManager);
+        processor = new TransactionsProcessor(redisRepository, repository, mapper,  qxCacheManager);
     }
 
     @Test

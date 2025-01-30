@@ -5,7 +5,6 @@ import org.qubic.qx.api.db.domain.*;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.qubic.qx.api.redis.dto.TransactionRedisDto;
 import org.qubic.qx.api.redis.repository.QueueProcessingRepository;
-import org.qubic.qx.api.richlist.TransferAssetService;
 import org.qubic.qx.api.scheduler.mapping.RedisToDomainMapper;
 import org.springframework.data.repository.CrudRepository;
 
@@ -14,12 +13,11 @@ import java.util.Optional;
 @Slf4j
 public class TransactionsProcessor extends QueueProcessor<Transaction, TransactionRedisDto> {
 
-    private final TransferAssetService transferAssetService;
     private final QxCacheManager qxCacheManager;
 
-    public TransactionsProcessor(QueueProcessingRepository<TransactionRedisDto> redisRepository, CrudRepository<Transaction, Long> repository, RedisToDomainMapper<Transaction, TransactionRedisDto> mapper, TransferAssetService transferAssetService, QxCacheManager qxCacheManager) {
+    public TransactionsProcessor(QueueProcessingRepository<TransactionRedisDto> redisRepository, CrudRepository<Transaction,
+            Long> repository, RedisToDomainMapper<Transaction, TransactionRedisDto> mapper, QxCacheManager qxCacheManager) {
         super(redisRepository, repository, mapper);
-        this.transferAssetService = transferAssetService;
         this.qxCacheManager = qxCacheManager;
     }
 
@@ -45,22 +43,14 @@ public class TransactionsProcessor extends QueueProcessor<Transaction, Transacti
 
         } else if (extraData instanceof QxTransferAssetData transferData) {
 
-            String issuer = transferData.issuer();
-            String assetName = transferData.name();
-            String from = sourceDto.sourcePublicId();
-            String to = transferData.newOwner();
-            transferAssetService.transfer(from, to, issuer, assetName, transferData.numberOfShares());
-
             log.info("Evicting transfer caches.");
             qxCacheManager.evictTransferCache();
-            qxCacheManager.evictTransferCacheForAsset(issuer, assetName);
-            qxCacheManager.evictTransferCacheForEntity(from);
-            qxCacheManager.evictTransferCacheForEntity(to);
+            qxCacheManager.evictTransferCacheForAsset(transferData.issuer(), transferData.name());
+            qxCacheManager.evictTransferCacheForEntity(sourceDto.sourcePublicId());
+            qxCacheManager.evictTransferCacheForEntity(transferData.newOwner());
 
-        } else if (extraData instanceof QxIssueAssetData issueAssetData) {
+        } else if (extraData instanceof QxIssueAssetData) {
 
-            String issuer = sourceDto.sourcePublicId();
-            transferAssetService.issueAsset(issuer, issueAssetData.name(), issueAssetData.numberOfShares());
             qxCacheManager.evictAssetsCaches();
 
         }

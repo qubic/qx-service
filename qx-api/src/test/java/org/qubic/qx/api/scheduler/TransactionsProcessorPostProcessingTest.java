@@ -6,16 +6,14 @@ import org.qubic.qx.api.db.domain.QxIssueAssetData;
 import org.qubic.qx.api.db.domain.QxTransferAssetData;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.qubic.qx.api.redis.dto.TransactionRedisDto;
-import org.qubic.qx.api.richlist.TransferAssetService;
 
 import static org.mockito.Mockito.*;
 
 class TransactionsProcessorPostProcessingTest {
 
-    private final TransferAssetService transferAssetService = mock();
     private final QxCacheManager qxCacheManager = mock();
     private final TransactionsProcessor processor = new TransactionsProcessor(null, null, null,
-            transferAssetService, qxCacheManager);
+            qxCacheManager);
 
     @Test
     void postProcess_givenAssetOrderData_thenEvictOrderCaches() {
@@ -47,26 +45,6 @@ class TransactionsProcessorPostProcessingTest {
         qxCacheManager.evictTransferCacheForAsset("ISSUER", "ASSET");
         qxCacheManager.evictTransferCacheForEntity("SOURCE_IDENTITY");
         qxCacheManager.evictTransferCacheForEntity("NEW_OWNER");
-    }
-
-    @Test
-    void postProcess_givenTransfer_thenCallTransferService() {
-        TransactionRedisDto source = mock();
-        when(source.sourcePublicId()).thenReturn("SOURCE_IDENTITY");
-        QxTransferAssetData transferAssetData = new QxTransferAssetData(
-                "ISSUER", "ASSET", "NEW_OWNER", 42
-        );
-        when(source.extraData()).thenReturn(transferAssetData);
-
-        processor.postProcess(source);
-        verify(transferAssetService).transfer("SOURCE_IDENTITY", "NEW_OWNER", "ISSUER", "ASSET", 42);
-    }
-
-    @Test
-    void postProcess_givenIssueAsset_thenCallTransferService() {
-        TransactionRedisDto source = createIssueAssetTransaction();
-        processor.postProcess(source);
-        verify(transferAssetService).issueAsset("ISSUER", "NAME", 42);
     }
 
     @Test
