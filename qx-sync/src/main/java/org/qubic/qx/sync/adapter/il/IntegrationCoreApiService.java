@@ -63,7 +63,7 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .bodyToMono(IlTickData.class)
                 .map(mapper::map)
                 .switchIfEmpty(Mono.error(emptyResult("get tick data", tick)))
-                .doOnError(e -> logError("Error getting tick data", e))
+                .doOnError(e -> logError(String.format("Error getting tick data for tick [%d]", tick), e))
                 .retryWhen(retrySpec());
     }
 
@@ -73,7 +73,7 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .flatMapMany(txs -> Flux.fromIterable(txs.transactions()))
                 .filter(this::isRelevantTransaction)
                 .map(mapper::mapTransaction)
-                .doOnError(e -> logError("Error getting qx transactions", e));
+                .doOnError(e -> logError(String.format("Error getting qx transactions for tick [%d]", tick), e));
     }
 
     Mono<IlTransactions> getTickTransactions(long tick) {
@@ -83,7 +83,7 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .retrieve()
                 .bodyToMono(IlTransactions.class)
                 .switchIfEmpty(Mono.error(emptyResult("get tick transactions", tick)))
-                .doOnError(e -> logError("Error getting tick transactions", e))
+                .doOnError(e -> logError(String.format("Error getting tick transactions for tick [%d]", tick), e))
                 .retryWhen(retrySpec());
     }
 

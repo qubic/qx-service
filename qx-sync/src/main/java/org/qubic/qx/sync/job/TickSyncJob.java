@@ -74,7 +74,7 @@ public class TickSyncJob {
             } else {
                 return Flux.just(startTick);
             }
-        } else if (numberOfTicks < 0) {
+        } else if (numberOfTicks < -3) { // don't log minor fluctuations
             log.warn("Not syncing. Invalid sync range. From tick [{}] to tick [{}].", startTick, endTick);
             return Flux.empty();
         } else {
