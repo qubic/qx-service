@@ -1,6 +1,7 @@
 package org.qubic.qx.sync.adapter.il;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.qubic.qx.sync.adapter.EventApiService;
 import org.qubic.qx.sync.adapter.exception.EmptyResultException;
 import org.qubic.qx.sync.domain.EpochAndTick;
@@ -18,12 +19,14 @@ import java.util.List;
 @Slf4j
 public class IntegrationEventApiService implements EventApiService {
 
-    private static final int NUM_RETRIES = 3;
+    private final int retries;
     private static final String BASE_PATH = "/v1/events";
     private final WebClient webClient;
 
-    public IntegrationEventApiService(WebClient webClient) {
+    public IntegrationEventApiService(WebClient webClient, int retries) {
         this.webClient = webClient;
+        log.info("Number of retries: [{}]", retries);
+        this.retries = retries;
     }
 
     @Override
@@ -35,7 +38,7 @@ public class IntegrationEventApiService implements EventApiService {
                 .bodyToMono(TickEvents.class)
                 .map(TickEvents::txEvents)
                 .switchIfEmpty(Mono.error(emptyGetEventsResult(tick)))
-                .doOnError(e -> log.error("Error getting tick events: {}", e.getMessage()))
+                .doOnError(e -> logError("Error getting tick events", e))
                 .retryWhen(retrySpec());
     }
 
@@ -47,12 +50,12 @@ public class IntegrationEventApiService implements EventApiService {
                 .bodyToMono(EventProcessingStatus.class)
                 .map(EventProcessingStatus::lastProcessedTick)
                 .switchIfEmpty(Mono.error(new EmptyResultException("Could not get event status.")))
-                .doOnError(e -> log.error("Error getting last processed tick: {}", e.getMessage()))
+                .doOnError(e -> logError("Error getting last processed tick", e))
                 .retryWhen(retrySpec());
     }
 
-    private static RetryBackoffSpec retrySpec() {
-        return Retry.backoff(NUM_RETRIES, Duration.ofSeconds(1)).doBeforeRetry(c -> log.info("Retry: [{}].", c.totalRetries() + 1));
+    private RetryBackoffSpec retrySpec() {
+        return Retry.backoff(retries, Duration.ofSeconds(1)).doBeforeRetry(c -> log.info("Retry: [{}].", c.totalRetries() + 1));
     }
 
     private static String tickPayloadBody(long tick) {
@@ -62,5 +65,13 @@ public class IntegrationEventApiService implements EventApiService {
     private static EmptyResultException emptyGetEventsResult(long tick) {
         return new EmptyResultException(String.format("Could not get events for tick [%d].", tick));
     }
+
+    private void logError(String logMessage, Throwable throwable) {
+        ExceptionUtils.forEach(throwable,
+                // here we warn only because we retry and log the error later, if retries are exhausted
+                e -> log.warn("{}: {}", logMessage, ExceptionUtils.getMessage(e))
+        );
+    }
+
 
 }

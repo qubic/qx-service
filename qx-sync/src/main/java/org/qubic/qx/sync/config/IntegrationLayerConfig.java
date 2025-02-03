@@ -3,12 +3,9 @@ package org.qubic.qx.sync.config;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
-import org.qubic.qx.sync.adapter.QxApiService;
 import org.qubic.qx.sync.adapter.il.IntegrationCoreApiService;
 import org.qubic.qx.sync.adapter.il.IntegrationEventApiService;
-import org.qubic.qx.sync.adapter.il.IntegrationQxApiService;
 import org.qubic.qx.sync.adapter.il.mapping.IlCoreMapper;
-import org.qubic.qx.sync.adapter.il.mapping.IlQxMapper;
 import org.qubic.qx.sync.properties.IntegrationClientProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,12 +27,6 @@ import java.util.List;
 @Configuration
 public class IntegrationLayerConfig {
 
-    @ConfigurationProperties(prefix = "il.qx.client", ignoreUnknownFields = false)
-    @Bean(name="qxClientProperties")
-    IntegrationClientProperties qxClientProperties() {
-        return new IntegrationClientProperties();
-    }
-
     @ConfigurationProperties(prefix = "il.event.client", ignoreUnknownFields = false)
     @Bean(name="eventClientProperties")
     IntegrationClientProperties eventClientProperties() {
@@ -48,43 +39,32 @@ public class IntegrationLayerConfig {
         return new IntegrationClientProperties();
     }
 
-    @Bean(name="qxClient")
-    WebClient qxApiWebClient(@Qualifier("qxClientProperties") IntegrationClientProperties properties, WebClient.Builder builder) {
-        HttpClient httpClient = createHttpClient();
-        URI uri = createUri(properties);
-        log.info("Integration layer qx API url: {}", uri);
-        return createClient(builder, httpClient, uri);
-    }
-
     @Bean(name="coreClient")
-    WebClient coreApiWebClient(@Qualifier("coreClientProperties") IntegrationClientProperties properties, WebClient.Builder builder) {
+    WebClient coreApiWebClient(WebClient.Builder builder) {
         HttpClient httpClient = createHttpClient();
-        URI uri = createUri(properties);
+        URI uri = createUri(coreClientProperties());
         log.info("Integration layer core API url: {}", uri);
         return createClient(builder, httpClient, uri);
     }
 
     @Bean(name="eventClient")
-    WebClient eventApiWebClient(@Qualifier("eventClientProperties") IntegrationClientProperties properties, WebClient.Builder builder) {
+    WebClient eventApiWebClient(WebClient.Builder builder) {
         HttpClient httpClient = createHttpClient();
-        URI uri = createUri(properties);
+        URI uri = createUri(eventClientProperties());
         log.info("Integration layer event API url: {}", uri);
         return createClient(builder, httpClient, uri);
     }
 
     @Bean
     IntegrationEventApiService integrationEventApiService(@Qualifier("eventClient") WebClient webClient) {
-        return new IntegrationEventApiService(webClient);
+        int retries = eventClientProperties().getRetries();
+        return new IntegrationEventApiService(webClient, retries);
     }
 
     @Bean
     CoreApiService integrationCoreApiService(@Qualifier("coreClient") WebClient integrationApiWebClient, IlCoreMapper transactionMapper) {
-        return new IntegrationCoreApiService(integrationApiWebClient, transactionMapper);
-    }
-
-    @Bean
-    QxApiService integrationQxApiService(@Qualifier("qxClient")WebClient integrationApiWebClient, IlQxMapper qxIntegrationMapper) {
-        return new IntegrationQxApiService(integrationApiWebClient, qxIntegrationMapper);
+        int retries = coreClientProperties().getRetries();
+        return new IntegrationCoreApiService(integrationApiWebClient, transactionMapper, retries);
     }
 
     // helper methods

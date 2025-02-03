@@ -8,5 +8,6 @@ public class IntegrationClientProperties {
     private String scheme;
     private String host;
     private String port;
+    private int retries;
 
 }

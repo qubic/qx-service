@@ -3,13 +3,11 @@ package org.qubic.qx.sync.job;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -30,8 +28,9 @@ public class TickSyncJobRunner {
 
     public void loopForever() {
 
-        Flux<? extends Serializable> syncLoop = runSyncJobMono()
-                .flatMap(syncJob::updateLatestSyncedTick)
+        Flux<? extends Serializable> syncLoop = syncJob.sync()
+                .takeLast(1).next() // last tick number or empty
+                .flatMap(syncJob::updateLatestSyncedTick) // skipped if error or empty
                 .doOnNext(tick -> log.debug("Sync to [{}] completed.", tick))
                 .doOnError(logError())
                 .retryWhen(getRetrySpec())
@@ -62,12 +61,6 @@ public class TickSyncJobRunner {
         return Retry.fixedDelay(Long.MAX_VALUE, retryDuration)
                 .doBeforeRetry(retrySignal -> log.info("Retrying sync job. Subsequent retries [{}], total retries [{}].",
                         retrySignal.totalRetriesInARow(), retrySignal.totalRetries()));
-    }
-
-    private Mono<Long> runSyncJobMono() {
-        return syncJob.sync()
-                .last()
-                .onErrorResume(NoSuchElementException.class, e -> Mono.empty());
     }
 
 }

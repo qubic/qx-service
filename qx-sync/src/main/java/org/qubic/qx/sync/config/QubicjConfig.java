@@ -10,10 +10,8 @@ import at.qubic.api.service.TransactionService;
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.EventApiService;
-import org.qubic.qx.sync.adapter.QxApiService;
 import org.qubic.qx.sync.adapter.qubicj.QubicjCoreApiService;
 import org.qubic.qx.sync.adapter.qubicj.QubicjEventApiService;
-import org.qubic.qx.sync.adapter.qubicj.QubicjQxApiService;
 import org.qubic.qx.sync.adapter.qubicj.mapping.QubicjMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -83,11 +81,6 @@ public class QubicjConfig {
     @Bean
     EventApiService eventApiService() {
         return new QubicjEventApiService();
-    }
-
-    @Bean
-    QxApiService qubicjQxApiService(ComputorService computorService, QubicjMapper mapper) {
-        return new QubicjQxApiService(computorService, mapper);
     }
 
 }

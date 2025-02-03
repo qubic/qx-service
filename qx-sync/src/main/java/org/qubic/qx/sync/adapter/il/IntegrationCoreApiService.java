@@ -2,6 +2,7 @@ package org.qubic.qx.sync.adapter.il;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.Qx;
 import org.qubic.qx.sync.adapter.exception.EmptyResultException;
@@ -22,13 +23,15 @@ import java.time.Duration;
 public class IntegrationCoreApiService implements CoreApiService {
 
     private static final String CORE_BASE_PATH_V1 = "/v1/core";
-    private static final int NUM_RETRIES = 3;
+    private final int retries;
     private final WebClient webClient;
     private final IlCoreMapper mapper;
 
-    public IntegrationCoreApiService(WebClient webClient, IlCoreMapper mapper) {
+    public IntegrationCoreApiService(WebClient webClient, IlCoreMapper mapper, int retries) {
         this.webClient = webClient;
         this.mapper = mapper;
+        log.info("Number of retries: [{}]", retries);
+        this.retries = retries;
     }
 
     @Override
@@ -36,7 +39,7 @@ public class IntegrationCoreApiService implements CoreApiService {
         return getTickInfo()
                 .map(TickInfo::tick)
                 .doOnNext(tick -> log.debug("Current tick: [{}]", tick))
-                .doOnError(e -> log.error("Error getting current tick: {}", e.getMessage()));
+                .doOnError(e -> logError("Error getting current tick", e));
     }
 
     @Override
@@ -47,7 +50,7 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .bodyToMono(IlTickInfo.class)
                 .map(mapper::map)
                 .switchIfEmpty(Mono.error(new EmptyResultException("Could not get tick info.")))
-                .doOnError(e -> log.error("Error getting tick info: {}", e.getMessage()))
+                .doOnError(e -> logError("Error getting tick info", e))
                 .retryWhen(retrySpec());
     }
 
@@ -60,7 +63,7 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .bodyToMono(IlTickData.class)
                 .map(mapper::map)
                 .switchIfEmpty(Mono.error(emptyResult("get tick data", tick)))
-                .doOnError(e -> log.error("Error getting tick data: {}", e.getMessage()))
+                .doOnError(e -> logError("Error getting tick data", e))
                 .retryWhen(retrySpec());
     }
 
@@ -70,7 +73,7 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .flatMapMany(txs -> Flux.fromIterable(txs.transactions()))
                 .filter(this::isRelevantTransaction)
                 .map(mapper::mapTransaction)
-                .doOnError(e -> log.error("Error getting qx transactions: {}", e.getMessage()));
+                .doOnError(e -> logError("Error getting qx transactions", e));
     }
 
     Mono<IlTransactions> getTickTransactions(long tick) {
@@ -80,12 +83,12 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .retrieve()
                 .bodyToMono(IlTransactions.class)
                 .switchIfEmpty(Mono.error(emptyResult("get tick transactions", tick)))
-                .doOnError(e -> log.error("Error getting tick transactions: {}", e.getMessage()))
+                .doOnError(e -> logError("Error getting tick transactions", e))
                 .retryWhen(retrySpec());
     }
 
-    private static RetryBackoffSpec retrySpec() {
-        return Retry.backoff(NUM_RETRIES, Duration.ofSeconds(1)).doBeforeRetry(c -> log.info("Retry: [{}].", c.totalRetries() + 1));
+    private RetryBackoffSpec retrySpec() {
+        return Retry.backoff(retries, Duration.ofSeconds(1)).doBeforeRetry(c -> log.info("Retry: [{}].", c.totalRetries() + 1));
     }
 
     private boolean isRelevantTransaction(IlTransaction transaction) {
@@ -111,6 +114,13 @@ public class IntegrationCoreApiService implements CoreApiService {
 
     private static EmptyResultException emptyResult(String action, long tick) {
         return new EmptyResultException(String.format("Could not %s for tick [%d].", action, tick));
+    }
+
+    private void logError(String logMessage, Throwable throwable) {
+        ExceptionUtils.forEach(throwable,
+                // here we warn only because we retry and log the error later, if retries are exhausted
+                e -> log.warn("{}: {}", logMessage, ExceptionUtils.getMessage(e))
+        );
     }
 
 }

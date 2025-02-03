@@ -64,7 +64,7 @@ public class TickSyncJob {
     private Flux<Long> calculateSyncRange(Tuple2<Long, Long> startAndEndTick) {
         long startTick = startAndEndTick.getT1();
         long endTick = startAndEndTick.getT2(); // we could do +1 here because end tick is exclusive but we better wait one tick
-        int numberOfTicks = (int) (endTick - startTick); // we don't sync the latest tick (integration api might still be behind)
+        int numberOfTicks = Math.min(1_000, (int) (endTick - startTick)); // we don't sync the latest tick (integration api might still be behind)
         if (numberOfTicks > 0) {
             if (numberOfTicks > 1) {
                 if (numberOfTicks > 5) {
@@ -74,6 +74,9 @@ public class TickSyncJob {
             } else {
                 return Flux.just(startTick);
             }
+        } else if (numberOfTicks < 0) {
+            log.warn("Not syncing. Invalid sync range. From tick [{}] to tick [{}].", startTick, endTick);
+            return Flux.empty();
         } else {
             log.debug("Nothing to sync... start [{}], end [{}]", startTick, endTick);
             return Flux.empty();
@@ -82,10 +85,11 @@ public class TickSyncJob {
 
     private Mono<Tuple2<Long, Long>> calculateStartAndEndTick(Tuple2<TickInfo, EpochAndTick> tuple) {
         return tickRepository.getLatestSyncedTick()
+                // take latest stored tick + 1 as next tick or initial tick if no old ticks are available
                 .map(latestStoredTick -> latestStoredTick < tuple.getT1().initialTick()
                         ? tuple.getT1().initialTick()
                         : latestStoredTick + 1)
-                // take the lowest common tick where event data is available (most probably always getT2().tickNumber()
+                // take the lowest common tick as end tick from normal nodes and event nodes
                 .map(startTick -> Tuples.of(startTick, Math.min(tuple.getT1().tick(), tuple.getT2().tickNumber())));
     }
 
@@ -106,7 +110,7 @@ public class TickSyncJob {
 
     private Mono<List<TransactionWithMeta>> queryTransactionsWithMetadata(long tickNumber) {
         Mono<List<TransactionEvents>> tickEventsMono = eventService.getTickEvents(tickNumber); // never empty
-        Mono<TickData> tickDataMono = coreService.getTickData(tickNumber); // never empty
+        Mono<TickData> tickDataMono = coreService.getTickData(tickNumber); // for time stamp // never empty
         Mono<List<Transaction>> qxTransactionsListMono = coreService.getQxTransactions(tickNumber)
                 .doOnNext(tx -> log.info("[{}] Received [{}] transaction.", tx.transactionHash(), Qx.OrderType.fromCode(tx.inputType())))
                 .collectList(); // empty list, if empty flux
