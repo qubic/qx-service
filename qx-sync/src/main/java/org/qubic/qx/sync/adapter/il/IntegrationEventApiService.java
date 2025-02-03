@@ -38,7 +38,7 @@ public class IntegrationEventApiService implements EventApiService {
                 .bodyToMono(TickEvents.class)
                 .map(TickEvents::txEvents)
                 .switchIfEmpty(Mono.error(emptyGetEventsResult(tick)))
-                .doOnError(e -> logError("Error getting tick events", e))
+                .doOnError(e -> logError(String.format("Error getting tick events for tick [%d]", tick), e))
                 .retryWhen(retrySpec());
     }
 
