@@ -63,8 +63,8 @@ public class TickSyncJob {
     private Mono<Tuple2<TickInfo, EpochAndTick>> getLatestAvailableTick() {
         return Mono.zip(coreService.getTickInfo(), eventService.getLastProcessedTick())
                 .doOnNext(tuple -> {
-                    latestLiveTick.lazySet(tuple.getT1().tick());
-                    latestEventTick.lazySet(tuple.getT2().tickNumber());
+                    latestLiveTick.set(tuple.getT1().tick());
+                    latestEventTick.set(tuple.getT2().tickNumber());
                     // log if there is a 'larger' gap between current tick and event service
                     if (Math.abs(tuple.getT1().tick() - tuple.getT2().tickNumber()) > 10) {
                         log.info("Current tick: [{}]. Events are available until tick [{}].",
@@ -97,7 +97,7 @@ public class TickSyncJob {
 
     private Mono<Tuple2<Long, Long>> calculateStartAndEndTick(Tuple2<TickInfo, EpochAndTick> tuple) {
         return tickRepository.getLatestSyncedTick()
-                .doOnNext(latestSyncedTick::lazySet)
+                .doOnNext(latestSyncedTick::set)
                 // take latest stored tick + 1 as next tick or initial tick if no old ticks are available
                 .map(latestStoredTick -> latestStoredTick < tuple.getT1().initialTick()
                         ? tuple.getT1().initialTick()

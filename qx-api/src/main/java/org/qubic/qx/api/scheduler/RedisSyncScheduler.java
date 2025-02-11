@@ -36,7 +36,7 @@ public class RedisSyncScheduler {
             log.info("Successfully synced [{}] transactions.", transactions.size());
             transactions.forEach(transaction -> {
                 if (latestMessageTick.get() < transaction.getTick()) {
-                    latestMessageTick.lazySet(transaction.getTick());
+                    latestMessageTick.set(transaction.getTick());
                 }
             });
         }
