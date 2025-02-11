@@ -1,5 +1,7 @@
 package org.qubic.qx.sync.job;
 
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +18,8 @@ import reactor.util.function.Tuples;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 public class TickSyncJob {
@@ -24,6 +28,12 @@ public class TickSyncJob {
     private final CoreApiService coreService;
     private final EventApiService eventService;
     private final TransactionProcessor transactionProcessor;
+
+    // export tick numbers as metric
+    private final AtomicLong latestSyncedTick = Objects.requireNonNull(Metrics.gauge("tick.latest", Tags.of("source", "sync"), new AtomicLong(0)));
+    private final AtomicLong latestEventTick = Objects.requireNonNull(Metrics.gauge("tick.latest", Tags.of("source", "events"), new AtomicLong(0)));
+    private final AtomicLong latestLiveTick = Objects.requireNonNull(Metrics.gauge("tick.latest", Tags.of("source", "live"), new AtomicLong(0)));
+
 
     public TickSyncJob(TickRepository tickRepository, CoreApiService coreService, EventApiService eventService, TransactionProcessor transactionProcessor) {
         this.tickRepository = tickRepository;
@@ -53,6 +63,8 @@ public class TickSyncJob {
     private Mono<Tuple2<TickInfo, EpochAndTick>> getLatestAvailableTick() {
         return Mono.zip(coreService.getTickInfo(), eventService.getLastProcessedTick())
                 .doOnNext(tuple -> {
+                    latestLiveTick.lazySet(tuple.getT1().tick());
+                    latestEventTick.lazySet(tuple.getT2().tickNumber());
                     // log if there is a 'larger' gap between current tick and event service
                     if (Math.abs(tuple.getT1().tick() - tuple.getT2().tickNumber()) > 10) {
                         log.info("Current tick: [{}]. Events are available until tick [{}].",
@@ -85,6 +97,7 @@ public class TickSyncJob {
 
     private Mono<Tuple2<Long, Long>> calculateStartAndEndTick(Tuple2<TickInfo, EpochAndTick> tuple) {
         return tickRepository.getLatestSyncedTick()
+                .doOnNext(latestSyncedTick::lazySet)
                 // take latest stored tick + 1 as next tick or initial tick if no old ticks are available
                 .map(latestStoredTick -> latestStoredTick < tuple.getT1().initialTick()
                         ? tuple.getT1().initialTick()
