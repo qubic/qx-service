@@ -30,8 +30,13 @@ public class EventsProcessor {
         log.info("Events for transaction [{}]: [{}] asset transfers, [{}] trades",
                 tx.transactionHash(),assetTransfers.size(), qxTrades.size());
 
+        log.debug("Asset transfers: {}", assetTransfers);
+        log.debug("Trades: {}", qxTrades);
+
         for (int i = 0; i < qxTrades.size(); i++) {
+
             QxTradeMessageEvent qxTrade = qxTrades.get(i);
+            log.info("Processing trade event: {}", qxTrade);
 
             String maker = tryToInferMakerFromEvents(qxTrades, assetTransfers, isAskOrder(getOrderType(tx.inputType())), i);
 
@@ -83,9 +88,11 @@ public class EventsProcessor {
 
             return Optional.of(relevantAssetChanges.getFirst());
 
-        } else if (qxTrades.size() == assetTransfers.size()) { // one asset change per trade
+        } else if (qxTrades.size() == assetTransfers.size() // one asset change per trade
+                && qxTrade.getNumberOfShares() == assetTransfers.get(i).getNumberOfShares()) {
+
             log.info("Taking trade #{} to find maker.", i);
-            return Optional.of(relevantAssetChanges.get(i)); // hope that order is deterministic
+            return Optional.of(assetTransfers.get(i)); // hope that order is deterministic
 
         } else {
             log.warn("Could not infer maker from trade events: {} {}. Index: [{}].", qxTrades, assetTransfers, i);
@@ -94,6 +101,8 @@ public class EventsProcessor {
         }
 
     }
+
+
 
     private static List<QxTradeMessageEvent> getTrades(List<TransactionEvent> relevantEvents) {
         return relevantEvents.stream()
