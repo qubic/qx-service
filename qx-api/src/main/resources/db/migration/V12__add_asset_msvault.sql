@@ -1,0 +1,2 @@
+insert into assets(issuer, name, verified)
+values ('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB', 'MSVAULT', true);
