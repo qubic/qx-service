@@ -13,7 +13,7 @@ import static org.qubic.qx.sync.job.TickSyncJob.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/v1/status")
+@RequestMapping("/service/v1/status")
 public class StatusController {
 
     private final MeterRegistry meterRegistry;

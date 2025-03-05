@@ -21,7 +21,7 @@ public class StatusControllerIT {
         client = WebTestClient
                 .bindToApplicationContext(context)
                 .configureClient()
-                .baseUrl("/v1/status")
+                .baseUrl("/service/v1/status")
                 .build();
     }
 
