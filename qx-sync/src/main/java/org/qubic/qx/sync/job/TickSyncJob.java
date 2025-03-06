@@ -24,16 +24,24 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 public class TickSyncJob {
 
+    public static final String TAG_KEY_SOURCE = "source";
+    public static final String TAG_VALUE_SYNCED = "sync";
+    public static final String TAG_VALUE_EVENTS = "events";
+    public static final String TAG_VALUE_LIVE = "live";
+    public static final String METRIC_LATEST_TICK = "tick.latest";
+
     private final TickRepository tickRepository;
     private final CoreApiService coreService;
     private final EventApiService eventService;
     private final TransactionProcessor transactionProcessor;
 
     // export tick numbers as metric
-    private final AtomicLong latestSyncedTick = Objects.requireNonNull(Metrics.gauge("tick.latest", Tags.of("source", "sync"), new AtomicLong(0)));
-    private final AtomicLong latestEventTick = Objects.requireNonNull(Metrics.gauge("tick.latest", Tags.of("source", "events"), new AtomicLong(0)));
-    private final AtomicLong latestLiveTick = Objects.requireNonNull(Metrics.gauge("tick.latest", Tags.of("source", "live"), new AtomicLong(0)));
-
+    private final AtomicLong latestSyncedTick = Objects.requireNonNull(
+            Metrics.gauge(METRIC_LATEST_TICK, Tags.of(TAG_KEY_SOURCE, TAG_VALUE_SYNCED), new AtomicLong(0)));
+    private final AtomicLong latestEventTick = Objects.requireNonNull(
+            Metrics.gauge(METRIC_LATEST_TICK, Tags.of(TAG_KEY_SOURCE, TAG_VALUE_EVENTS), new AtomicLong(0)));
+    private final AtomicLong latestLiveTick = Objects.requireNonNull(
+            Metrics.gauge(METRIC_LATEST_TICK, Tags.of(TAG_KEY_SOURCE, TAG_VALUE_LIVE), new AtomicLong(0)));
 
     public TickSyncJob(TickRepository tickRepository, CoreApiService coreService, EventApiService eventService, TransactionProcessor transactionProcessor) {
         this.tickRepository = tickRepository;

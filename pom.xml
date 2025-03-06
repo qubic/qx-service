@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.1</version>
+        <version>3.4.3</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -26,12 +26,10 @@
         <commons-collections4.version>4.5.0-M3</commons-collections4.version>
         <commons-csv.version>1.12.0</commons-csv.version>
         <embedded-redis.version>1.4.3</embedded-redis.version>
-        <lettuce.version>6.4.2.RELEASE</lettuce.version> <!-- 6.4.1 is vulnerable. security fix -->
-        <logback.version>1.5.14</logback.version> <!-- 1.5.12 is vulnerable. security fix -->
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <mapstruct.version>1.6.2</mapstruct.version>
         <okhttp3-mockserver.version>4.12.0</okhttp3-mockserver.version>
-        <qubicj.version>1.4.0</qubicj.version>
+        <qubicj.version>1.5.0</qubicj.version>
         <resilience4j.version>2.2.0</resilience4j.version>
         <springdoc.version>2.7.0</springdoc.version>
         <testcontainers-redis.version>2.2.2</testcontainers-redis.version>
