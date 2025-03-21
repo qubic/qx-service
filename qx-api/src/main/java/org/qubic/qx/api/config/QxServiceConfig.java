@@ -10,7 +10,6 @@ import org.qubic.qx.api.db.AssetsRepository;
 import org.qubic.qx.api.db.TradesRepository;
 import org.qubic.qx.api.db.TransactionsRepository;
 import org.qubic.qx.api.validation.IdentityValidator;
-import org.qubic.qx.api.validation.ValidationUtility;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,11 +20,6 @@ public class QxServiceConfig {
     @Bean
     IdentityUtil identityUtil() {
         return new IdentityUtil(true, new NoCrypto()); // use no crypto to avoid shared lib dependency
-    }
-
-    @Bean
-    ValidationUtility validationUtility(IdentityUtil identityUtil) {
-        return new ValidationUtility(identityUtil);
     }
 
     @Bean
