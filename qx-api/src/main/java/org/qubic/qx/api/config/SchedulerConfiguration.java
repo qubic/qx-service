@@ -35,9 +35,10 @@ public class SchedulerConfiguration {
     TransactionsProcessor transactionsProcessor(TransactionsRedisRepository transactionsRedisRepository,
                                                 TransactionsRepository transactionsRepository,
                                                 TransactionMapper transactionMapper,
+                                                AssetsRepository assetsRepository,
                                                 QxCacheManager qxCacheManager) {
         return new TransactionsProcessor(transactionsRedisRepository, transactionsRepository, transactionMapper,
-                qxCacheManager);
+                assetsRepository, qxCacheManager);
     }
 
     @Bean

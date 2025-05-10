@@ -2,6 +2,7 @@ package org.qubic.qx.api.scheduler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.qubic.qx.api.db.AssetsRepository;
 import org.qubic.qx.api.db.TransactionsRepository;
 import org.qubic.qx.api.db.domain.Transaction;
 import org.qubic.qx.api.redis.QxCacheManager;
@@ -21,8 +22,9 @@ class TransactionsQueueProcessorTest extends QueueProcessorTest<Transaction, Tra
         this.redisRepository = mock(TransactionsRedisRepository.class);
         this.repository = mock(TransactionsRepository.class);
         this.mapper = mock(TransactionMapper.class);
+        AssetsRepository assetsRepository = mock();
         QxCacheManager qxCacheManager = mock();
-        processor = new TransactionsProcessor(redisRepository, repository, mapper,  qxCacheManager);
+        processor = new TransactionsProcessor(redisRepository, repository, mapper, assetsRepository, qxCacheManager);
     }
 
     @Test
