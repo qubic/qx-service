@@ -71,7 +71,7 @@ class ExtraDataMapperTest {
                 .order(ByteOrder.LITTLE_ENDIAN)
                 .put(new byte[] {'F','O','O',0,0,0,0,0})
                 .putLong(666)
-                .put(new byte[] {0,0,0,0,0,2,0,0})
+                .put(new byte[] {0,0,0,0,0,0,0})
                 .put((byte) 16)
                 .array();
 
@@ -81,7 +81,27 @@ class ExtraDataMapperTest {
         QxIssueAssetData extraData = (QxIssueAssetData) mapped;
         assertThat(extraData.name()).isEqualTo("FOO");
         assertThat(extraData.numberOfShares()).isEqualTo(666);
-        assertThat(extraData.unitOfMeasurement()).isEqualTo("0000020");
+        assertThat(extraData.unitOfMeasurement()).isEqualTo("AAAAAAAAAA==");
+        assertThat(extraData.numberOfDecimalPlaces()).isEqualTo((byte) 16);
+    }
+
+    @Test
+    void mapQxIssueAsset_withNullCharacters() {
+        byte[] input = ByteBuffer.allocate(25)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .put(new byte[] {'F','O','O',0,0,0,0,0})
+                .putLong(666)
+                .put(new byte[] {0,-48,0,-48,-48,-48,-48})
+                .put((byte) 16)
+                .array();
+
+        ExtraData mapped = mapper.map(1, input);
+
+        assertThat(mapped).isInstanceOf(QxIssueAssetData.class);
+        QxIssueAssetData extraData = (QxIssueAssetData) mapped;
+        assertThat(extraData.name()).isEqualTo("FOO");
+        assertThat(extraData.numberOfShares()).isEqualTo(666);
+        assertThat(extraData.unitOfMeasurement()).isEqualTo("ANAA0NDQ0A==");
         assertThat(extraData.numberOfDecimalPlaces()).isEqualTo((byte) 16);
     }
 

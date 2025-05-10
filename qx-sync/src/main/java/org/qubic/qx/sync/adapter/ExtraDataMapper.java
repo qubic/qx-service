@@ -83,7 +83,7 @@ public class ExtraDataMapper {
         buffer.get(name);
         String assetName = AssetUtil.getAssetNameString(name);
         long numberOfUnits = buffer.getLong();
-        byte[] units = new byte[8];
+        byte[] units = new byte[7];
         buffer.get(units);
         String unitOfMeasurement = AssetUtil.getUnitOfMeasurementString(units);
 
@@ -91,7 +91,7 @@ public class ExtraDataMapper {
                 assetName,
                 numberOfUnits,
                 unitOfMeasurement,
-                buffer.get()
+                buffer.get() // number of decimal places
         );
     }
 
