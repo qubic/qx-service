@@ -2,7 +2,7 @@ package org.qubic.qx.sync.job;
 
 import at.qubic.api.crypto.IdentityUtil;
 import io.micrometer.core.instrument.util.IOUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.domain.*;
 import org.qubic.qx.sync.util.JsonUtil;
@@ -55,7 +55,7 @@ class EventsProcessorIT {
                 orderData
         );
         List<TransactionEvents> transactionEventList = Arrays.asList(JsonUtil.fromJson(responseJson, TransactionEvents[].class));
-        List<TransactionEvent> events = transactionEventList.stream().filter(te -> StringUtils.equals(te.txId(), transactionHash)).findAny().orElseThrow().events();
+        List<TransactionEvent> events = transactionEventList.stream().filter(te -> Strings.CS.equals(te.txId(), transactionHash)).findAny().orElseThrow().events();
         TransactionWithMeta transaction = TransactionWithMeta.builder().transaction(tx).events(events).time(Instant.EPOCH).build();
 
         List<Trade> trades = processor.calculateTrades(transaction, orderData);
