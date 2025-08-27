@@ -14,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @SpringBootTest
 @Tag("MANUAL")
+@Tag("SIT")
 class IntegrationCoreApiServiceManualIT {
 
     private final IntegrationCoreApiService apiService;

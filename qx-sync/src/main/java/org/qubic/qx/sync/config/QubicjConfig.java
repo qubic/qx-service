@@ -1,7 +1,6 @@
 package org.qubic.qx.sync.config;
 
 import at.qubic.api.crypto.IdentityUtil;
-import at.qubic.api.crypto.NoCrypto;
 import at.qubic.api.network.*;
 import at.qubic.api.properties.ComputorProperties;
 import at.qubic.api.properties.NetworkProperties;
@@ -65,7 +64,7 @@ public class QubicjConfig {
     // create bean without shared lib crypto dependency
     @Bean
     TransactionService transactionService(IdentityUtil identityUtil) {
-        return new TransactionService(identityUtil, new NoCrypto());
+        return new TransactionService(identityUtil);
     }
 
     @Bean

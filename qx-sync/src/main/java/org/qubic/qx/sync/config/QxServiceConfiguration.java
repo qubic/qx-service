@@ -1,7 +1,6 @@
 package org.qubic.qx.sync.config;
 
 import at.qubic.api.crypto.IdentityUtil;
-import at.qubic.api.crypto.NoCrypto;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.EventApiService;
 import org.qubic.qx.sync.adapter.ExtraDataMapper;
@@ -24,7 +23,7 @@ public class QxServiceConfiguration {
 
     @Bean
     IdentityUtil identityUtil() {
-        return new IdentityUtil(true, new NoCrypto());
+        return new IdentityUtil();
     }
 
     @Bean

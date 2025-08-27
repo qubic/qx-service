@@ -6,13 +6,17 @@
     <parent>
         <groupId>org.qubic.qx</groupId>
         <artifactId>qx-parent</artifactId>
-        <version>1.5.2-SNAPSHOT</version>
+        <version>1.6.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>qx-api</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Service that provides an API to access qx data.</description>
     <packaging>jar</packaging>
+
+    <properties>
+        <commons-lang3.version>3.18.0</commons-lang3.version> <!-- 3.17.0 is vulnerable -->
+    </properties>
 
     <dependencies>
 
@@ -161,13 +165,17 @@
                 </configuration>
             </plugin>
 
+            <!-- no need to install the app jar -->
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <configuration>
-                    <excludedGroups>MANUAL</excludedGroups>
-                    <excludedGroups>SIT</excludedGroups>
-                </configuration>
             </plugin>
 
             <plugin>

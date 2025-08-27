@@ -1,7 +1,6 @@
 package org.qubic.qx.api.config;
 
 import at.qubic.api.crypto.IdentityUtil;
-import at.qubic.api.crypto.NoCrypto;
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.adapter.CoreApiService;
 import org.qubic.qx.api.adapter.QxApiService;
@@ -19,7 +18,7 @@ public class QxServiceConfig {
 
     @Bean
     IdentityUtil identityUtil() {
-        return new IdentityUtil(true, new NoCrypto()); // use no crypto to avoid shared lib dependency
+        return new IdentityUtil(); // use no crypto to avoid shared lib dependency
     }
 
     @Bean

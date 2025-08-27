@@ -1,7 +1,6 @@
 package org.qubic.qx.sync.job;
 
 import at.qubic.api.crypto.IdentityUtil;
-import at.qubic.api.crypto.NoCrypto;
 import io.micrometer.core.instrument.util.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class EventsProcessorIT {
 
-    private final IdentityUtil identityUtil = new IdentityUtil(true, new NoCrypto());
+    private final IdentityUtil identityUtil = new IdentityUtil();
     private final EventsProcessor processor = new EventsProcessor(identityUtil);
 
     /*

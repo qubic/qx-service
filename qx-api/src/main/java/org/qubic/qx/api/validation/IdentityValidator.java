@@ -1,7 +1,6 @@
 package org.qubic.qx.api.validation;
 
 import at.qubic.api.crypto.IdentityUtil;
-import at.qubic.api.crypto.NoCrypto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +12,7 @@ public class IdentityValidator implements ConstraintValidator<Identity, String> 
 
     @SuppressWarnings("unused") // needed for unit test
     IdentityValidator() {
-        this(new IdentityUtil(true, new NoCrypto()));
+        this(new IdentityUtil());
         log.warn("Default constructor used. This should only happen in tests.");
     }
 
