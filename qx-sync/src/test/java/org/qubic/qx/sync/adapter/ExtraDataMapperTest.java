@@ -34,7 +34,7 @@ class ExtraDataMapperTest {
         assertThat(mapped).isInstanceOf(QxAssetOrderData.class);
         QxAssetOrderData extraData = (QxAssetOrderData) mapped;
         assertThat(extraData).isNotNull();
-        assertThat(extraData.issuer()).isEqualTo("0000000000000000000000000000000000000000000000000000000000000000");
+        assertThat(extraData.issuer()).isEqualTo("0000000000000000000000000000000000000000000000000000000000000000"); // uses mock
         assertThat(extraData.name()).isEqualTo("FOO");
         assertThat(extraData.price()).isEqualTo(123);
         assertThat(extraData.numberOfShares()).isEqualTo(45);
@@ -59,8 +59,8 @@ class ExtraDataMapperTest {
         assertThat(mapped).isInstanceOf(QxTransferAssetData.class);
         QxTransferAssetData extraData = (QxTransferAssetData) mapped;
         assertThat(extraData).isNotNull();
-        assertThat(extraData.issuer()).isEqualTo("0000000000000000000000000000000000000000000000000000000000000000");
-        assertThat(extraData.newOwner()).isEqualTo("0101010000000000000000000000000000000000000000000000000000000000");
+        assertThat(extraData.issuer()).isEqualTo("0000000000000000000000000000000000000000000000000000000000000000");  // uses mock
+        assertThat(extraData.newOwner()).isEqualTo("0101010000000000000000000000000000000000000000000000000000000000");  // uses mock
         assertThat(extraData.name()).isEqualTo("FOO");
         assertThat(extraData.numberOfShares()).isEqualTo(666);
     }
