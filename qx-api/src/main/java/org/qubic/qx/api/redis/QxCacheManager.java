@@ -1,14 +1,15 @@
 package org.qubic.qx.api.redis;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.CacheManager;
+import org.springframework.data.redis.cache.RedisCache;
+import org.springframework.data.redis.cache.RedisCacheManager;
 
 import java.util.Objects;
 
 @Slf4j
 public class QxCacheManager {
 
-    private final CacheManager cacheManager;
+    private final RedisCacheManager cacheManager;
 
     public static final String CACHE_NAME_FEES = "cache:fees";
     public static final String CACHE_NAME_ASSETS = "cache:assets";
@@ -35,7 +36,10 @@ public class QxCacheManager {
 
     public static final String CACHE_NAME_CHART_AVG_PRICE = "cache:chartAvgPrice";
 
-    public QxCacheManager(CacheManager cacheManager) {
+    static final String CACHE_KEY_IDENTITY_PATTERN = "SimpleKey \\[%s*";
+    static final String CACHE_KEY_ASSET_PATTERN = "SimpleKey \\[%s, %s*";
+
+    public QxCacheManager(RedisCacheManager cacheManager) {
         this.cacheManager = cacheManager;
     }
 
@@ -46,12 +50,14 @@ public class QxCacheManager {
 
     public void evictTradeCacheForEntity(String identity) {
         log.debug("Evicting trade cache for entity [{}].", identity);
-        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ENTITY_TRADES)).evict(identity);
+        RedisCache cache = (RedisCache) Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ENTITY_TRADES));
+        cache.clear(String.format(CACHE_KEY_IDENTITY_PATTERN, identity));
     }
 
     public void evictTradeCacheForAsset(String issuer, String name) {
         log.debug("Evicting cache for asset with issuer [{}] and name [{}].", issuer, name);
-        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_TRADES)).evict(String.format("%s:%s", issuer, name));
+        RedisCache cache = (RedisCache) Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_TRADES));
+        cache.clear(String.format(CACHE_KEY_ASSET_PATTERN, issuer, name)); // SimipleKey [issuer, name, pageable]
     }
 
     public void evictOrderCacheForEntity(String identity) {

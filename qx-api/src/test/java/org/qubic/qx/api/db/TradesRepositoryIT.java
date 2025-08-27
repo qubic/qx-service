@@ -57,7 +57,7 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
     }
 
     @Test
-    void findOrderedByTickTIme() {
+    void findOrderedByTickTime() {
         Iterator<Entity> entityIterator = entitiesRepository.findAll().iterator();
         Entity taker = entityIterator.next();
         Entity maker = entityIterator.next();
@@ -66,12 +66,19 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
         assertThat(tx.getSourceId()).isEqualTo(taker.getId());
 
         Trade trade1 = repository.save(trade(tx, asset, maker, nowPlusSeconds(100)));
-        repository.save(trade(tx, asset, maker, nowPlusSeconds(-100))); // outside limit
+        Trade trade2 = repository.save(trade(tx, asset, maker, nowPlusSeconds(-100))); // outside limit
         Trade trade3 = repository.save(trade(tx, asset, maker, nowPlusSeconds(0)));
 
-        assertThat(repository.findOrderedByTickTimeDesc(2))
+        assertThat(repository.findOrderedByTickTimeDesc(0, 2))
                 .containsExactly(tradeDto(asset, taker, maker, trade1), tradeDto(asset, taker, maker, trade3));
+
+        assertThat(repository.findOrderedByTickTimeDesc(1, 2))
+                .containsExactly(tradeDto(asset, taker, maker, trade3), tradeDto(asset, taker, maker, trade2));
+
+        assertThat(repository.findOrderedByTickTimeDesc(1, 1))
+                .containsExactly(tradeDto(asset, taker, maker, trade3));
     }
+
 
     @Test
     void findByAssetOrderedByTickTime() {
@@ -83,12 +90,23 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
 
         Trade trade1 = repository.save(trade(tx, asset1, entity, nowPlusSeconds(100)));
         Trade trade2 = repository.save(trade(tx, asset1, entity, nowPlusSeconds(-100)));
-        repository.save(trade(tx, asset1, entity, nowPlusSeconds(-101))); // outside limit
+        Trade trade3 = repository.save(trade(tx, asset1, entity, nowPlusSeconds(-101))); // outside limit
         repository.save(trade(tx, asset2, entity, nowPlusSeconds(0))); // another asset
 
-        assertThat(repository.findByAssetOrderedByTickTimeDesc(asset1.getIssuer(), asset1.getName(), 2))
+        assertThat(repository.findByAssetOrderedByTickTimeDesc(asset1.getIssuer(), asset1.getName(), 0, 2))
                 .containsExactly(
                         tradeDto(asset1, entity, entity, trade1),
+                        tradeDto(asset1, entity, entity, trade2)
+                );
+
+        assertThat(repository.findByAssetOrderedByTickTimeDesc(asset1.getIssuer(), asset1.getName(), 1, 2))
+                .containsExactly(
+                        tradeDto(asset1, entity, entity, trade2),
+                        tradeDto(asset1, entity, entity, trade3)
+                );
+
+        assertThat(repository.findByAssetOrderedByTickTimeDesc(asset1.getIssuer(), asset1.getName(), 1, 1))
+                .containsExactly(
                         tradeDto(asset1, entity, entity, trade2)
                 );
     }
@@ -110,19 +128,32 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
         assertThat(tx1.getSourceId()).isEqualTo(entity1.getId());
 
         Trade trade1 = repository.save(trade(tx1, asset, entity1, nowPlusSeconds(100))); // only entity 1
-        repository.save(trade(tx1, asset, entity1, nowPlusSeconds(-100))); // only entity 1 // out of limit
+        Trade trade2 = repository.save(trade(tx1, asset, entity1, nowPlusSeconds(-100))); // only entity 1 // out of limit
         Trade trade3 = repository.save(trade(tx1, asset, entity2, nowPlusSeconds(0))); // entity 1 and 2
         Trade trade4 = repository.save(trade(tx2, asset, entity1, nowPlusSeconds(-1000))); // only entity 2
 
-        assertThat(repository.findByEntityOrderedByTickTimeDesc(entity2.getIdentity(), 3))
+        assertThat(repository.findByEntityOrderedByTickTimeDesc(entity2.getIdentity(), 0, 3))
                 .containsExactly(
                         tradeDto(asset, entity1, entity2, trade3),
-                        tradeDto("hash2", asset, entity2, entity1, trade4));
+                        tradeDto(tx2.getHash(), asset, entity2, entity1, trade4)
+                );
 
-        assertThat(repository.findByEntityOrderedByTickTimeDesc(entity1.getIdentity(), 2))
+        assertThat(repository.findByEntityOrderedByTickTimeDesc(entity1.getIdentity(), 0, 2))
                 .containsExactly(
                         tradeDto(asset, entity1, entity1, trade1),
-                        tradeDto(asset, entity1, entity2, trade3));
+                        tradeDto(asset, entity1, entity2, trade3)
+                );
+
+        assertThat(repository.findByEntityOrderedByTickTimeDesc(entity1.getIdentity(), 1, 2))
+                .containsExactly(
+                        tradeDto(asset, entity1, entity2, trade3),
+                        tradeDto(asset, entity1, entity1, trade2)
+                        );
+
+        assertThat(repository.findByEntityOrderedByTickTimeDesc(entity1.getIdentity(), 1, 1))
+                .containsExactly(
+                        tradeDto(asset, entity1, entity2, trade3)
+                );
     }
 
     @Test

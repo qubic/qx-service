@@ -1,10 +1,14 @@
 package org.qubic.qx.api.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.controller.service.TradesService;
 import org.qubic.qx.api.db.dto.TradeDto;
 import org.qubic.qx.api.validation.AssetName;
 import org.qubic.qx.api.validation.Identity;
+import org.qubic.qx.api.validation.Pagination;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.interceptor.SimpleKeyGenerator;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +16,7 @@ import java.util.List;
 
 import static org.qubic.qx.api.redis.QxCacheManager.*;
 
+@Slf4j
 @CrossOrigin
 @Validated
 @RestController
@@ -26,21 +31,24 @@ public class TradesController {
 
     @Cacheable(CACHE_NAME_TRADES)
     @GetMapping("/trades")
-    public List<TradeDto> getTrades() {
-        return tradesService.getTrades();
+    public List<TradeDto> getTrades(@Pagination Pageable pageable) {
+        return tradesService.getTrades(pageable);
     }
 
-    @Cacheable(cacheNames = CACHE_NAME_ASSET_TRADES, key = CACHE_KEY_ASSET)
+    @Cacheable(cacheNames = CACHE_NAME_ASSET_TRADES)
     @GetMapping("/issuer/{issuer}/asset/{asset}/trades")
     public List<TradeDto> getAssetTrades(@PathVariable("issuer") @Identity String issuer,
-                                         @PathVariable("asset") @AssetName String asset) {
-        return tradesService.getAssetTrades(issuer, asset);
+                                         @PathVariable("asset") @AssetName String asset,
+                                         @Pagination Pageable pageable) {
+        return tradesService.getAssetTrades(issuer, asset, pageable);
     }
 
     @Cacheable(CACHE_NAME_ENTITY_TRADES)
     @GetMapping("/entity/{identity}/trades")
-    public List<TradeDto>  getEntityTrades(@PathVariable("identity") @Identity String identity) {
-        return tradesService.getEntityTrades(identity);
+    public List<TradeDto>  getEntityTrades(@PathVariable("identity") @Identity String identity,
+                                           @Pagination Pageable pageable) {
+        log.info("Key: {}", SimpleKeyGenerator.generateKey(identity, pageable));
+        return tradesService.getEntityTrades(identity, pageable);
     }
 
 }

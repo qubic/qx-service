@@ -8,6 +8,8 @@ import org.qubic.qx.api.db.dto.TradeDto;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Instant;
@@ -25,6 +27,8 @@ class TradesControllerCacheIT extends AbstractSpringIntegrationTest {
     private static final String TEST_ASSET_NAME = "FOO";
     private static final String TEST_IDENTITY = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEOPXN";
     private static final TradeDto TEST_TRADE = new TradeDto(Instant.now(), "hash", "taker", "maker", "issuer", "assetName", true, 123, 456);
+
+    private static final Pageable DEFAULT_PAGE = PageRequest.of(0, 100);
 
     @MockitoBean
     private TradesService tradesService;
@@ -44,49 +48,49 @@ class TradesControllerCacheIT extends AbstractSpringIntegrationTest {
     void getTrades_givenCacheEvicted_thenCallServiceAgain() {
         verifyThatGetTradesIsCached();
         qxCacheManager.evictTradesCache();
-        controller.getTrades();
-        verify(tradesService, times(2)).getTrades();
+        controller.getTrades(DEFAULT_PAGE);
+        verify(tradesService, times(2)).getTrades(DEFAULT_PAGE);
     }
 
     private void verifyThatGetTradesIsCached() {
         List<TradeDto> expected = List.of(TEST_TRADE, TEST_TRADE);
-        when(tradesService.getTrades()).thenReturn(expected);
+        when(tradesService.getTrades(DEFAULT_PAGE)).thenReturn(expected);
 
-        List<TradeDto> result = controller.getTrades(); // not cached
-        List<TradeDto> cached = controller.getTrades(); // cached
+        List<TradeDto> result = controller.getTrades(DEFAULT_PAGE); // not cached
+        List<TradeDto> cached = controller.getTrades(DEFAULT_PAGE); // cached
 
         assertThat(result).isEqualTo(expected);
         assertThat(cached).isEqualTo(result);
 
-        verify(tradesService, times(1)).getTrades();
+        verify(tradesService, times(1)).getTrades(DEFAULT_PAGE);
     }
 
     @Test
     void getAssetTrades_thenHitCache() {
-        verifyThatGetAssetTradesIsCached();
+        verifyThatGetAssetTradesIsCached(DEFAULT_PAGE);
     }
 
     @Test
     void getAssetTrades_givenCacheEvicted_thenCallServiceAgain() {
-        verifyThatGetAssetTradesIsCached();
+        verifyThatGetAssetTradesIsCached(DEFAULT_PAGE);
         qxCacheManager.evictTradeCacheForAsset(TEST_ISSUER, TEST_ASSET_NAME);
-        controller.getAssetTrades(TEST_ISSUER, TEST_ASSET_NAME);
-        verify(tradesService, times(2)).getAssetTrades(TEST_ISSUER, TEST_ASSET_NAME);
+        controller.getAssetTrades(TEST_ISSUER, TEST_ASSET_NAME, DEFAULT_PAGE);
+        verify(tradesService, times(2)).getAssetTrades(TEST_ISSUER, TEST_ASSET_NAME, DEFAULT_PAGE);
     }
 
-    private void verifyThatGetAssetTradesIsCached() {
+    private void verifyThatGetAssetTradesIsCached(Pageable pageable) {
         List<TradeDto> expected = List.of(TEST_TRADE, TEST_TRADE);
-        when(tradesService.getAssetTrades(TEST_ISSUER, TEST_ASSET_NAME)).thenReturn(expected);
+        when(tradesService.getAssetTrades(TEST_ISSUER, TEST_ASSET_NAME, pageable)).thenReturn(expected);
 
-        List<TradeDto> result = controller.getAssetTrades(TEST_ISSUER, TEST_ASSET_NAME); // not cached
-        List<TradeDto> cached = controller.getAssetTrades(TEST_ISSUER, TEST_ASSET_NAME); // cached
-        controller.getAssetTrades(TEST_IDENTITY, TEST_ASSET_NAME);
+        List<TradeDto> result = controller.getAssetTrades(TEST_ISSUER, TEST_ASSET_NAME, pageable); // not cached
+        List<TradeDto> cached = controller.getAssetTrades(TEST_ISSUER, TEST_ASSET_NAME, pageable); // cached
+        controller.getAssetTrades(TEST_IDENTITY, TEST_ASSET_NAME, pageable);
 
         assertThat(result).isEqualTo(expected);
         assertThat(cached).isEqualTo(result);
 
-        verify(tradesService, times(1)).getAssetTrades(TEST_ISSUER, TEST_ASSET_NAME);
-        verify(tradesService, times(1)).getAssetTrades(TEST_IDENTITY, TEST_ASSET_NAME);
+        verify(tradesService, times(1)).getAssetTrades(TEST_ISSUER, TEST_ASSET_NAME, pageable);
+        verify(tradesService, times(1)).getAssetTrades(TEST_IDENTITY, TEST_ASSET_NAME, pageable);
     }
 
     @Test
@@ -98,23 +102,23 @@ class TradesControllerCacheIT extends AbstractSpringIntegrationTest {
     void getEntityTrades_givenCacheEvicted_thenCallServiceAgain() {
         verfiyThatGetEntityTradesIsCached();
         qxCacheManager.evictTradeCacheForEntity(TEST_IDENTITY);
-        controller.getEntityTrades(TEST_IDENTITY);
-        verify(tradesService, times(2)).getEntityTrades(TEST_IDENTITY);
+        controller.getEntityTrades(TEST_IDENTITY, DEFAULT_PAGE);
+        verify(tradesService, times(2)).getEntityTrades(TEST_IDENTITY, DEFAULT_PAGE);
     }
 
     private void verfiyThatGetEntityTradesIsCached() {
         List<TradeDto> expected = List.of(TEST_TRADE, TEST_TRADE);
-        when(tradesService.getEntityTrades(TEST_IDENTITY)).thenReturn(expected);
+        when(tradesService.getEntityTrades(TEST_IDENTITY, DEFAULT_PAGE)).thenReturn(expected);
 
-        List<TradeDto> result = controller.getEntityTrades(TEST_IDENTITY); // not cached
-        List<TradeDto> cached = controller.getEntityTrades(TEST_IDENTITY); // cached
-        controller.getEntityTrades(TEST_ISSUER);
+        List<TradeDto> result = controller.getEntityTrades(TEST_IDENTITY, DEFAULT_PAGE); // not cached
+        List<TradeDto> cached = controller.getEntityTrades(TEST_IDENTITY, DEFAULT_PAGE); // cached
+        controller.getEntityTrades(TEST_ISSUER, DEFAULT_PAGE);
 
         assertThat(result).isEqualTo(expected);
         assertThat(cached).isEqualTo(result);
 
-        verify(tradesService, times(1)).getEntityTrades(TEST_IDENTITY);
-        verify(tradesService, times(1)).getEntityTrades(TEST_ISSUER);
+        verify(tradesService, times(1)).getEntityTrades(TEST_IDENTITY, DEFAULT_PAGE);
+        verify(tradesService, times(1)).getEntityTrades(TEST_ISSUER, DEFAULT_PAGE);
     }
 
     @AfterEach

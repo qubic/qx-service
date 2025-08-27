@@ -19,9 +19,10 @@ public interface TradesRepository extends CrudRepository<Trade, Long> {
         join entities maker on t.maker_id = maker.id
         join assets a on t.asset_id = a.id
     order by tick_time desc, t.id desc
+    offset :offset
     limit :limit
     """)
-    List<TradeDto> findOrderedByTickTimeDesc(long limit);
+    List<TradeDto> findOrderedByTickTimeDesc(long offset, long limit);
 
     @Query("""
     select t.tick_time, tx.hash as transaction_hash, taker.identity as taker, maker.identity as maker, a.issuer, a.name as asset_name, t.bid, t.price, t.number_of_shares
@@ -32,9 +33,10 @@ public interface TradesRepository extends CrudRepository<Trade, Long> {
         join assets a on t.asset_id = a.id
     where a.issuer = :issuer and a.name = :name
     order by tick_time desc, t.id desc
+    offset :offset
     limit :limit
     """)
-    List<TradeDto> findByAssetOrderedByTickTimeDesc(String issuer, String name, long limit);
+    List<TradeDto> findByAssetOrderedByTickTimeDesc(String issuer, String name, long offset, long limit);
 
     @Query("""
     select t.tick_time, tx.hash as transaction_hash, taker.identity as taker, maker.identity as maker, a.issuer, a.name as asset_name, t.bid, t.price, t.number_of_shares
@@ -45,9 +47,10 @@ public interface TradesRepository extends CrudRepository<Trade, Long> {
         join assets a on t.asset_id = a.id
     where taker.identity = :identity or maker.identity = :identity
     order by tick_time desc, t.id desc
+    offset :offset
     limit :limit
     """)
-    List<TradeDto> findByEntityOrderedByTickTimeDesc(String identity, long limit);
+    List<TradeDto> findByEntityOrderedByTickTimeDesc(String identity, long offset, long limit);
 
 
     @Query("""

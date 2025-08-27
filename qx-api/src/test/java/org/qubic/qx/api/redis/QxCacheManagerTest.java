@@ -2,14 +2,15 @@ package org.qubic.qx.api.redis;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
+import org.springframework.data.redis.cache.RedisCache;
+import org.springframework.data.redis.cache.RedisCacheManager;
 
 import static org.mockito.Mockito.*;
 import static org.qubic.qx.api.redis.QxCacheManager.*;
 
 class QxCacheManagerTest {
 
-    private final CacheManager redisCacheManager = mock();
+    private final RedisCacheManager redisCacheManager = mock();
     private final QxCacheManager cacheManager = new QxCacheManager(redisCacheManager);
 
     @Test
@@ -22,18 +23,18 @@ class QxCacheManagerTest {
 
     @Test
     void evictTradeCacheForEntity() {
-        Cache cache = mock();
+        RedisCache cache = mock();
         when(redisCacheManager.getCache(CACHE_NAME_ENTITY_TRADES)).thenReturn(cache);
         cacheManager.evictTradeCacheForEntity("foo");
-        verify(cache).evict("foo");
+        verify(cache).clear("SimpleKey \\[foo*");
     }
 
     @Test
     void evictTradeCacheForAsset() {
-        Cache cache = mock();
+        RedisCache cache = mock();
         when(redisCacheManager.getCache(CACHE_NAME_ASSET_TRADES)).thenReturn(cache);
         cacheManager.evictTradeCacheForAsset("foo", "bar");
-        verify(cache, times(1)).evict("foo:bar");
+        verify(cache, times(1)).clear("SimpleKey \\[foo, bar*");
     }
 
     @Test
