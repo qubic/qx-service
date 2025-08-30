@@ -35,6 +35,18 @@ public class TradesController {
         return tradesService.getTrades(pageable);
     }
 
+    @Cacheable(CACHE_NAME_TRADES_SMART_CONTRACTS)
+    @GetMapping("/smart-contract-trades")
+    public List<TradeDto> getSmartContractTrades(@Pagination Pageable pageable) {
+        return tradesService.getSmartContractTrades(pageable);
+    }
+
+    @Cacheable(CACHE_NAME_TRADES_TOKENS)
+    @GetMapping("/token-trades")
+    public List<TradeDto> getTokenTrades(@Pagination Pageable pageable) {
+        return tradesService.getTokenTrades(pageable);
+    }
+
     @Cacheable(cacheNames = CACHE_NAME_ASSET_TRADES)
     @GetMapping("/issuer/{issuer}/asset/{asset}/trades")
     public List<TradeDto> getAssetTrades(@PathVariable("issuer") @Identity String issuer,

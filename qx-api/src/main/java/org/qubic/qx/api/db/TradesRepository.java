@@ -22,7 +22,36 @@ public interface TradesRepository extends CrudRepository<Trade, Long> {
     offset :offset
     limit :limit
     """)
-    List<TradeDto> findOrderedByTickTimeDesc(long offset, long limit);
+    List<TradeDto> findAll(long offset, long limit);
+
+    @Query("""
+    select t.tick_time, tx.hash as transaction_hash, taker.identity as taker, maker.identity as maker, a.issuer, a.name as asset_name, t.bid, t.price, t.number_of_shares
+    from trades t
+        join transactions tx on t.transaction_id = tx.id
+        join entities taker on tx.source_entity_id = taker.id
+        join entities maker on t.maker_id = maker.id
+        join assets a on t.asset_id = a.id
+    where a.issuer = :issuer
+    order by tick_time desc, t.id desc
+    offset :offset
+    limit :limit
+    """)
+    List<TradeDto> findByIssuer(String issuer, long offset, long limit);
+
+    @Query("""
+    select t.tick_time, tx.hash as transaction_hash, taker.identity as taker, maker.identity as maker, a.issuer, a.name as asset_name, t.bid, t.price, t.number_of_shares
+    from trades t
+        join transactions tx on t.transaction_id = tx.id
+        join entities taker on tx.source_entity_id = taker.id
+        join entities maker on t.maker_id = maker.id
+        join assets a on t.asset_id = a.id
+    where a.issuer != :issuer
+    order by tick_time desc, t.id desc
+    offset :offset
+    limit :limit
+    """)
+    List<TradeDto> findByIssuerIsNot(String issuer, long offset, long limit);
+
 
     @Query("""
     select t.tick_time, tx.hash as transaction_hash, taker.identity as taker, maker.identity as maker, a.issuer, a.name as asset_name, t.bid, t.price, t.number_of_shares
@@ -36,7 +65,7 @@ public interface TradesRepository extends CrudRepository<Trade, Long> {
     offset :offset
     limit :limit
     """)
-    List<TradeDto> findByAssetOrderedByTickTimeDesc(String issuer, String name, long offset, long limit);
+    List<TradeDto> findByIssuerAndAsset(String issuer, String name, long offset, long limit);
 
     @Query("""
     select t.tick_time, tx.hash as transaction_hash, taker.identity as taker, maker.identity as maker, a.issuer, a.name as asset_name, t.bid, t.price, t.number_of_shares
@@ -50,7 +79,7 @@ public interface TradesRepository extends CrudRepository<Trade, Long> {
     offset :offset
     limit :limit
     """)
-    List<TradeDto> findByEntityOrderedByTickTimeDesc(String identity, long offset, long limit);
+    List<TradeDto> findByEntity(String identity, long offset, long limit);
 
 
     @Query("""

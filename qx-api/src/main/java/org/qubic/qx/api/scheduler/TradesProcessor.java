@@ -25,7 +25,7 @@ public class TradesProcessor extends QueueProcessor<Trade, TradeRedisDto> {
             log.info("Evicting caches.");
             String issuer = sourceDto.issuer();
             String assetName = sourceDto.assetName();
-            qxCacheManager.evictTradesCache();
+            qxCacheManager.evictTradesCache(issuer);
             qxCacheManager.evictTradeCacheForAsset(issuer, assetName);
             qxCacheManager.evictChartCachesForAsset(issuer, assetName);
             qxCacheManager.evictTradeCacheForEntity(sourceDto.maker());

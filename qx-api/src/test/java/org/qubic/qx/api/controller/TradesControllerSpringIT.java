@@ -11,6 +11,7 @@ import org.springframework.web.context.WebApplicationContext;
 public class TradesControllerSpringIT extends AbstractSpringIntegrationTest {
 
     private static final String ISSUER = "ISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISSUERISPXHC";
+    private static final String ENTITY = "ENTITYENTITYENTITYENTITYENTITYENTITYENTITYENTITYENTITYENJLPE";
 
     private WebTestClient client;
 
@@ -24,8 +25,44 @@ public class TradesControllerSpringIT extends AbstractSpringIntegrationTest {
     }
 
     @Test
+    void getTrades() {
+        client.get().uri("/trades")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(TradeDto.class)
+                .hasSize(0);
+    }
+
+    @Test
+    void getSmartContractTrades() {
+        client.get().uri("/smart-contract-trades")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(TradeDto.class)
+                .hasSize(0);
+    }
+
+    @Test
+    void getTokenTrades() {
+        client.get().uri("/token-trades")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(TradeDto.class)
+                .hasSize(0);
+    }
+
+    @Test
     void getAssetTrades() {
         client.get().uri("/issuer/{:issuer}/asset/ASSET/trades", ISSUER)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(TradeDto.class)
+                .hasSize(0);
+    }
+
+    @Test
+    void getEntityTrades() {
+        client.get().uri("/entity/{:entity}/trades", ENTITY)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(TradeDto.class)

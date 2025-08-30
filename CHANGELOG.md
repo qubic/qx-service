@@ -1,3 +1,7 @@
+# 1.6.1
+
+* Add endpoints for smart contract and token trades.
+
 # 1.6.0
 
 * Add paging.

@@ -1,6 +1,8 @@
 package org.qubic.qx.api.redis;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
+import org.qubic.qx.api.db.domain.Asset;
 import org.springframework.data.redis.cache.RedisCache;
 import org.springframework.data.redis.cache.RedisCacheManager;
 
@@ -15,6 +17,8 @@ public class QxCacheManager {
     public static final String CACHE_NAME_ASSETS = "cache:assets";
 
     public static final String CACHE_NAME_TRADES = "cache:trades";
+    public static final String CACHE_NAME_TRADES_SMART_CONTRACTS = "cache:trades:smart-contracts";
+    public static final String CACHE_NAME_TRADES_TOKENS = "cache:trades:tokens";
     public static final String CACHE_NAME_ASSET_TRADES = "cache:assetTrades";
     public static final String CACHE_NAME_ENTITY_TRADES = "cache:entityTrades";
 
@@ -43,9 +47,14 @@ public class QxCacheManager {
         this.cacheManager = cacheManager;
     }
 
-    public void evictTradesCache() {
+    public void evictTradesCache(String issuer) {
         log.debug("Clear general trades cache.");
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRADES)).clear();
+        if (Strings.CS.equals(issuer, Asset.SMART_CONTRACT_ISSUER)) {
+            Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRADES_SMART_CONTRACTS)).clear();
+        } else {
+            Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRADES_TOKENS)).clear();
+        }
     }
 
     public void evictTradeCacheForEntity(String identity) {

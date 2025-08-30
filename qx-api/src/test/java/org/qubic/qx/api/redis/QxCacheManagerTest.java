@@ -1,6 +1,7 @@
 package org.qubic.qx.api.redis;
 
 import org.junit.jupiter.api.Test;
+import org.qubic.qx.api.db.domain.Asset;
 import org.springframework.cache.Cache;
 import org.springframework.data.redis.cache.RedisCache;
 import org.springframework.data.redis.cache.RedisCacheManager;
@@ -16,8 +17,27 @@ class QxCacheManagerTest {
     @Test
     void evictTradesCache() {
         Cache cache = mock();
+        when(redisCacheManager.getCache(anyString())).thenReturn(mock());
         when(redisCacheManager.getCache(CACHE_NAME_TRADES)).thenReturn(cache);
-        cacheManager.evictTradesCache();
+        cacheManager.evictTradesCache("ISSUER");
+        verify(cache).clear();
+    }
+
+    @Test
+    void evictSmartContractTradesCache() {
+        Cache cache = mock();
+        when(redisCacheManager.getCache(anyString())).thenReturn(mock());
+        when(redisCacheManager.getCache(CACHE_NAME_TRADES_SMART_CONTRACTS)).thenReturn(cache);
+        cacheManager.evictTradesCache(Asset.SMART_CONTRACT_ISSUER);
+        verify(cache).clear();
+    }
+
+    @Test
+    void evictTokenTradesCache() {
+        Cache cache = mock();
+        when(redisCacheManager.getCache(anyString())).thenReturn(mock());
+        when(redisCacheManager.getCache(CACHE_NAME_TRADES_TOKENS)).thenReturn(cache);
+        cacheManager.evictTradesCache("ISSUER");
         verify(cache).clear();
     }
 

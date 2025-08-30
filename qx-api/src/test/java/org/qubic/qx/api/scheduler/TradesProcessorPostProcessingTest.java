@@ -20,7 +20,7 @@ class TradesProcessorPostProcessingTest {
         when(sourceDto.taker()).thenReturn("TAKER");
         processor.postProcess(sourceDto);
 
-        verify(qxCacheManager).evictTradesCache();
+        verify(qxCacheManager).evictTradesCache("ISSUER");
         verify(qxCacheManager).evictTradeCacheForAsset("ISSUER", "ASSET");
         verify(qxCacheManager).evictChartCachesForAsset("ISSUER", "ASSET");
         verify(qxCacheManager).evictTradeCacheForEntity("MAKER");

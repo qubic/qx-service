@@ -39,6 +39,26 @@ class TradesControllerTest {
     }
 
     @Test
+    void getSmartContractTrades() {
+        when(tradesService.getSmartContractTrades(any(Pageable.class))).thenReturn(List.of(mock(), mock()));
+        client.get().uri("/smart-contract-trades")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(TradeDto.class)
+                .hasSize(2);
+    }
+
+    @Test
+    void getTokenTrades() {
+        when(tradesService.getTokenTrades(any(Pageable.class))).thenReturn(List.of(mock(), mock()));
+        client.get().uri("/token-trades")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(TradeDto.class)
+                .hasSize(2);
+    }
+
+    @Test
     void getEntityTrades() {
         when(tradesService.getEntityTrades(eq("FOO"), any(Pageable.class))).thenReturn(List.of(mock(), mock()));
         client.get().uri("/entity/FOO/trades")

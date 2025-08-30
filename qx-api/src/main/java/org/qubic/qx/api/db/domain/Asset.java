@@ -15,6 +15,8 @@ import java.io.Serializable;
 @Table("assets")
 public class Asset implements Serializable {
 
+    public static final String SMART_CONTRACT_ISSUER = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB";
+
     @JsonIgnore
     @Id
     private Long id;
