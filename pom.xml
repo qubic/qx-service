@@ -30,6 +30,7 @@
         <okhttp3-mockserver.version>5.1.0</okhttp3-mockserver.version>
         <qubicj.version>1.6.0</qubicj.version>
         <resilience4j.version>2.2.0</resilience4j.version>
+        <netty.version>4.1.125.Final</netty.version> <!-- netty-codec-http:4.1.124 vulnerability -->
         <springdoc.version>2.8.8</springdoc.version>
         <testcontainers-redis.version>2.2.2</testcontainers-redis.version>
     </properties>
