@@ -15,6 +15,7 @@ public class QxCacheManager {
 
     public static final String CACHE_NAME_FEES = "cache:fees";
     public static final String CACHE_NAME_ASSETS = "cache:assets";
+    public static final String CACHE_NAME_ASSETS_VERIFIED = "cache:assets:verified";
 
     public static final String CACHE_NAME_TRADES = "cache:trades";
     public static final String CACHE_NAME_TRADES_SMART_CONTRACTS = "cache:trades:smart-contracts";
@@ -106,6 +107,7 @@ public class QxCacheManager {
     public void evictAssetsCaches() {
         log.debug("Evicting cache for issued assets.");
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSETS)).clear();
+        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSETS_VERIFIED)).clear();
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ISSUED_ASSETS)).clear();
     }
 

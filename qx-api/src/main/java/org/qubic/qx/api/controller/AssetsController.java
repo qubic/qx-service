@@ -2,15 +2,9 @@ package org.qubic.qx.api.controller;
 
 import org.qubic.qx.api.controller.service.AssetsService;
 import org.qubic.qx.api.db.domain.Asset;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-import static org.qubic.qx.api.redis.QxCacheManager.CACHE_NAME_ASSETS;
 
 @CrossOrigin
 @RestController
@@ -23,10 +17,13 @@ public class AssetsController {
         this.assetsService = assetsService;
     }
 
-    @Cacheable(CACHE_NAME_ASSETS)
     @GetMapping("/assets")
-    public List<Asset> getAssets() {
-        return assetsService.getVerifiedAssets();
+    public List<Asset> getAssets(@RequestParam(name = "all", defaultValue = "false") boolean all) {
+        if (all) {
+            return assetsService.getAllAssets();
+        } else {
+            return assetsService.getVerifiedAssets();
+        }
     }
 
 }

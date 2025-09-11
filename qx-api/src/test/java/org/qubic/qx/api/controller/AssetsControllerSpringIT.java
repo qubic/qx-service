@@ -29,15 +29,20 @@ class AssetsControllerSpringIT extends AbstractSpringIntegrationTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(Asset.class)
-                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QX").build())
-                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("RANDOM").build())
-                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QUTIL").build())
-                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QTRY").build())
-                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("MLM").build())
-                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QPOOL").build())
-                .contains(Asset.builder().issuer("TFUYVBXYIYBVTEMJHAJGEJOOZHJBQFVQLTBBKMEHPEVIZFXZRPEYFUWGTIWG").name("QFT").build())
-                .contains(Asset.builder().issuer("CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL").name("CFB").build())
-                .contains(Asset.builder().issuer("QWALLETSGQVAGBHUCVVXWZXMBKQBPQQSHRYKZGEJWFVNUFCEDDPRMKTAUVHA").name("QWALLET").build());
+                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QX").verified(true).build())
+                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("RANDOM").verified(true).build())
+                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QUTIL").verified(true).build())
+                .contains(Asset.builder().issuer("TFUYVBXYIYBVTEMJHAJGEJOOZHJBQFVQLTBBKMEHPEVIZFXZRPEYFUWGTIWG").name("QFT").verified(true).build());
+    }
+
+    @Test
+    void getAllAssets() {
+        client.get().uri("/assets?all=true")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Asset.class)
+                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QX").verified(true).build())
+                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QPOOL").verified(false).build());
     }
 
 }

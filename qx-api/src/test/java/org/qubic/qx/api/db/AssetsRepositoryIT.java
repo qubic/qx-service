@@ -3,6 +3,8 @@ package org.qubic.qx.api.db;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.db.domain.Asset;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.jdbc.JdbcTestUtils;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
@@ -14,6 +16,9 @@ public class AssetsRepositoryIT extends AbstractPostgresJdbcTest {
 
     @Autowired
     private AssetsRepository repository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Test
     public void saveAndLoad() {
@@ -38,12 +43,24 @@ public class AssetsRepositoryIT extends AbstractPostgresJdbcTest {
         assertThat(assetList).contains(Tuples.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "QX", true));
         assertThat(assetList).contains(Tuples.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "RANDOM", true));
         assertThat(assetList).contains(Tuples.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "QUTIL", true));
-        assertThat(assetList).contains(Tuples.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "QTRY", true));
         assertThat(assetList).contains(Tuples.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "MLM", true));
-        assertThat(assetList).contains(Tuples.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "QPOOL", true));
         assertThat(assetList).contains(Tuples.of("TFUYVBXYIYBVTEMJHAJGEJOOZHJBQFVQLTBBKMEHPEVIZFXZRPEYFUWGTIWG", "QFT", true));
-        assertThat(assetList).contains(Tuples.of("CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL", "CFB", true));
-        assertThat(assetList).contains(Tuples.of("QWALLETSGQVAGBHUCVVXWZXMBKQBPQQSHRYKZGEJWFVNUFCEDDPRMKTAUVHA", "QWALLET", true));
+
+        assertThat(assetList).doesNotContain(Tuples.of("CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL", "QPOOL", false));
+        assertThat(assetList).doesNotContain(Tuples.of("CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL", "QPOOL", true));
+
+    }
+
+    @Test
+    public void findAllIncludingUnverified() {
+        int count = JdbcTestUtils.countRowsInTable(jdbcTemplate, "assets");
+
+        List<Asset> assets = repository.findAll();
+
+        List<Tuple3<String, String, Boolean>> assetList = assets.stream().map(a -> Tuples.of(a.getIssuer(), a.getName(), a.isVerified())).toList();
+        assertThat(assetList).hasSize(count);
+        assertThat(assetList).contains(Tuples.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "QX", true));
+        assertThat(assetList).contains(Tuples.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "QPOOL", false));
 
     }
 

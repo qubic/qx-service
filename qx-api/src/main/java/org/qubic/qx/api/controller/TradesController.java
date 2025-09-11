@@ -1,13 +1,11 @@
 package org.qubic.qx.api.controller;
 
-import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.api.controller.service.TradesService;
 import org.qubic.qx.api.db.dto.TradeDto;
 import org.qubic.qx.api.validation.AssetName;
 import org.qubic.qx.api.validation.Identity;
 import org.qubic.qx.api.validation.Pagination;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.interceptor.SimpleKeyGenerator;
 import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
