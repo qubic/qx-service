@@ -16,7 +16,6 @@ import java.util.List;
 
 import static org.qubic.qx.api.redis.QxCacheManager.*;
 
-@Slf4j
 @CrossOrigin
 @Validated
 @RestController
@@ -59,7 +58,6 @@ public class TradesController {
     @GetMapping("/entity/{identity}/trades")
     public List<TradeDto>  getEntityTrades(@PathVariable("identity") @Identity String identity,
                                            @Pagination Pageable pageable) {
-        log.info("Key: {}", SimpleKeyGenerator.generateKey(identity, pageable));
         return tradesService.getEntityTrades(identity, pageable);
     }
 
