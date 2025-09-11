@@ -3,8 +3,6 @@ package org.qubic.qx.api.db;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.db.domain.Asset;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.jdbc.JdbcTestUtils;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
@@ -16,9 +14,6 @@ public class AssetsRepositoryIT extends AbstractPostgresJdbcTest {
 
     @Autowired
     private AssetsRepository repository;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     @Test
     public void saveAndLoad() {
@@ -38,7 +33,7 @@ public class AssetsRepositoryIT extends AbstractPostgresJdbcTest {
     @Test
     public void findAllVerified() {
 
-        List<Asset> assets = repository.findByVerifiedIsTrue();
+        List<Asset> assets = repository.findAll();
         List<Tuple3<String, String, Boolean>> assetList = assets.stream().map(a -> Tuples.of(a.getIssuer(), a.getName(), a.isVerified())).toList();
         assertThat(assetList).contains(Tuples.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "QX", true));
         assertThat(assetList).contains(Tuples.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "RANDOM", true));
@@ -52,23 +47,10 @@ public class AssetsRepositoryIT extends AbstractPostgresJdbcTest {
     }
 
     @Test
-    public void findAllIncludingUnverified() {
-        int count = JdbcTestUtils.countRowsInTable(jdbcTemplate, "assets");
-
-        List<Asset> assets = repository.findAll();
-
-        List<Tuple3<String, String, Boolean>> assetList = assets.stream().map(a -> Tuples.of(a.getIssuer(), a.getName(), a.isVerified())).toList();
-        assertThat(assetList).hasSize(count);
-        assertThat(assetList).contains(Tuples.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "QX", true));
-        assertThat(assetList).contains(Tuples.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "QPOOL", false));
-
-    }
-
-    @Test
     public void findByIssuerAndName() {
         assertThat(repository.findByIssuerAndName("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "QX")).isNotEmpty();
+        assertThat(repository.findByIssuerAndName("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "QPOOL")).isEmpty(); // removed
         assertThat(repository.findByIssuerAndName("FOO", "BAR")).isEmpty();
-
     }
 
 }

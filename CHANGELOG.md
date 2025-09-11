@@ -1,3 +1,13 @@
+# 1.7.1
+
+* Always return all assets, no matter if verified.
+* Delete qpool from assets.
+
+# 1.7.0
+
+* Add possibility to get all assets, no matter if verified.
+* Update assets list (only relevant for new installations).
+
 # 1.6.1
 
 * Add endpoints for smart contract and token trades.

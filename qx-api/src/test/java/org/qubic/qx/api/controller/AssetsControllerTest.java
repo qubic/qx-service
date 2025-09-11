@@ -21,21 +21,6 @@ class AssetsControllerTest {
             .build();
 
     @Test
-    void getVerifiedAssets() {
-        Asset a = Asset.builder().issuer("issuerA").name("nameA").build();
-        Asset b = Asset.builder().issuer("issuerB").name("nameA").build();
-        Asset c = Asset.builder().issuer("issuerB").name("nameB").build();
-
-        when(assetsService.getVerifiedAssets()).thenReturn(List.of(a, b, c));
-
-        client.get().uri("/assets")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(Asset.class)
-                .contains(a, b, c);
-    }
-
-    @Test
     void getAllAssets() {
         Asset a = Asset.builder().issuer("issuerA").name("nameA").build();
         Asset b = Asset.builder().issuer("issuerB").name("nameA").build();
@@ -43,7 +28,7 @@ class AssetsControllerTest {
 
         when(assetsService.getAllAssets()).thenReturn(List.of(a, b, c));
 
-        client.get().uri("/assets?all=true")
+        client.get().uri("/assets")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(Asset.class)

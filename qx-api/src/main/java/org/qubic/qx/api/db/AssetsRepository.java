@@ -10,8 +10,6 @@ public interface AssetsRepository extends CrudRepository<Asset, Long> {
 
     List<Asset> findAll();
 
-    List<Asset> findByVerifiedIsTrue();
-
     Optional<Asset> findByIssuerAndName(String issuer, String name);
 
 }

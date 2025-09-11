@@ -25,24 +25,14 @@ class AssetsControllerSpringIT extends AbstractSpringIntegrationTest {
 
     @Test
     void getAssets() {
-        client.get().uri("/assets")
+        client.get().uri("/assets?foo=bar")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(Asset.class)
-                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QX").verified(true).build())
-                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("RANDOM").verified(true).build())
-                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QUTIL").verified(true).build())
-                .contains(Asset.builder().issuer("TFUYVBXYIYBVTEMJHAJGEJOOZHJBQFVQLTBBKMEHPEVIZFXZRPEYFUWGTIWG").name("QFT").verified(true).build());
-    }
-
-    @Test
-    void getAllAssets() {
-        client.get().uri("/assets?all=true")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(Asset.class)
-                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QX").verified(true).build())
-                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QPOOL").verified(false).build());
+                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QX").build())
+                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("RANDOM").build())
+                .contains(Asset.builder().issuer("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB").name("QUTIL").build())
+                .contains(Asset.builder().issuer("TFUYVBXYIYBVTEMJHAJGEJOOZHJBQFVQLTBBKMEHPEVIZFXZRPEYFUWGTIWG").name("QFT").build());
     }
 
 }

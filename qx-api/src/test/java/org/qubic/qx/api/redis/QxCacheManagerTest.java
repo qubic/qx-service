@@ -104,10 +104,9 @@ class QxCacheManagerTest {
     void evictAssetsCache() {
         Cache cache = mock();
         when(redisCacheManager.getCache(CACHE_NAME_ASSETS)).thenReturn(cache);
-        when(redisCacheManager.getCache(CACHE_NAME_ASSETS_VERIFIED)).thenReturn(cache);
         when(redisCacheManager.getCache(CACHE_NAME_ISSUED_ASSETS)).thenReturn(cache);
         cacheManager.evictAssetsCaches();
-        verify(cache, times(3)).clear();
+        verify(cache, times(2)).clear();
     }
 
 }
