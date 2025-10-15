@@ -1,3 +1,8 @@
+# 1.8.0
+
+* Update qubicj version (asset issuance event changes from epoch 182).
+* Update dependency versions.
+
 # 1.7.1
 
 * Always return all assets, no matter if verified.
