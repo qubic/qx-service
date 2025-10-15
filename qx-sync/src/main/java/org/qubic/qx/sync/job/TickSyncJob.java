@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.EventApiService;
 import org.qubic.qx.sync.adapter.Qx;
@@ -154,7 +154,7 @@ public class TickSyncJob {
 
     private static List<TransactionEvent> getEventsForTransaction(List<TransactionEvents> events, String transactionHash) {
         return events.stream()
-                .filter(txe -> StringUtils.equals(transactionHash, txe.txId()))
+                .filter(txe -> Strings.CS.equals(transactionHash, txe.txId()))
                 .findAny() // there should only be one
                 .orElse(new TransactionEvents(transactionHash, List.of())) // empty
                 .events();

@@ -30,7 +30,7 @@ spring.security.user.password=...
 
 ## Migration
 
-Only relevant, if you want to switch to a new version from an very old version (0.1.0) without losing data. 
+Only relevant, if you want to switch to a new version from a very old version (0.1.0) without losing data. 
 To move all transactions from old storage format into the transactions queue:
 
 ```shell

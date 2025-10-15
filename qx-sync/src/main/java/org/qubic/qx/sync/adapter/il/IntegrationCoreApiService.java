@@ -1,7 +1,7 @@
 package org.qubic.qx.sync.adapter.il;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.Qx;
@@ -105,7 +105,7 @@ public class IntegrationCoreApiService implements CoreApiService {
     }
 
     private static boolean isSentToQxAddress(IlTransaction transaction) {
-        return StringUtils.equals(transaction.destId(), Qx.QX_PUBLIC_ID);
+        return Strings.CS.equals(transaction.destId(), Qx.QX_PUBLIC_ID);
     }
 
     private static boolean isRelevantInputType(IlTransaction transaction) {

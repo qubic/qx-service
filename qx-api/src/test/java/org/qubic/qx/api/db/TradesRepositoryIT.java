@@ -39,7 +39,7 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
     @Test
     void saveAndLoad() {
 
-        Asset asset = assetsRepository.findAll().iterator().next();
+        Asset asset = assetsRepository.findAll().getFirst();
         Transaction tx = transactionsRepository.findAll().iterator().next();
 
         Trade trade = Trade.builder()
@@ -65,7 +65,7 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
         Iterator<Entity> entityIterator = entitiesRepository.findAll().iterator();
         Entity taker = entityIterator.next();
         Entity maker = entityIterator.next();
-        Asset asset = assetsRepository.findAll().iterator().next();
+        Asset asset = assetsRepository.findAll().getFirst();
         Transaction tx = transactionsRepository.findAll().iterator().next();
         assertThat(tx.getSourceId()).isEqualTo(taker.getId());
 
@@ -173,7 +173,7 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
         Iterator<Entity> entityIterator = entitiesRepository.findAll().iterator();
         Entity entity1 = entityIterator.next();
         Entity entity2 = entityIterator.next();
-        Asset asset = assetsRepository.findAll().iterator().next();
+        Asset asset = assetsRepository.findAll().getFirst();
         Transaction tx1 = transactionsRepository.findAll().iterator().next();
         Transaction tx2 = transactionsRepository.save(Transaction.builder()
                         .hash("hash2")
@@ -214,7 +214,7 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
 
     @Test
     void findAveragePriceByAssetGroupedByDay() {
-        Asset asset = assetsRepository.findAll().iterator().next();
+        Asset asset = assetsRepository.findAll().getFirst();
         Transaction tx = transactionsRepository.findAll().iterator().next();
         Instant now = Instant.now();
 
