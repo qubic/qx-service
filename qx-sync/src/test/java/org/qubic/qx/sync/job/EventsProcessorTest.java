@@ -24,7 +24,7 @@ class EventsProcessorTest {
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 2, 3);
         Transaction transaction = new Transaction("hash", "source", "destination", 1, 42,6, 0, orderData);
         List<TransactionEvent> events = List.of(
-                new TransactionEvent(mock(), 2, 0, "0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv02EYTUnxm1rKM15TYeDdxsn6lv0WHZd47t7Tzvs+MeIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAABNTE0AAAAAAAAAAAAAAAA="),
+                new TransactionEvent(mock(), 2, 0, "0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv02EYTUnxm1rKM15TYeDdxsn6lv0WHZd47t7Tzvs+MeIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAqAAAAAAAAAE1MTQAAAAAAAAAAAAAAAA=="),
                 new TransactionEvent(mock(), 6, 0, "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAcLrCwAAAAABAAAAAAAAAA==")
         );
         when(identityUtil.getIdentityFromPublicKey(Base64.decode("0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv0="))).thenReturn("maker");
@@ -49,9 +49,8 @@ class EventsProcessorTest {
 
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 2, 3);
         Transaction transaction = new Transaction("hash", "buyer", "destination", 1, 2, 6, 0, orderData); // add bid
-
         List<TransactionEvent> events = List.of(
-                new TransactionEvent(mock(), 2, 0, "8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAABDRkIAAAAAAADQANAjGBU="),
+                new TransactionEvent(mock(), 2, 0, "8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ=="),
                 new TransactionEvent(mock(), 6, 0, "AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==")
         );
         when(identityUtil.getIdentityFromPublicKey(Base64.decode("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQ="))).thenReturn("seller");
@@ -76,7 +75,7 @@ class EventsProcessorTest {
         List<TransactionEvent> events = List.of(
                 new TransactionEvent(mock(), 0, 0, "JMrv6y7p07Jw6kBog1fCGOmCDhzDtt8SR1IR42qQQ0EBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACEzAwAAAAAA"),
                 new TransactionEvent(mock(), 0, 0, "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADymrKZ7qm/15hUDu1de8gP1X9FfDK/NKJ3FLVwj+bcRAgvAwAAAAAA"),
-                new TransactionEvent(mock(), 2, 0, "8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAABDRkIAAAAAAADQANAjGBU="),
+                new TransactionEvent(mock(), 2, 0, "8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ=="),
                 new TransactionEvent(mock(), 6, 0, "AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==")
         );
         when(identityUtil.getIdentityFromPublicKey(Base64.decode("JMrv6y7p07Jw6kBog1fCGOmCDhzDtt8SR1IR42qQQ0E="))).thenReturn("buyer");
