@@ -25,3 +25,4 @@ application-local.properties
 *.iml
 *.ipr
 
+notebooks/*.csv
