@@ -25,7 +25,6 @@ public class Asset implements Serializable {
 
     private String name;
 
-    @JsonIgnore
     private boolean verified;
 
 }

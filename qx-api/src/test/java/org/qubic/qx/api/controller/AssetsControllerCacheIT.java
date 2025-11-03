@@ -34,6 +34,7 @@ class AssetsControllerCacheIT extends AbstractSpringIntegrationTest {
                 .id(42L)
                 .issuer("ISSUER1")
                 .name("NAME1")
+                .verified(true)
                 .build();
 
         when(assetsService.getAllAssets()).thenReturn(List.of(asset1));

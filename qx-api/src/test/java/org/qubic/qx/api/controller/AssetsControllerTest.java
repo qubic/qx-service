@@ -22,8 +22,8 @@ class AssetsControllerTest {
 
     @Test
     void getAllAssets() {
-        Asset a = Asset.builder().issuer("issuerA").name("nameA").build();
-        Asset b = Asset.builder().issuer("issuerB").name("nameA").build();
+        Asset a = Asset.builder().issuer("issuerA").name("nameA").verified(true).build();
+        Asset b = Asset.builder().issuer("issuerB").name("nameA").verified(true).build();
         Asset c = Asset.builder().issuer("issuerB").name("nameB").build();
 
         when(assetsService.getAllAssets()).thenReturn(List.of(a, b, c));
