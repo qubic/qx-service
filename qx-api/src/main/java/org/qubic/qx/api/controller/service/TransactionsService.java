@@ -7,7 +7,7 @@ import java.util.List;
 
 public class TransactionsService {
 
-    static final int LIMIT = 50;
+    static final int LIMIT = 100;
     static final List<Integer> TRANSFER_INPUT_TYPE = List.of(2);
     static final List<Integer> ISSUE_ASSET_INPUT_TYPE = List.of(1);
 

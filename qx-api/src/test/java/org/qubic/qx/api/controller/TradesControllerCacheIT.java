@@ -1,6 +1,7 @@
 package org.qubic.qx.api.controller;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.AbstractSpringIntegrationTest;
 import org.qubic.qx.api.controller.service.TradesService;
@@ -29,7 +30,7 @@ class TradesControllerCacheIT extends AbstractSpringIntegrationTest {
     private static final String TEST_IDENTITY = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEOPXN";
     private static final TradeDto TEST_TRADE = new TradeDto(Instant.now(), "hash", "taker", "maker", "issuer", "tokenAsset", true, 123, 456);
 
-    private static final Pageable DEFAULT_PAGE = PageRequest.of(0, 100);
+    private static final Pageable DEFAULT_PAGE = PageRequest.of(0, 10);
 
     @MockitoBean
     private TradesService tradesService;
@@ -174,6 +175,7 @@ class TradesControllerCacheIT extends AbstractSpringIntegrationTest {
         verify(tradesService, times(1)).getEntityTrades(TEST_ISSUER, DEFAULT_PAGE);
     }
 
+    @BeforeEach
     @AfterEach
     void clearCache() {
         evictAllCaches();
