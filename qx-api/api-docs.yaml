@@ -1,28 +1,28 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
   title: OpenAPI definition
   version: v0
 servers:
-  - url: http://localhost:8081
-    description: Generated server url
+- url: http://localhost:8081
+  description: Generated server url
 paths:
   /service/v1/qx/issuer/{issuer}/asset/{asset}/remove-bid:
     post:
       tags:
-        - qx-order-controller
+      - qx-order-controller
       operationId: createRemoveBidOrderTemplate
       parameters:
-        - name: issuer
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: asset
-          in: path
-          required: true
-          schema:
-            pattern: "^[A-Z0-9]{1,7}$"
-            type: string
+      - name: issuer
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: asset
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[A-Z0-9]{1,7}$"
       requestBody:
         content:
           application/json:
@@ -39,21 +39,21 @@ paths:
   /service/v1/qx/issuer/{issuer}/asset/{asset}/remove-ask:
     post:
       tags:
-        - qx-order-controller
+      - qx-order-controller
       operationId: createRemoveAskOrderTemplate
       parameters:
-        - name: issuer
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: asset
-          in: path
-          required: true
-          schema:
-            maxLength: 7
-            minLength: 1
-            type: string
+      - name: issuer
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: asset
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 7
+          minLength: 1
       requestBody:
         content:
           application/json:
@@ -70,20 +70,20 @@ paths:
   /service/v1/qx/issuer/{issuer}/asset/{asset}/add-bid:
     post:
       tags:
-        - qx-order-controller
+      - qx-order-controller
       operationId: createAddBidOrderTemplate
       parameters:
-        - name: issuer
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: asset
-          in: path
-          required: true
-          schema:
-            pattern: "^[A-Z0-9]{1,7}$"
-            type: string
+      - name: issuer
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: asset
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[A-Z0-9]{1,7}$"
       requestBody:
         content:
           application/json:
@@ -100,21 +100,21 @@ paths:
   /service/v1/qx/issuer/{issuer}/asset/{asset}/add-ask:
     post:
       tags:
-        - qx-order-controller
+      - qx-order-controller
       operationId: createAddAskOrderTemplate
       parameters:
-        - name: issuer
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: asset
-          in: path
-          required: true
-          schema:
-            maxLength: 7
-            minLength: 1
-            type: string
+      - name: issuer
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: asset
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 7
+          minLength: 1
       requestBody:
         content:
           application/json:
@@ -131,7 +131,7 @@ paths:
   /service/v1/qx/transfers:
     get:
       tags:
-        - transactions-controller
+      - transactions-controller
       operationId: getTransferTransactions
       responses:
         "200":
@@ -145,8 +145,54 @@ paths:
   /service/v1/qx/trades:
     get:
       tags:
-        - trades-controller
+      - trades-controller
       operationId: getTrades
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TradeDto"
+  /service/v1/qx/token-trades:
+    get:
+      tags:
+      - trades-controller
+      operationId: getTokenTrades
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TradeDto"
+  /service/v1/qx/smart-contract-trades:
+    get:
+      tags:
+      - trades-controller
+      operationId: getSmartContractTrades
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
       responses:
         "200":
           description: OK
@@ -159,20 +205,20 @@ paths:
   /service/v1/qx/issuer/{issuer}/asset/{asset}/transfers:
     get:
       tags:
-        - transactions-controller
+      - transactions-controller
       operationId: getTransferTransactionsForAsset
       parameters:
-        - name: issuer
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: asset
-          in: path
-          required: true
-          schema:
-            pattern: "^[A-Z0-9]{1,7}$"
-            type: string
+      - name: issuer
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: asset
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[A-Z0-9]{1,7}$"
       responses:
         "200":
           description: OK
@@ -185,20 +231,25 @@ paths:
   /service/v1/qx/issuer/{issuer}/asset/{asset}/trades:
     get:
       tags:
-        - trades-controller
+      - trades-controller
       operationId: getAssetTrades
       parameters:
-        - name: issuer
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: asset
-          in: path
-          required: true
-          schema:
-            pattern: "^[A-Z0-9]{1,7}$"
-            type: string
+      - name: issuer
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: asset
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[A-Z0-9]{1,7}$"
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
       responses:
         "200":
           description: OK
@@ -211,20 +262,20 @@ paths:
   /service/v1/qx/issuer/{issuer}/asset/{asset}/chart/average-price:
     get:
       tags:
-        - chart-controller
+      - chart-controller
       operationId: getAveragePriceForAsset
       parameters:
-        - name: issuer
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: asset
-          in: path
-          required: true
-          schema:
-            pattern: "^[A-Z0-9]{1,7}$"
-            type: string
+      - name: issuer
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: asset
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[A-Z0-9]{1,7}$"
       responses:
         "200":
           description: OK
@@ -237,26 +288,26 @@ paths:
   /service/v1/qx/issuer/{issuer}/asset/{asset}/bids:
     get:
       tags:
-        - qx-functions-controller
+      - qx-functions-controller
       operationId: getAssetBidOrders
       parameters:
-        - name: issuer
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: asset
-          in: path
-          required: true
-          schema:
-            pattern: "^[A-Z0-9]{1,7}$"
-            type: string
-        - name: aggregated
-          in: query
-          required: false
-          schema:
-            type: boolean
-            default: false
+      - name: issuer
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: asset
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[A-Z0-9]{1,7}$"
+      - name: aggregated
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
       responses:
         "200":
           description: OK
@@ -269,26 +320,26 @@ paths:
   /service/v1/qx/issuer/{issuer}/asset/{asset}/asks:
     get:
       tags:
-        - qx-functions-controller
+      - qx-functions-controller
       operationId: getAssetAskOrders
       parameters:
-        - name: issuer
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: asset
-          in: path
-          required: true
-          schema:
-            pattern: "^[A-Z0-9]{1,7}$"
-            type: string
-        - name: aggregated
-          in: query
-          required: false
-          schema:
-            type: boolean
-            default: false
+      - name: issuer
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: asset
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[A-Z0-9]{1,7}$"
+      - name: aggregated
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
       responses:
         "200":
           description: OK
@@ -301,7 +352,7 @@ paths:
   /service/v1/qx/issued-assets:
     get:
       tags:
-        - transactions-controller
+      - transactions-controller
       operationId: getIssuedAssets
       responses:
         "200":
@@ -315,7 +366,7 @@ paths:
   /service/v1/qx/fees:
     get:
       tags:
-        - qx-functions-controller
+      - qx-functions-controller
       operationId: getFees
       responses:
         "200":
@@ -327,14 +378,14 @@ paths:
   /service/v1/qx/entity/{identity}/transfers:
     get:
       tags:
-        - transactions-controller
+      - transactions-controller
       operationId: getTransferTransactionsForEntity
       parameters:
-        - name: identity
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: identity
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -347,14 +398,19 @@ paths:
   /service/v1/qx/entity/{identity}/trades:
     get:
       tags:
-        - trades-controller
+      - trades-controller
       operationId: getEntityTrades
       parameters:
-        - name: identity
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: identity
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
       responses:
         "200":
           description: OK
@@ -367,14 +423,14 @@ paths:
   /service/v1/qx/entity/{identity}/bids:
     get:
       tags:
-        - qx-functions-controller
+      - qx-functions-controller
       operationId: getEntityBidOrders
       parameters:
-        - name: identity
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: identity
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -387,14 +443,14 @@ paths:
   /service/v1/qx/entity/{identity}/asks:
     get:
       tags:
-        - qx-functions-controller
+      - qx-functions-controller
       operationId: getEntityAskOrders
       parameters:
-        - name: identity
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: identity
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -407,7 +463,7 @@ paths:
   /service/v1/qx/assets:
     get:
       tags:
-        - assets-controller
+      - assets-controller
       operationId: getAssets
       responses:
         "200":
@@ -421,9 +477,6 @@ paths:
 components:
   schemas:
     QxOrderRequest:
-      required:
-        - numberOfShares
-        - pricePerShare
       type: object
       properties:
         from:
@@ -432,6 +485,9 @@ components:
           type: integer
         pricePerShare:
           type: integer
+      required:
+      - numberOfShares
+      - pricePerShare
     QxOrderTemplate:
       type: object
       properties:
@@ -449,14 +505,13 @@ components:
         extraData:
           type: string
     ExtraData:
-      required:
-        - '@class'
-      type: object
+      discriminator:
+        propertyName: '@class'
       properties:
         '@class':
           type: string
-      discriminator:
-        propertyName: '@class'
+      required:
+      - '@class'
     TransactionDto:
       type: object
       properties:
@@ -480,6 +535,21 @@ components:
           $ref: "#/components/schemas/ExtraData"
         moneyFlew:
           type: boolean
+    Pageable:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+        sort:
+          type: array
+          items:
+            type: string
     TradeDto:
       type: object
       properties:
@@ -571,3 +641,5 @@ components:
           type: string
         name:
           type: string
+        verified:
+          type: boolean
