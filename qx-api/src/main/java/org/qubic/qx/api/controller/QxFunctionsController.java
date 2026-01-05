@@ -36,8 +36,8 @@ public class QxFunctionsController {
 
     @Cacheable(cacheNames = CACHE_NAME_ASSET_ASKS, key = CACHE_KEY_ASSET_AGGREGATED)
     @GetMapping("/issuer/{issuer}/asset/{asset}/asks")
-    public List<AssetOrder> getAssetAskOrders(@PathVariable("issuer") @Identity String issuer,
-                                              @PathVariable("asset") @AssetName String asset,
+    public List<AssetOrder> getAssetAskOrders(@PathVariable @Identity String issuer,
+                                              @PathVariable @AssetName String asset,
                                               @RequestParam(value = "aggregated", defaultValue = "false") boolean aggregated) {
         return aggregated
                 ? qxService.getAggregatedAssetAskOrders(issuer, asset)
@@ -46,8 +46,8 @@ public class QxFunctionsController {
 
     @Cacheable(cacheNames = CACHE_NAME_ASSET_BIDS, key = CACHE_KEY_ASSET_AGGREGATED)
     @GetMapping("/issuer/{issuer}/asset/{asset}/bids")
-    public List<AssetOrder> getAssetBidOrders(@PathVariable("issuer") @Identity String issuer,
-                                              @PathVariable("asset") @AssetName String asset,
+    public List<AssetOrder> getAssetBidOrders(@PathVariable @Identity String issuer,
+                                              @PathVariable @AssetName String asset,
                                               @RequestParam(value = "aggregated", defaultValue = "false") boolean aggregated) {
         return aggregated
                 ? qxService.getAggregatedAssetBidOrders(issuer, asset)
@@ -56,13 +56,13 @@ public class QxFunctionsController {
 
     @Cacheable(CACHE_NAME_ENTITY_ASKS)
     @GetMapping("/entity/{identity}/asks")
-    public List<EntityOrder> getEntityAskOrders(@PathVariable("identity") @Identity String identity) {
+    public List<EntityOrder> getEntityAskOrders(@PathVariable @Identity String identity) {
         return qxService.getEntityAskOrders(identity);
     }
 
     @Cacheable(CACHE_NAME_ENTITY_BIDS)
     @GetMapping("/entity/{identity}/bids")
-    public List<EntityOrder> getEntityBidOrders(@PathVariable("identity") @Identity String identity) {
+    public List<EntityOrder> getEntityBidOrders(@PathVariable @Identity String identity) {
         return qxService.getEntityBidOrders(identity);
     }
 

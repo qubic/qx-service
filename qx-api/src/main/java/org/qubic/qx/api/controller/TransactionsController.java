@@ -45,14 +45,14 @@ public class TransactionsController {
 
     @Cacheable(cacheNames = CACHE_NAME_TRANSFERS_ASSET, key = CACHE_KEY_ASSET)
     @GetMapping("/issuer/{issuer}/asset/{asset}/transfers")
-    public List<TransactionDto> getTransferTransactionsForAsset(@PathVariable("issuer") @Identity String issuer,
-                                                                @PathVariable("asset") @AssetName String asset) {
+    public List<TransactionDto> getTransferTransactionsForAsset(@PathVariable @Identity String issuer,
+                                                                @PathVariable @AssetName String asset) {
         return transactionsService.getTransferTransactionsForAsset(issuer, asset);
     }
 
     @Cacheable(CACHE_NAME_TRANSFERS_ENTITY)
     @GetMapping("/entity/{identity}/transfers")
-    public List<TransactionDto> getTransferTransactionsForEntity(@PathVariable("identity") @Identity String identity) {
+    public List<TransactionDto> getTransferTransactionsForEntity(@PathVariable @Identity String identity) {
         return transactionsService.getTransferTransactionsForEntity(identity);
     }
 

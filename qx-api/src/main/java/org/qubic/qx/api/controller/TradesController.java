@@ -46,15 +46,15 @@ public class TradesController {
 
     @Cacheable(cacheNames = CACHE_NAME_ASSET_TRADES)
     @GetMapping("/issuer/{issuer}/asset/{asset}/trades")
-    public List<TradeDto> getAssetTrades(@PathVariable("issuer") @Identity String issuer,
-                                         @PathVariable("asset") @AssetName String asset,
+    public List<TradeDto> getAssetTrades(@PathVariable @Identity String issuer,
+                                         @PathVariable @AssetName String asset,
                                          @Pagination Pageable pageable) {
         return tradesService.getAssetTrades(issuer, asset, pageable);
     }
 
     @Cacheable(CACHE_NAME_ENTITY_TRADES)
     @GetMapping("/entity/{identity}/trades")
-    public List<TradeDto>  getEntityTrades(@PathVariable("identity") @Identity String identity,
+    public List<TradeDto>  getEntityTrades(@PathVariable @Identity String identity,
                                            @Pagination Pageable pageable) {
         return tradesService.getEntityTrades(identity, pageable);
     }

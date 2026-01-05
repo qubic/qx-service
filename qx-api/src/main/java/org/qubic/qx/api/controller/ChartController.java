@@ -27,8 +27,8 @@ public class ChartController {
 
     @Cacheable(cacheNames = CACHE_NAME_CHART_AVG_PRICE, key = CACHE_KEY_ASSET)
     @GetMapping("/issuer/{issuer}/asset/{asset}/chart/average-price")
-    public List<AvgPriceData> getAveragePriceForAsset(@PathVariable("issuer") @Identity String issuer,
-                                                      @PathVariable("asset") @AssetName String asset) {
+    public List<AvgPriceData> getAveragePriceForAsset(@PathVariable @Identity String issuer,
+                                                      @PathVariable @AssetName String asset) {
         return chartService.getAveragePriceForAsset(issuer, asset);
     }
 

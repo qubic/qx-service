@@ -30,8 +30,8 @@ public class QxOrderController {
     }
 
     @PostMapping("/issuer/{issuer}/asset/{asset}/add-bid")
-    public QxOrderTemplate createAddBidOrderTemplate(@PathVariable("issuer") @Identity String issuer,
-                                                     @PathVariable("asset") @AssetName String asset,
+    public QxOrderTemplate createAddBidOrderTemplate(@PathVariable @Identity String issuer,
+                                                     @PathVariable @AssetName String asset,
                                                      @RequestBody @Valid QxOrderRequest request) {
         log.info("Create add bid order for issuer [{}] and asset [{}]: {}", issuer, asset, request);
         QxAssetOrder order = qxOrderService.createAddBidOrder(issuer, asset, request.numberOfShares(), request.pricePerShare());
@@ -39,8 +39,8 @@ public class QxOrderController {
     }
 
     @PostMapping("/issuer/{issuer}/asset/{asset}/add-ask")
-    public QxOrderTemplate createAddAskOrderTemplate(@PathVariable("issuer") @Identity String issuer,
-                                                     @PathVariable("asset") @Size(min=1, max=7) String asset,
+    public QxOrderTemplate createAddAskOrderTemplate(@PathVariable @Identity String issuer,
+                                                     @PathVariable @Size(min=1, max=7) String asset,
                                                      @RequestBody @Valid QxOrderRequest request) {
         log.info("Create add ask order for issuer [{}] and asset [{}]: {}", issuer, asset, request);
         QxAssetOrder order = qxOrderService.createAddAskOrder(issuer, asset, request.numberOfShares(), request.pricePerShare());
@@ -48,8 +48,8 @@ public class QxOrderController {
     }
 
     @PostMapping("/issuer/{issuer}/asset/{asset}/remove-bid")
-    public QxOrderTemplate createRemoveBidOrderTemplate(@PathVariable("issuer") @Identity String issuer,
-                                                        @PathVariable("asset") @AssetName String asset,
+    public QxOrderTemplate createRemoveBidOrderTemplate(@PathVariable @Identity String issuer,
+                                                        @PathVariable @AssetName String asset,
                                                         @RequestBody @Valid QxOrderRequest request) {
         log.info("Create remove bid order for issuer [{}] and asset [{}]: {}", issuer, asset, request);
         QxAssetOrder order = qxOrderService.createRemoveBidOrder(issuer, asset, request.numberOfShares(), request.pricePerShare());
@@ -57,8 +57,8 @@ public class QxOrderController {
     }
 
     @PostMapping("/issuer/{issuer}/asset/{asset}/remove-ask")
-    public QxOrderTemplate createRemoveAskOrderTemplate(@PathVariable("issuer") @Identity String issuer,
-                                                        @PathVariable("asset") @Size(min=1, max=7) String asset,
+    public QxOrderTemplate createRemoveAskOrderTemplate(@PathVariable @Identity String issuer,
+                                                        @PathVariable @Size(min=1, max=7) String asset,
                                                         @RequestBody @Valid QxOrderRequest request) {
         log.info("Create remove ask order for issuer [{}] and asset [{}]: {}", issuer, asset, request);
         QxAssetOrder order = qxOrderService.createRemoveAskOrder(issuer, asset, request.numberOfShares(), request.pricePerShare());
