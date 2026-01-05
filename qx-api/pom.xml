@@ -14,10 +14,6 @@
     <description>Service that provides an API to access qx data.</description>
     <packaging>jar</packaging>
 
-    <properties>
-        <commons-lang3.version>3.18.0</commons-lang3.version> <!-- 3.17.0 is vulnerable -->
-    </properties>
-
     <dependencies>
 
         <dependency>

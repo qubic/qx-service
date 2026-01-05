@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.6</version>
+        <version>3.5.9</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -31,9 +31,8 @@
         <testcontainers-redis.version>2.2.2</testcontainers-redis.version>
 
         <!-- vulnerablity overrides -->
-        <commons-compress.version>[1.28.0,)</commons-compress.version> <!-- 1.24 is vulnerable -->
         <commons-lang3.version>[3.18.0,)</commons-lang3.version> <!-- 3.17.0 is vulnerable -->
-        <logback.version>[1.5.19,)</logback.version> <!-- 1.5.18 is vulnerable -->
+        <commons-compress.version>[1.28.0,)</commons-compress.version> <!-- 1.24 is vulnerable -->
 
     </properties>
 
@@ -73,7 +72,7 @@
                 <version>${resilience4j.version}</version>
             </dependency>
 
-            <!-- mapstruct and lombok doesn't work together nicely -->
+            <!-- mapstruct and lombok don't work together nicely -->
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>

@@ -52,7 +52,7 @@
             <artifactId>qubicj-computor-api</artifactId>
         </dependency>
 
-        <!-- mapstruct and lombok doesn't work together nicely -->
+        <!-- mapstruct and lombok don't work together nicely -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
