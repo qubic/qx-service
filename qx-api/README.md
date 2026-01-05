@@ -44,7 +44,7 @@ CREATE USER qx WITH PASSWORD '<enter-your-password-here>';
 CREATE DATABASE qx OWNER qx;
 ```
 
-#### Configura database connections
+#### Configure database connections
 
 ```properties
 # database (application)
