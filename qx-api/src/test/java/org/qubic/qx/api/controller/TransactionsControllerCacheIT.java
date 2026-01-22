@@ -8,10 +8,14 @@ import org.qubic.qx.api.controller.service.TransactionsService;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(properties = """
@@ -35,83 +39,91 @@ class TransactionsControllerCacheIT extends AbstractSpringIntegrationTest {
     @Test
     void getTransferTransactions_thenHitCache() {
         TransactionDto dto = mock();
-        when(service.getTransferTransactions()).thenReturn(List.of(dto));
-        controller.getTransferTransactions();
-        controller.getTransferTransactions();
+        Pageable pageable = PageRequest.of(0, 50);
+        when(service.getTransferTransactions(any(Pageable.class))).thenReturn(List.of(dto));
+        controller.getTransferTransactions(pageable);
+        controller.getTransferTransactions(pageable);
 
-        verify(service, times(1)).getTransferTransactions();
+        verify(service, times(1)).getTransferTransactions(any(Pageable.class));
     }
 
     @Test
     void getTransferTransactions_givenCacheEvicted_thenHitService() {
         TransactionDto dto = mock();
-        when(service.getTransferTransactions()).thenReturn(List.of(dto));
-        controller.getTransferTransactions();
+        Pageable pageable = PageRequest.of(0, 50);
+        when(service.getTransferTransactions(any(Pageable.class))).thenReturn(List.of(dto));
+        controller.getTransferTransactions(pageable);
         qxCacheManager.evictTransferCache();
-        controller.getTransferTransactions();
+        controller.getTransferTransactions(pageable);
 
-        verify(service, times(2)).getTransferTransactions();
+        verify(service, times(2)).getTransferTransactions(any(Pageable.class));
     }
 
     @Test
     void getTransferTransactionsForAsset_thenHitCache() {
         TransactionDto dto = mock();
-        when(service.getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME)).thenReturn(List.of(dto));
-        controller.getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME);
-        controller.getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME);
+        Pageable pageable = PageRequest.of(0, 50);
+        when(service.getTransferTransactionsForAsset(eq(TEST_ISSUER), eq(TEST_ASSET_NAME), any(Pageable.class))).thenReturn(List.of(dto));
+        controller.getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME, pageable);
+        controller.getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME, pageable);
 
-        verify(service, times(1)).getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME);
+        verify(service, times(1)).getTransferTransactionsForAsset(eq(TEST_ISSUER), eq(TEST_ASSET_NAME), any(Pageable.class));
     }
 
     @Test
     void getTransferTransactionsForAsset_givenCacheEvicted_thenHitService() {
         TransactionDto dto = mock();
-        when(service.getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME)).thenReturn(List.of(dto));
-        controller.getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME);
+        Pageable pageable = PageRequest.of(0, 50);
+        when(service.getTransferTransactionsForAsset(eq(TEST_ISSUER), eq(TEST_ASSET_NAME), any(Pageable.class))).thenReturn(List.of(dto));
+        controller.getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME, pageable);
         qxCacheManager.evictTransferCacheForAsset(TEST_ISSUER, TEST_ASSET_NAME);
-        controller.getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME);
+        controller.getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME, pageable);
 
-        verify(service, times(2)).getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME);
+        verify(service, times(2)).getTransferTransactionsForAsset(eq(TEST_ISSUER), eq(TEST_ASSET_NAME), any(Pageable.class));
     }
 
     @Test
     void getTransferTransactionsForEntity_thenHitCache() {
         TransactionDto dto = mock();
-        when(service.getTransferTransactionsForEntity(TEST_IDENTITY)).thenReturn(List.of(dto));
-        controller.getTransferTransactionsForEntity(TEST_IDENTITY);
-        controller.getTransferTransactionsForEntity(TEST_IDENTITY);
+        Pageable pageable = PageRequest.of(0, 50);
+        when(service.getTransferTransactionsForEntity(eq(TEST_IDENTITY), any(Pageable.class))).thenReturn(List.of(dto));
+        controller.getTransferTransactionsForEntity(TEST_IDENTITY, pageable);
+        controller.getTransferTransactionsForEntity(TEST_IDENTITY, pageable);
 
-        verify(service, times(1)).getTransferTransactionsForEntity(TEST_IDENTITY);
+        verify(service, times(1)).getTransferTransactionsForEntity(eq(TEST_IDENTITY), any(Pageable.class));
     }
 
     @Test
     void getTransferTransactionsForEntity_givenCacheEvicted_thenHitService() {
         TransactionDto dto = mock();
-        when(service.getTransferTransactionsForEntity(TEST_IDENTITY)).thenReturn(List.of(dto));
-        controller.getTransferTransactionsForEntity(TEST_IDENTITY);
+        Pageable pageable = PageRequest.of(0, 50);
+        when(service.getTransferTransactionsForEntity(eq(TEST_IDENTITY), any(Pageable.class))).thenReturn(List.of(dto));
+        controller.getTransferTransactionsForEntity(TEST_IDENTITY, pageable);
         qxCacheManager.evictTransferCacheForEntity(TEST_IDENTITY);
-        controller.getTransferTransactionsForEntity(TEST_IDENTITY);
+        controller.getTransferTransactionsForEntity(TEST_IDENTITY, pageable);
 
-        verify(service, times(2)).getTransferTransactionsForEntity(TEST_IDENTITY);
+        verify(service, times(2)).getTransferTransactionsForEntity(eq(TEST_IDENTITY), any(Pageable.class));
     }
 
     @Test
     void getIssuedAssets_givenCached_thenHitCache() {
         TransactionDto dto = mock();
-        when(service.getIssuedAssets()).thenReturn(List.of(dto));
-        controller.getIssuedAssets();
-        controller.getIssuedAssets();
-        verify(service, times(1)).getIssuedAssets();
+        Pageable pageable = PageRequest.of(0, 50);
+        when(service.getIssuedAssets(any(Pageable.class))).thenReturn(List.of(dto));
+        controller.getIssuedAssets(pageable);
+        controller.getIssuedAssets(pageable);
+        verify(service, times(1)).getIssuedAssets(any(Pageable.class));
     }
 
     @Test
     void getIssuedAssets_givenCacheEvicted_thenHitServiceAgain() {
         TransactionDto dto = mock();
-        when(service.getIssuedAssets()).thenReturn(List.of(dto));
-        controller.getIssuedAssets();
+        Pageable pageable = PageRequest.of(0, 50);
+        when(service.getIssuedAssets(any(Pageable.class))).thenReturn(List.of(dto));
+        controller.getIssuedAssets(pageable);
         qxCacheManager.evictAssetsCaches();
-        controller.getIssuedAssets();
-        verify(service, times(2)).getIssuedAssets();
+        controller.getIssuedAssets(pageable);
+        verify(service, times(2)).getIssuedAssets(any(Pageable.class));
     }
 
     @BeforeEach

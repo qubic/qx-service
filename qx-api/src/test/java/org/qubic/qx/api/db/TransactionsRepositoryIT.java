@@ -125,7 +125,7 @@ class TransactionsRepositoryIT extends AbstractPostgresJdbcTest {
 
     @Test
     void findByAssetOrdered() {
-        List<TransactionDto> result = repository.findByAssetOrdered("ISSUER1", "ASSET1", List.of(1,2,5,6,7), 3);
+        List<TransactionDto> result = repository.findByAssetOrdered("ISSUER1", "ASSET1", List.of(1,2,5,6,7), 0, 3);
         assertThat(result).isNotEmpty();
         assertThat(result.stream().map(TransactionDto::hash)).containsExactly(
                 "hash4", "hash3", "hash1"
@@ -134,7 +134,7 @@ class TransactionsRepositoryIT extends AbstractPostgresJdbcTest {
 
     @Test
     void findByInputTypesOrdered() {
-        List<TransactionDto> result = repository.findByInputTypesOrdered(List.of(6,7,5), 10);
+        List<TransactionDto> result = repository.findByInputTypesOrdered(List.of(6,7,5), 0, 10);
         assertThat(result).isNotEmpty();
         assertThat(result.stream().map(TransactionDto::hash)).containsExactly(
                 "hash5", "hash4", "hash1"
@@ -152,7 +152,7 @@ class TransactionsRepositoryIT extends AbstractPostgresJdbcTest {
 
     @Test
     void findTransfersByEntityOrdered() {
-        List<TransactionDto> result = repository.findTransfersByEntityOrdered("ID1", 5);
+        List<TransactionDto> result = repository.findTransfersByEntityOrdered("ID1", 0L, 5L);
         assertThat(result).isNotEmpty();
         assertThat(result.stream().map(TransactionDto::hash)).containsExactly(
                 "hash3", "hash7"

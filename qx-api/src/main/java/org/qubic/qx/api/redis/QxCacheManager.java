@@ -90,12 +90,14 @@ public class QxCacheManager {
 
     public void evictTransferCacheForEntity(String identity) {
         log.debug("Evicting transfer cache for entity [{}].", identity);
-        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRANSFERS_ENTITY)).evict(identity);
+        RedisCache cache = (RedisCache) Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRANSFERS_ENTITY));
+        cache.clear(String.format(CACHE_KEY_IDENTITY_PATTERN, identity));
     }
 
     public void evictTransferCacheForAsset(String issuer, String name) {
         log.debug("Evicting transfer cache for asset for issuer [{}] and name [{}].", issuer, name);
-        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRANSFERS_ASSET)).evict(String.format("%s:%s", issuer, name));
+        RedisCache cache = (RedisCache) Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRANSFERS_ASSET));
+        cache.clear(String.format(CACHE_KEY_ASSET_PATTERN, issuer, name)); // SimpleKey [issuer, name, pageable]
     }
 
     public void evictChartCachesForAsset(String issuer, String name) {
