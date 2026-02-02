@@ -30,9 +30,10 @@ public interface TransactionsRepository extends CrudRepository<Transaction, Long
     join entities src on t.source_entity_id = src.id
     where t.input_type in (:inputTypes)
     order by t.tick desc, t.id desc
+    offset :offset
     limit :limit
     """)
-    List<TransactionDto> findByInputTypesOrdered(List<Integer> inputTypes, long limit);
+    List<TransactionDto> findByInputTypesOrdered(List<Integer> inputTypes, long offset, long limit);
 
     @Query("""
     select t.tick_time, t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
@@ -43,9 +44,10 @@ public interface TransactionsRepository extends CrudRepository<Transaction, Long
     and a.name = :asset
     and t.input_type in (:inputTypes)
     order by t.tick desc, t.id desc
+    offset :offset
     limit :limit
     """)
-    List<TransactionDto> findByAssetOrdered(String issuer, String asset, List<Integer> inputTypes, long limit); // inputType 1 does not work here
+    List<TransactionDto> findByAssetOrdered(String issuer, String asset, List<Integer> inputTypes, long offset, long limit); // inputType 1 does not work here
 
     @Query("""
     select t.tick_time, t.hash, src.identity as source, t.amount, t.tick, t.input_type, t.extra_data, t.money_flew
@@ -65,8 +67,9 @@ public interface TransactionsRepository extends CrudRepository<Transaction, Long
     where (src.identity = :identity or t.extra_data->>'newOwner' = :identity)
     and t.input_type = 2
     order by t.tick desc, t.id desc
+    offset :offset
     limit :limit
     """)
-    List<TransactionDto> findTransfersByEntityOrdered(String identity, long limit);
+    List<TransactionDto> findTransfersByEntityOrdered(String identity, long offset, long limit);
 
 }
