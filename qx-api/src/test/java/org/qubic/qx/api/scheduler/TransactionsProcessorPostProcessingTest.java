@@ -47,10 +47,10 @@ class TransactionsProcessorPostProcessingTest {
 
         processor.postProcess(source);
 
-        qxCacheManager.evictTransferCache();
-        qxCacheManager.evictTransferCacheForAsset("ISSUER", "ASSET");
-        qxCacheManager.evictTransferCacheForEntity("SOURCE_IDENTITY");
-        qxCacheManager.evictTransferCacheForEntity("NEW_OWNER");
+        qxCacheManager.evictAssetTransferCache();
+        qxCacheManager.evictAssetTransferCacheForAsset("ISSUER", "ASSET");
+        qxCacheManager.evictAssetTransferCacheForEntity("SOURCE_IDENTITY");
+        qxCacheManager.evictAssetTransferCacheForEntity("NEW_OWNER");
     }
 
     @Test

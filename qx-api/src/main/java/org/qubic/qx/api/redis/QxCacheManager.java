@@ -83,18 +83,18 @@ public class QxCacheManager {
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_BIDS)).evict(String.format("%s:%s:false", issuer, name));
     }
 
-    public void evictTransferCache() {
+    public void evictAssetTransferCache() {
         log.debug("Clear general transfer transaction cache.");
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRANSFERS)).clear();
     }
 
-    public void evictTransferCacheForEntity(String identity) {
+    public void evictAssetTransferCacheForEntity(String identity) {
         log.debug("Evicting transfer cache for entity [{}].", identity);
         RedisCache cache = (RedisCache) Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRANSFERS_ENTITY));
         cache.clear(String.format(CACHE_KEY_IDENTITY_PATTERN, identity));
     }
 
-    public void evictTransferCacheForAsset(String issuer, String name) {
+    public void evictAssetTransferCacheForAsset(String issuer, String name) {
         log.debug("Evicting transfer cache for asset for issuer [{}] and name [{}].", issuer, name);
         RedisCache cache = (RedisCache) Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_TRANSFERS_ASSET));
         cache.clear(String.format(CACHE_KEY_ASSET_PATTERN, issuer, name)); // SimpleKey [issuer, name, pageable]

@@ -53,7 +53,7 @@ class TransactionsControllerCacheIT extends AbstractSpringIntegrationTest {
         Pageable pageable = PageRequest.of(0, 50);
         when(service.getTransferTransactions(any(Pageable.class))).thenReturn(List.of(dto));
         controller.getTransferTransactions(pageable);
-        qxCacheManager.evictTransferCache();
+        qxCacheManager.evictAssetTransferCache();
         controller.getTransferTransactions(pageable);
 
         verify(service, times(2)).getTransferTransactions(any(Pageable.class));
@@ -76,7 +76,7 @@ class TransactionsControllerCacheIT extends AbstractSpringIntegrationTest {
         Pageable pageable = PageRequest.of(0, 50);
         when(service.getTransferTransactionsForAsset(eq(TEST_ISSUER), eq(TEST_ASSET_NAME), any(Pageable.class))).thenReturn(List.of(dto));
         controller.getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME, pageable);
-        qxCacheManager.evictTransferCacheForAsset(TEST_ISSUER, TEST_ASSET_NAME);
+        qxCacheManager.evictAssetTransferCacheForAsset(TEST_ISSUER, TEST_ASSET_NAME);
         controller.getTransferTransactionsForAsset(TEST_ISSUER, TEST_ASSET_NAME, pageable);
 
         verify(service, times(2)).getTransferTransactionsForAsset(eq(TEST_ISSUER), eq(TEST_ASSET_NAME), any(Pageable.class));
@@ -99,7 +99,7 @@ class TransactionsControllerCacheIT extends AbstractSpringIntegrationTest {
         Pageable pageable = PageRequest.of(0, 50);
         when(service.getTransferTransactionsForEntity(eq(TEST_IDENTITY), any(Pageable.class))).thenReturn(List.of(dto));
         controller.getTransferTransactionsForEntity(TEST_IDENTITY, pageable);
-        qxCacheManager.evictTransferCacheForEntity(TEST_IDENTITY);
+        qxCacheManager.evictAssetTransferCacheForEntity(TEST_IDENTITY);
         controller.getTransferTransactionsForEntity(TEST_IDENTITY, pageable);
 
         verify(service, times(2)).getTransferTransactionsForEntity(eq(TEST_IDENTITY), any(Pageable.class));

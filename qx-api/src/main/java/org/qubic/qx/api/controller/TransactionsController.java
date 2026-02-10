@@ -26,9 +26,6 @@ public class TransactionsController {
         this.transactionsService = transactionsService;
     }
 
-    // make own 'filters' endpoint? These could be stored, cached and lead to fewer variations of get methods.
-    // .../transactions/filter/1, .../transactions/filter/2
-
     // issued assets
 
     @Cacheable(CACHE_NAME_ISSUED_ASSETS)
