@@ -48,10 +48,10 @@ public class TransactionsProcessor extends QueueProcessor<Transaction, Transacti
 
             createAssetIfNotExists(transferData.issuer(), transferData.name());
             log.info("Evicting transfer caches.");
-            qxCacheManager.evictTransferCache();
-            qxCacheManager.evictTransferCacheForAsset(transferData.issuer(), transferData.name());
-            qxCacheManager.evictTransferCacheForEntity(sourceDto.sourcePublicId());
-            qxCacheManager.evictTransferCacheForEntity(transferData.newOwner());
+            qxCacheManager.evictAssetTransferCache();
+            qxCacheManager.evictAssetTransferCacheForAsset(transferData.issuer(), transferData.name());
+            qxCacheManager.evictAssetTransferCacheForEntity(sourceDto.sourcePublicId());
+            qxCacheManager.evictAssetTransferCacheForEntity(transferData.newOwner());
 
         } else if (extraData instanceof QxIssueAssetData issueData) {
 

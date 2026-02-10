@@ -77,36 +77,45 @@ class QxCacheManagerTest {
     }
 
     @Test
-    void evictTransferCache() {
+    void evictAssetTransferCache() {
         Cache cache = mock();
         when(redisCacheManager.getCache(CACHE_NAME_TRANSFERS)).thenReturn(cache);
-        cacheManager.evictTransferCache();
+        cacheManager.evictAssetTransferCache();
         verify(cache).clear();
     }
 
     @Test
-    void evictTransferCacheForEntity() {
-        Cache cache = mock();
+    void whenEvictAssetTransferCacheForEntity_thenClearAssetTransfersCacheForEntity() {
+        RedisCache cache = mock();
         when(redisCacheManager.getCache(CACHE_NAME_TRANSFERS_ENTITY)).thenReturn(cache);
-        cacheManager.evictTransferCacheForEntity("foo");
-        verify(cache).evict("foo");
+        cacheManager.evictAssetTransferCacheForEntity("foo");
+        verify(cache, times(1)).clear("SimpleKey \\[foo*");
     }
 
     @Test
-    void evictTransferCacheForAsset() {
-        Cache cache = mock();
+    void whenEvictAssetTransferCacheForAsset_thenClearAssetTransfersCacheForAsset() {
+        RedisCache cache = mock();
         when(redisCacheManager.getCache(CACHE_NAME_TRANSFERS_ASSET)).thenReturn(cache);
-        cacheManager.evictTransferCacheForAsset("foo", "bar");
-        verify(cache, times(1)).evict("foo:bar");
+        cacheManager.evictAssetTransferCacheForAsset("foo", "bar");
+        verify(cache, times(1)).clear("SimpleKey \\[foo, bar*");
     }
 
     @Test
-    void evictAssetsCache() {
+    void whenEvictAssetsCache_thenClearAssetTransfersCache() {
         Cache cache = mock();
         when(redisCacheManager.getCache(CACHE_NAME_ASSETS)).thenReturn(cache);
-        when(redisCacheManager.getCache(CACHE_NAME_ISSUED_ASSETS)).thenReturn(cache);
+        when(redisCacheManager.getCache(CACHE_NAME_ISSUED_ASSETS)).thenReturn(mock()); // stub
         cacheManager.evictAssetsCaches();
-        verify(cache, times(2)).clear();
+        verify(cache, times(1)).clear();
+    }
+
+    @Test
+    void whenEvictAssetsCache_thenClearAssetIssuanceCache() {
+        Cache cache = mock();
+        when(redisCacheManager.getCache(CACHE_NAME_ISSUED_ASSETS)).thenReturn(cache);
+        when(redisCacheManager.getCache(CACHE_NAME_ASSETS)).thenReturn(mock()); // stub
+        cacheManager.evictAssetsCaches();
+        verify(cache, times(1)).clear();
     }
 
 }
