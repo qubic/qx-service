@@ -1,6 +1,8 @@
 package org.qubic.qx.sync.adapter;
 
 import at.qubic.api.crypto.IdentityUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,12 +11,15 @@ import org.qubic.qx.sync.domain.QxAssetOrderData;
 import org.qubic.qx.sync.domain.QxIssueAssetData;
 import org.qubic.qx.sync.domain.QxTransferAssetData;
 
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+@Slf4j
 class ExtraDataMapperTest {
 
     private final IdentityUtil identityUtil = mock();
@@ -103,6 +108,23 @@ class ExtraDataMapperTest {
         assertThat(extraData.numberOfShares()).isEqualTo(666);
         assertThat(extraData.unitOfMeasurement()).isEqualTo("ANAA0NDQ0A==");
         assertThat(extraData.numberOfDecimalPlaces()).isEqualTo((byte) 16);
+    }
+
+    @Test
+    void mapQxOrder_withMissingName_thenProcess() {
+        byte[] input = Base64.decodeBase64("uXOQ1aRJ7kCH5cV762dGBongHEYBh0EXzUemX49l+IQBAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAA=");
+        ExtraData mapped = mapper.map(5, input);
+        assertThat(mapped).isInstanceOf(QxAssetOrderData.class);
+
+        QxAssetOrderData extraData = (QxAssetOrderData) mapped;
+        assertThat(extraData).isNotNull();
+        assertThat(extraData.name()).isEmpty();
+    }
+
+    // mapper will throw if incompatible data is mapped
+    @Test
+    void mapQxOrder_withInvalidInputData_thenThrow() {
+        assertThatThrownBy(() -> mapper.map(5, new byte[0])).isInstanceOf(BufferUnderflowException.class);
     }
 
 }
