@@ -6,7 +6,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.Qx;
 import org.qubic.qx.sync.adapter.exception.EmptyResultException;
-import org.qubic.qx.sync.adapter.il.domain.*;
+import org.qubic.qx.sync.adapter.il.domain.IlTickData;
+import org.qubic.qx.sync.adapter.il.domain.IlTickInfo;
+import org.qubic.qx.sync.adapter.il.domain.IlTransaction;
+import org.qubic.qx.sync.adapter.il.domain.IlTransactions;
 import org.qubic.qx.sync.adapter.il.mapping.IlCoreMapper;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
@@ -72,8 +75,18 @@ public class IntegrationCoreApiService implements CoreApiService {
         return getTickTransactions(tick)
                 .flatMapMany(txs -> Flux.fromIterable(txs.transactions()))
                 .filter(this::isRelevantTransaction)
-                .map(mapper::mapTransaction)
+                .mapNotNull(this::mapTransaction)
                 .doOnError(e -> logError(String.format("Error getting qx transactions for tick [%d]", tick), e));
+    }
+
+    private Transaction mapTransaction(IlTransaction transaction) {
+        try {
+            return mapper.mapTransaction(transaction);
+        } catch (Exception e) {
+            log.error("Could not map transaction: {}", transaction, e);
+            log.warn("Ignoring transaction [{}]", transaction.txId());
+            return null;
+        }
     }
 
     Mono<IlTransactions> getTickTransactions(long tick) {
@@ -118,7 +131,7 @@ public class IntegrationCoreApiService implements CoreApiService {
 
     private void logError(String logMessage, Throwable throwable) {
         ExceptionUtils.forEach(throwable,
-                // here we warn only because we retry and log the error later, if retries are exhausted
+                // here we warn only because we retry and log the error later if retries are exhausted
                 e -> log.warn("{}: {}", logMessage, ExceptionUtils.getMessage(e))
         );
     }
