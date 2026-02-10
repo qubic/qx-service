@@ -94,9 +94,26 @@ public interface TradesRepository extends CrudRepository<Trade, Long> {
         from trades t
         join assets a on t.asset_id = a.id
         where a.issuer = :issuer and a.name = :name and t.tick_time >= :after
-        group by t.tick_time::date
+        group by time
         order by time;
     """)
     List<AvgPriceData> findAveragePriceByAssetGroupedByDay(String issuer, String name, Instant after);
+
+    @Query("""
+        select
+            date_trunc('hour', t.tick_time) as time,
+            min(t.price) as min,
+            max(t.price) as max,
+            sum(t.number_of_shares) total_shares,
+            sum(t.price * t.number_of_shares) total_amount,
+            sum(t.price * t.number_of_shares) / sum(t.number_of_shares) as average_price,
+            COUNT(*) AS total_trades
+        from trades t
+        join assets a on t.asset_id = a.id
+        where a.issuer = :issuer and a.name = :name and t.tick_time >= :after
+        group by time
+        order by time;
+    """)
+    List<AvgPriceData> findAveragePriceByAssetGroupedByHour(String issuer, String name, Instant after);
 
 }

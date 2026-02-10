@@ -3,6 +3,7 @@ package org.qubic.qx.api.controller;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.AbstractSpringIntegrationTest;
+import org.qubic.qx.api.controller.domain.ChartInterval;
 import org.qubic.qx.api.controller.service.ChartService;
 import org.qubic.qx.api.redis.QxCacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,23 +29,23 @@ class ChartControllerCacheIT extends AbstractSpringIntegrationTest {
     private QxCacheManager qxCacheManager;
 
     @Test
-    void getAveragePriceForAsset_thenChache() {
-        controller.getAveragePriceForAsset(ISSUER, "ASSET");
-        controller.getAveragePriceForAsset(ISSUER, "ASSET");
-        controller.getAveragePriceForAsset(ISSUER, "ASSET");
+    void getAveragePriceForAsset_thenCache() {
+        controller.getAveragePriceForAsset(ISSUER, "ASSET", ChartInterval.DAY);
+        controller.getAveragePriceForAsset(ISSUER, "ASSET", ChartInterval.DAY);
+        controller.getAveragePriceForAsset(ISSUER, "ASSET", ChartInterval.DAY);
 
-        verify(chartService, times(1)).getAveragePriceForAsset(any(), any());
+        verify(chartService, times(1)).getAveragePriceForAssetPerDay(any(), any());
     }
 
     @Test
     void getAveragePriceForAsset_givenCacheEvicted_thenHitServiceAgain() {
         qxCacheManager.evictChartCachesForAsset(ISSUER, "ASSET");
-        controller.getAveragePriceForAsset(ISSUER, "ASSET");
-        controller.getAveragePriceForAsset(ISSUER, "ASSET");
+        controller.getAveragePriceForAsset(ISSUER, "ASSET", null);
+        controller.getAveragePriceForAsset(ISSUER, "ASSET", null);
         qxCacheManager.evictChartCachesForAsset(ISSUER, "ASSET");
-        controller.getAveragePriceForAsset(ISSUER, "ASSET");
+        controller.getAveragePriceForAsset(ISSUER, "ASSET", null);
 
-        verify(chartService, times(2)).getAveragePriceForAsset(any(), any());
+        verify(chartService, times(2)).getAveragePriceForAssetPerDay(any(), any());
     }
 
     @AfterEach
