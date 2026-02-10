@@ -1,9 +1,9 @@
 package org.qubic.qx.api.db.dto;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.Instant;
 
-public record AvgPriceData(LocalDate time,
+public record AvgPriceData(Instant time,
                            long min,
                            long max,
                            long totalShares,

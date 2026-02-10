@@ -11,6 +11,9 @@ import org.qubic.qx.api.db.TransactionsRepository;
 import org.qubic.qx.api.validation.IdentityValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
+
+import java.util.List;
 
 @Slf4j
 @Configuration

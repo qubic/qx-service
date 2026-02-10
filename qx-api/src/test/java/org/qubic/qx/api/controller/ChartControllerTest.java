@@ -1,11 +1,11 @@
 package org.qubic.qx.api.controller;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.api.db.dto.AvgPriceData;
 import org.qubic.qx.api.controller.service.ChartService;
+import org.qubic.qx.api.db.dto.AvgPriceData;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
@@ -24,10 +24,11 @@ class ChartControllerTest {
 
     @Test
     void getAveragePriceForAsset() {
-        AvgPriceData priceData = new AvgPriceData(LocalDate.EPOCH, 1, 3, 5, 7, 13.13, 17);
+        AvgPriceData priceData = new AvgPriceData(Instant.EPOCH, 1, 3, 5, 7, 13.13, 17);
         List<AvgPriceData> expected = List.of(priceData);
-        when(chartService.getAveragePriceForAsset("ISSUER", "ASSET")).thenReturn(expected);
+        when(chartService.getAveragePriceForAssetPerDay("ISSUER", "ASSET")).thenReturn(expected);
 
+        // needs interval required = false without default value as conversion is not registered in test
         client.get().uri("/issuer/ISSUER/asset/ASSET/chart/average-price")
                 .exchange()
                 .expectStatus().isOk()

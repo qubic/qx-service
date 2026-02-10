@@ -13,8 +13,6 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.List;
@@ -234,12 +232,44 @@ class TradesRepositoryIT extends AbstractPostgresJdbcTest {
         List<AvgPriceData> priceData = repository.findAveragePriceByAssetGroupedByDay(asset.getIssuer(), asset.getName(), now.minus(Duration.ofDays(6)));
         assertThat(priceData.size()).isEqualTo(4);
 
-        ZoneId UTC = ZoneId.of("UTC");
         assertThat(priceData).containsExactly(
-                new AvgPriceData(LocalDate.ofInstant(now.minus(Duration.ofDays(6)), UTC), 1, 3, 8, 13, (double) 13 / 8, 3),
-                new AvgPriceData(LocalDate.ofInstant(now.minus(Duration.ofDays(4)), UTC), 4, 8, 3, 16, (double) 16 / 3, 2),
-                new AvgPriceData(LocalDate.ofInstant(now.minus(Duration.ofDays(1)), UTC), 16, 16, 2, 32, 16, 1),
-                new AvgPriceData(LocalDate.ofInstant(now, UTC), 32, 32, 3, 96, 32, 1)
+                new AvgPriceData(now.minus(Duration.ofDays(6)).truncatedTo(ChronoUnit.DAYS), 1, 3, 8, 13, (double) 13 / 8, 3),
+                new AvgPriceData(now.minus(Duration.ofDays(4)).truncatedTo(ChronoUnit.DAYS), 4, 8, 3, 16, (double) 16 / 3, 2),
+                new AvgPriceData(now.minus(Duration.ofDays(1)).truncatedTo(ChronoUnit.DAYS), 16, 16, 2, 32, 16, 1),
+                new AvgPriceData(now.truncatedTo(ChronoUnit.DAYS), 32, 32, 3, 96, 32, 1)
+        );
+
+    }
+
+    @Test
+    void findAveragePriceByAssetGroupedByHour() {
+        Asset asset = assetsRepository.findAll().getFirst();
+        Transaction tx = transactionsRepository.findAll().iterator().next();
+        Instant now = Instant.now();
+
+        repository.save(trade(tx, asset, 100, 1, now.minus(Duration.ofDays(7))));
+
+        Instant fiveDaysAgo = now.minus(Duration.ofDays(5));
+        repository.save(trade(tx, asset, 2, 3, fiveDaysAgo));
+        repository.save(trade(tx, asset, 1, 4, fiveDaysAgo.minus(Duration.ofHours(6))));
+        repository.save(trade(tx, asset, 3, 1, fiveDaysAgo.minus(Duration.ofHours(6))));
+
+        repository.save(trade(tx, asset, 4, 2, now.minus(Duration.ofDays(4))));
+        repository.save(trade(tx, asset, 8, 1, now.minus(Duration.ofDays(4))));
+
+        repository.save(trade(tx, asset, 16, 2, now.minus(Duration.ofDays(1))));
+
+        repository.save(trade(tx, asset, 32, 3, now));
+
+        List<AvgPriceData> priceData = repository.findAveragePriceByAssetGroupedByHour(asset.getIssuer(), asset.getName(), now.minus(Duration.ofDays(6)));
+        assertThat(priceData.size()).isEqualTo(5);
+
+        assertThat(priceData).containsExactly(
+                new AvgPriceData(now.minus(Duration.ofDays(5)).minus(Duration.ofHours(6)).truncatedTo(ChronoUnit.HOURS), 1, 3, 5, 7, (double) 7 / 5, 2),
+                new AvgPriceData(now.minus(Duration.ofDays(5)).truncatedTo(ChronoUnit.HOURS), 2, 2, 3, 6, 2, 1),
+                new AvgPriceData(now.minus(Duration.ofDays(4)).truncatedTo(ChronoUnit.HOURS), 4, 8, 3, 16, (double) 16 / 3, 2),
+                new AvgPriceData(now.minus(Duration.ofDays(1)).truncatedTo(ChronoUnit.HOURS), 16, 16, 2, 32, 16, 1),
+                new AvgPriceData(now.truncatedTo(ChronoUnit.HOURS), 32, 32, 3, 96, 32, 1)
         );
 
     }
