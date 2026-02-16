@@ -110,11 +110,13 @@ public class IntegrationQueryApiService implements CoreApiService {
     }
 
     private static String getTickTransactionsQuery(long tickNumber) {
-        return """
-                { "tickNumber":%d,
+        String query = """
+                { "tickNumber": %d,
                   "filters": { "destination": "%s" },
-                  "ranges": { "inputType": { "gt": 0 } }
+                  "ranges": { "inputType": { "gt": "0" } }
                 }""".formatted(tickNumber, Qx.QX_PUBLIC_ID);
+        log.info("Query: {}", query);
+        return query;
     }
 
     private static EmptyResultException emptyResult(String action, long tick) {
