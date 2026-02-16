@@ -5,7 +5,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.il.IntegrationCoreApiService;
 import org.qubic.qx.sync.adapter.il.IntegrationEventApiService;
+import org.qubic.qx.sync.adapter.il.IntegrationQueryApiService;
 import org.qubic.qx.sync.adapter.il.mapping.IlCoreMapper;
+import org.qubic.qx.sync.adapter.il.mapping.IlQueryApiMapper;
 import org.qubic.qx.sync.properties.IntegrationClientProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -61,10 +63,18 @@ public class IntegrationLayerConfig {
         return new IntegrationEventApiService(webClient, retries);
     }
 
+    @ConditionalOnProperty(value = "integrationLayer", havingValue = "goqubic")
     @Bean
     CoreApiService integrationCoreApiService(@Qualifier("coreClient") WebClient integrationApiWebClient, IlCoreMapper transactionMapper) {
         int retries = coreClientProperties().getRetries();
         return new IntegrationCoreApiService(integrationApiWebClient, transactionMapper, retries);
+    }
+
+    @ConditionalOnProperty(value = "integrationLayer", havingValue = "query", matchIfMissing = true)
+    @Bean
+    CoreApiService integrationQueryApiService(@Qualifier("coreClient") WebClient integrationApiWebClient, IlQueryApiMapper transactionMapper) {
+        int retries = coreClientProperties().getRetries();
+        return new IntegrationQueryApiService(integrationApiWebClient, transactionMapper, retries);
     }
 
     // helper methods

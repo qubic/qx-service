@@ -1,11 +1,9 @@
 package org.qubic.qx.sync.adapter.il;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.qubic.qx.sync.adapter.Qx;
-import org.qubic.qx.sync.adapter.il.domain.IlTransaction;
-import org.qubic.qx.sync.adapter.il.domain.IlTransactions;
+import org.qubic.qx.sync.adapter.il.domain.goqubic.IlTransaction;
+import org.qubic.qx.sync.adapter.il.domain.goqubic.IlTransactions;
 import org.qubic.qx.sync.adapter.il.mapping.IlCoreMapper;
 import org.qubic.qx.sync.domain.Transaction;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -14,10 +12,8 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class IntegrationCoreApiServiceTest {
 
     private final WebClient webClient = mock();
