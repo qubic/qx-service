@@ -224,6 +224,65 @@ class IntegrationQueryApiServiceTest {
                 .verifyComplete();
     }
 
+    @Test
+    void getTickData_whenTickDataIsNull_shouldReturnEmptyTickData() {
+        long tickNumber = 44191622L;
+
+        IlQueryApiTickDataResponse apiResponse = new IlQueryApiTickDataResponse(null);
+        IlQueryApiTickData emptyApiTickData = new IlQueryApiTickData(0, 0, 0);
+        TickData mapped = new TickData(0, 0, Instant.ofEpochMilli(0));
+
+        when(webClient.post()
+                .uri("/query/v1/getTickData")
+                .bodyValue(any())
+                .retrieve()
+                .bodyToMono(IlQueryApiTickDataResponse.class))
+                .thenReturn(Mono.just(apiResponse));
+        
+        when(mapper.map(emptyApiTickData)).thenReturn(mapped);
+
+        StepVerifier.create(service.getTickData(tickNumber))
+                .expectNext(mapped)
+                .verifyComplete();
+        
+        verify(mapper).map(emptyApiTickData);
+    }
+
+    @Test
+    void getTickTransactions_whenApiReturnsEmpty_shouldReturnEmptyFlux() {
+        long tick = 12345L;
+
+        when(webClient.post()
+                .uri("/query/v1/getTransactionsForTick")
+                .bodyValue(any())
+                .retrieve()
+                .bodyToFlux(IlQueryApiTransaction.class))
+                .thenReturn(Flux.empty());
+
+        StepVerifier.create(service.getTickTransactions(tick))
+                .verifyComplete();
+    }
+
+    @Test
+    void getQxTransactions_whenApiReturnsEmpty_shouldReturnEmptyFlux() {
+        long tick = 12345L;
+
+        // Ensure we're testing the real `getTickTransactions` call (not spy-stubbed)
+        // by making sure `getTickTransactions` is not stubbed in this test.
+
+        when(webClient.post()
+                .uri("/query/v1/getTransactionsForTick")
+                .bodyValue(any())
+                .retrieve()
+                .bodyToFlux(IlQueryApiTransaction.class))
+                .thenReturn(Flux.empty());
+
+        StepVerifier.create(service.getQxTransactions(tick))
+                .verifyComplete();
+
+        verify(mapper, never()).mapTransaction(any());
+    }
+
     private IlQueryApiTransaction createTransaction(long tick, int inputType, String txId) {
         return new IlQueryApiTransaction(
                 txId,

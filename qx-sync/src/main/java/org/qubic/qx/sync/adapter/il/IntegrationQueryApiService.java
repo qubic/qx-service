@@ -59,7 +59,9 @@ public class IntegrationQueryApiService implements CoreApiService {
                 .bodyValue(String.format("{\"tickNumber\":%d}", tickNumber))
                 .retrieve()
                 .bodyToMono(IlQueryApiTickDataResponse.class)
-                .map(IlQueryApiTickDataResponse::tickData)
+                .map(response -> response.tickData() == null
+                        ? new IlQueryApiTickData(0,0,0) // empty tick
+                        : response.tickData())
                 .map(mapper::map)
                 .switchIfEmpty(Mono.error(emptyResult("get tick data", tickNumber)))
                 .doOnError(e -> logError(String.format("Error getting tick data for tick [%d]", tickNumber), e))
@@ -89,8 +91,7 @@ public class IntegrationQueryApiService implements CoreApiService {
                 .uri(QUERY_API_BASE_PATH + "/getTransactionsForTick")
                 .bodyValue(getTickTransactionsQuery(tick))
                 .retrieve()
-                .bodyToFlux(IlQueryApiTransaction.class)
-                .switchIfEmpty(Mono.error(emptyResult("get tick transactions", tick)))
+                .bodyToFlux(IlQueryApiTransaction.class) // can be empty (for example, empty transaction list for empty tick)
                 .doOnError(e -> logError(String.format("Error getting tick transactions for tick [%d]", tick), e))
                 .retryWhen(retrySpec());
     }
