@@ -5,7 +5,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.Qx;
 import org.qubic.qx.sync.adapter.exception.EmptyResultException;
-import org.qubic.qx.sync.adapter.il.domain.query.*;
+import org.qubic.qx.sync.adapter.il.domain.query.IlQueryApiLastProcessedTick;
+import org.qubic.qx.sync.adapter.il.domain.query.IlQueryApiTickData;
+import org.qubic.qx.sync.adapter.il.domain.query.IlQueryApiTickDataResponse;
+import org.qubic.qx.sync.adapter.il.domain.query.IlQueryApiTransaction;
 import org.qubic.qx.sync.adapter.il.mapping.IlQueryApiMapper;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
@@ -110,13 +113,11 @@ public class IntegrationQueryApiService implements CoreApiService {
     }
 
     private static String getTickTransactionsQuery(long tickNumber) {
-        String query = """
+       return  """
                 { "tickNumber": %d,
                   "filters": { "destination": "%s" },
                   "ranges": { "inputType": { "gt": "0" } }
                 }""".formatted(tickNumber, Qx.QX_PUBLIC_ID);
-        log.info("Query: {}", query);
-        return query;
     }
 
     private static EmptyResultException emptyResult(String action, long tick) {
