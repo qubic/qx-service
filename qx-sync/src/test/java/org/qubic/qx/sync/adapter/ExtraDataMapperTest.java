@@ -2,6 +2,7 @@ package org.qubic.qx.sync.adapter;
 
 import at.qubic.api.crypto.IdentityUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.BeforeEach;
@@ -111,7 +112,7 @@ class ExtraDataMapperTest {
     }
 
     @Test
-    void mapQxOrder_withMissingName_thenProcess() {
+    void mapQxOrder_withMissingName_thenProcess() throws DecoderException {
         byte[] input = Base64.decodeBase64("uXOQ1aRJ7kCH5cV762dGBongHEYBh0EXzUemX49l+IQBAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAA=");
         ExtraData mapped = mapper.map(5, input);
         assertThat(mapped).isInstanceOf(QxAssetOrderData.class);
@@ -119,6 +120,9 @@ class ExtraDataMapperTest {
         QxAssetOrderData extraData = (QxAssetOrderData) mapped;
         assertThat(extraData).isNotNull();
         assertThat(extraData.name()).isEmpty();
+
+        IdentityUtil identityUtil = new IdentityUtil();
+        log.info("Issuer: {}", identityUtil.getIdentityFromPublicKey(Hex.decodeHex(extraData.issuer())));
     }
 
     // mapper will throw if incompatible data is mapped

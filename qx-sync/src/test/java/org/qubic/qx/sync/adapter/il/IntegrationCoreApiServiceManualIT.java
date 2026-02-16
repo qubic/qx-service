@@ -4,10 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.CoreApiService;
-import org.qubic.qx.sync.adapter.il.domain.IlTransactions;
+import org.qubic.qx.sync.adapter.il.domain.goqubic.IlTransactions;
 import org.qubic.qx.sync.domain.TickData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @Tag("MANUAL")
 @Tag("SIT")
+@TestPropertySource(properties = "integrationLayer=goqubic")
 class IntegrationCoreApiServiceManualIT {
 
     private final IntegrationCoreApiService apiService;

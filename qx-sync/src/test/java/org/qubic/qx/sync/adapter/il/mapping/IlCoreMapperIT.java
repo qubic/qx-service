@@ -1,8 +1,8 @@
 package org.qubic.qx.sync.adapter.il.mapping;
 
 import org.junit.jupiter.api.Test;
-import org.qubic.qx.sync.adapter.il.domain.IlTickData;
-import org.qubic.qx.sync.adapter.il.domain.IlTransaction;
+import org.qubic.qx.sync.adapter.il.domain.goqubic.IlTickData;
+import org.qubic.qx.sync.adapter.il.domain.goqubic.IlTransaction;
 import org.qubic.qx.sync.domain.QxAssetOrderData;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.Transaction;
