@@ -3,9 +3,10 @@ package org.qubic.qx.api.config;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.api.adapter.CoreApiService;
-import org.qubic.qx.api.adapter.CoreArchiveApiService;
 import org.qubic.qx.api.adapter.QxApiService;
-import org.qubic.qx.api.adapter.il.*;
+import org.qubic.qx.api.adapter.il.IntegrationCoreApiService;
+import org.qubic.qx.api.adapter.il.IntegrationQxApiService;
+import org.qubic.qx.api.adapter.il.QxMapper;
 import org.qubic.qx.api.properties.IntegrationClientProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -31,12 +32,6 @@ public class IntegrationLayerConfig {
         return new IntegrationClientProperties();
     }
 
-    @ConfigurationProperties(prefix = "il.archive.client", ignoreUnknownFields = false)
-    @Bean(name="archiveClientProperties")
-    IntegrationClientProperties integrationArchiveClientProperties() {
-        return new IntegrationClientProperties();
-    }
-
     @ConfigurationProperties(prefix = "il.core.client", ignoreUnknownFields = false)
     @Bean(name="coreClientProperties")
     IntegrationClientProperties integrationCoreClientProperties() {
@@ -51,25 +46,12 @@ public class IntegrationLayerConfig {
         return createClient(builder, httpClient, uri);
     }
 
-    @Bean(name="archiveClient")
-    WebClient integrationArchiveWebClient(@Qualifier("archiveClientProperties") IntegrationClientProperties properties, WebClient.Builder builder) {
-        HttpClient httpClient = createHttpClient();
-        URI uri = createUri(properties);
-        log.info("Integration layer archive API url: {}", uri);
-        return createClient(builder, httpClient, uri);
-    }
-
     @Bean(name="coreClient")
     WebClient integrationCoreWebClient(@Qualifier("coreClientProperties") IntegrationClientProperties properties, WebClient.Builder builder) {
         HttpClient httpClient = createHttpClient();
         URI uri = createUri(properties);
         log.info("Integration layer core API url: {}", uri);
         return createClient(builder, httpClient, uri);
-    }
-
-    @Bean
-    CoreArchiveApiService integrationArchiveService(@Qualifier("archiveClient") WebClient webClient, ArchiveMapper archiveMapper) {
-        return new IntegrationArchiveApiService(webClient, archiveMapper);
     }
 
     @Bean

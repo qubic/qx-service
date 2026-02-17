@@ -20,14 +20,14 @@ class IntegrationCoreApiServiceIT extends AbstractSpringIntegrationTest {
     @Test
     void getLatestTick() {
         String responseJson = """
-           {
-             "tick": 18352644,
-             "durationInSeconds": 4,
-             "epoch": 143,
-             "numberOfAlignedVotes": 0,
-             "numberOfMisalignedVotes": 0,
-             "initialTickOfEpoch": 18330000
-           }""";
+        {
+          "tickInfo": {
+            "tick": 44224811,
+            "duration": 1,
+            "epoch": 200,
+            "initialTick": 43910000
+          }
+        }""";
 
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
@@ -35,9 +35,9 @@ class IntegrationCoreApiServiceIT extends AbstractSpringIntegrationTest {
                 .setBody(responseJson));
 
         BigInteger latestTick = coreApiService.getLatestTick();
-        assertThat(latestTick).isEqualTo(18352644);
+        assertThat(latestTick).isEqualTo(44224811);
 
-        assertRequest("/v1/core/getTickInfo");
+        assertRequest("/live/v1/tick-info");
     }
 
 }
