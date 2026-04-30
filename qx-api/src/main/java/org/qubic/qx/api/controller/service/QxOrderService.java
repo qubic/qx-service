@@ -2,17 +2,17 @@ package org.qubic.qx.api.controller.service;
 
 import at.qubic.api.crypto.IdentityUtil;
 import at.qubic.api.domain.qx.request.*;
-import org.qubic.qx.api.adapter.CoreApiService;
+import org.qubic.qx.api.adapter.LiveApiService;
 
 import java.math.BigInteger;
 
 public class QxOrderService {
 
-    private final CoreApiService coreApiService;
+    private final LiveApiService liveApiService;
     private final IdentityUtil identityUtil;
 
-    public QxOrderService(CoreApiService coreApiService, IdentityUtil identityUtil) {
-        this.coreApiService = coreApiService;
+    public QxOrderService(LiveApiService liveApiService, IdentityUtil identityUtil) {
+        this.liveApiService = liveApiService;
         this.identityUtil = identityUtil;
     }
 
@@ -50,7 +50,7 @@ public class QxOrderService {
     }
 
     public BigInteger getLatestTick() {
-        return coreApiService.getLatestTick();
+        return liveApiService.getLatestTick();
     }
 
 }

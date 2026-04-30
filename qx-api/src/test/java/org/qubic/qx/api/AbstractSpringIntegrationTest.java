@@ -26,9 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ImportTestcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest(properties = """
-    il.qx.client.scheme=http
-    il.qx.client.host=localhost
-    il.qx.client.port=1234
     il.archive.client.scheme=http
     il.archive.client.host=localhost
     il.archive.client.port=1234
@@ -78,6 +75,7 @@ public abstract class AbstractSpringIntegrationTest {
 
     @BeforeEach
     protected void setUp() throws Exception {
+        log.info("Starting mock integration layer.");
         integrationLayer.start(1234);
     }
 

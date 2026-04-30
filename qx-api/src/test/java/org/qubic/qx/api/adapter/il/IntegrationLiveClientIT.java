@@ -2,7 +2,7 @@ package org.qubic.qx.api.adapter.il;
 
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.AbstractSpringIntegrationTest;
-import org.qubic.qx.api.adapter.CoreApiService;
+import org.qubic.qx.api.adapter.LiveApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -12,10 +12,10 @@ import java.math.BigInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class IntegrationCoreApiServiceIT extends AbstractSpringIntegrationTest {
+class IntegrationLiveClientIT extends AbstractSpringIntegrationTest {
 
     @Autowired
-    private CoreApiService coreApiService;
+    private LiveApiService liveApiService;
 
     @Test
     void getLatestTick() {
@@ -34,7 +34,7 @@ class IntegrationCoreApiServiceIT extends AbstractSpringIntegrationTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(responseJson));
 
-        BigInteger latestTick = coreApiService.getLatestTick();
+        BigInteger latestTick = liveApiService.getLatestTick();
         assertThat(latestTick).isEqualTo(44224811);
 
         assertRequest("/live/v1/tick-info");

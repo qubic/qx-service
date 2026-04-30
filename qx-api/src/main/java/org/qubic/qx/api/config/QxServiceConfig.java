@@ -2,7 +2,7 @@ package org.qubic.qx.api.config;
 
 import at.qubic.api.crypto.IdentityUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.qubic.qx.api.adapter.CoreApiService;
+import org.qubic.qx.api.adapter.LiveApiService;
 import org.qubic.qx.api.adapter.QxApiService;
 import org.qubic.qx.api.controller.service.*;
 import org.qubic.qx.api.db.AssetsRepository;
@@ -11,9 +11,6 @@ import org.qubic.qx.api.db.TransactionsRepository;
 import org.qubic.qx.api.validation.IdentityValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.NonNull;
-
-import java.util.List;
 
 @Slf4j
 @Configuration
@@ -55,8 +52,8 @@ public class QxServiceConfig {
     }
 
     @Bean
-    QxOrderService qxOrderService(CoreApiService coreApiService, IdentityUtil identityUtil) {
-        return new QxOrderService(coreApiService, identityUtil);
+    QxOrderService qxOrderService(LiveApiService liveApiService, IdentityUtil identityUtil) {
+        return new QxOrderService(liveApiService, identityUtil);
     }
 
 }

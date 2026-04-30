@@ -12,14 +12,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.qubic.qx.api.uitl.FileUtil.readFile;
 
 @Slf4j
 class IntegrationQxApiServiceIT extends AbstractSpringIntegrationTest {
 
-    private static final String TEST_ID = "TESTRAIJSNPOJAKARTQNQVRROKWBKLHXIBEYMYKVIGTWYXLDKFMEAFMDRJIC";
     private static final String CFB_ISSUER = "CFBMEMZOIDEXQAUXYYSZIURADQLAPWPMNJXQSNVQZAHYVOPYUKKJBJUCTVJL";
 
     @Autowired
@@ -27,71 +28,69 @@ class IntegrationQxApiServiceIT extends AbstractSpringIntegrationTest {
 
     @Test
     void getFees() {
+        String responseJson = """
+                { "responseData": "AMqaO2QAAADAxi0A" }""";
+
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody("""
-                        { "assetIssuanceFee": 1000000000, "transferFee": 1000000, "tradeFee": 5000000 }"""));
+                .setBody(responseJson));
 
         Fees result = apiClient.getFees();
-        assertThat(result).isEqualTo(new Fees(1_000_000_000, 1_000_000, 5_000_000));
-        assertRequest("/v1/qx/getFees");
+        assertThat(result).isEqualTo(new Fees(1_000_000_000, 100, 3_000_000));
+        assertRequest("/live/v1/querySmartContract");
     }
 
     @Test
-    void getAssetAskOrders() {
+    void getAssetAskOrders() throws IOException {
+        String json = readFile("/testdata/db/responses/get-asset-ask-orders-response.json");
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody("""
-                         {"orders":[ {"entityId":"%s","price":"3","numberOfShares":"100"} ]}""".formatted(TEST_ID)));
+                .setBody(json));
 
         List<AssetOrder> orders = apiClient.getAssetAskOrders(CFB_ISSUER, "CFB");
-        assertThat(orders).containsExactly(new AssetOrder(TEST_ID, 3, 100));
-        assertRequest(String.format("/v1/qx/getAssetAskOrders?issuerId=%s&assetName=CFB&offset=0", CFB_ISSUER));
+        assertThat(orders).contains(new AssetOrder("BOJOBRHAZILUCDADNGBXYUIYHNIDCKBSQEWGUFCAJASIOPFNBMWWXDJHCCTC", 3, 424634414));
+        assertRequest("/live/v1/querySmartContract");
     }
 
     @Test
-    void getAssetBidOrders() {
+    void getAssetBidOrders() throws IOException {
+        String json = readFile("/testdata/db/responses/get-asset-bid-orders-response.json");
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody("""
-                         {"orders":[ {"entityId":"%s","price":"3","numberOfShares":"100"} ]}""".formatted(TEST_ID)));
+                .setBody(json));
 
         List<AssetOrder> orders = apiClient.getAssetBidOrders(CFB_ISSUER, "CFB");
-        assertThat(orders).containsExactly(new AssetOrder(TEST_ID, 3, 100));
-        assertRequest(String.format("/v1/qx/getAssetBidOrders?issuerId=%s&assetName=CFB&offset=0", CFB_ISSUER));
+        assertThat(orders).containsExactly(new AssetOrder("JHCGKVNUKTBVJGGZTCDBPVSYIOIDFUPCQOVCQFNMEGYHVWMINTEJITLGTXGO", 1, 23116901));
+        assertRequest("/live/v1/querySmartContract");
     }
 
     @Test
-    void getEntityAskOrders() {
+    void getEntityAskOrders() throws IOException {
+        String json = readFile("/testdata/db/responses/get-entity-ask-orders-response.json");
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody("""
-                         {"orders":[
-                           {"issuerId":"issuer","assetName":"asset","price":"42","numberOfShares": "666"}
-                         ]}"""));
+                .setBody(json));
 
-        List<EntityOrder> orders = apiClient.getEntityAskOrders(TEST_ID);
-        assertThat(orders).containsExactly(new EntityOrder("issuer", "asset", 42, 666));
-        assertRequest(String.format("/v1/qx/getEntityAskOrders?entityId=%s&offset=0", TEST_ID));
+        List<EntityOrder> orders = apiClient.getEntityAskOrders("BOJOBRHAZILUCDADNGBXYUIYHNIDCKBSQEWGUFCAJASIOPFNBMWWXDJHCCTC");
+        assertThat(orders).contains(new EntityOrder("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "MLM", 4_500_000_000L, 1));
+        assertRequest("/live/v1/querySmartContract");
     }
 
     @Test
-    void getEntityBidOrders() {
+    void getEntityBidOrders() throws IOException {
+        String json = readFile("/testdata/db/responses/get-entity-bid-orders-response.json");
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody("""
-                         {"orders":[
-                           {"issuerId":"issuer","assetName":"asset","price":"42","numberOfShares": "666"}
-                         ]}"""));
+                .setBody(json));
 
-        List<EntityOrder> orders = apiClient.getEntityBidOrders(TEST_ID);
-        assertThat(orders).containsExactly(new EntityOrder("issuer", "asset", 42, 666));
-        assertRequest(String.format("/v1/qx/getEntityBidOrders?entityId=%s&offset=0", TEST_ID));
+        List<EntityOrder> orders = apiClient.getEntityBidOrders("BOJOBRHAZILUCDADNGBXYUIYHNIDCKBSQEWGUFCAJASIOPFNBMWWXDJHCCTC");
+        assertThat(orders).contains(new EntityOrder("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "MLM", 1_900_000_000L, 1));
+        assertRequest("/live/v1/querySmartContract");
     }
 
 }

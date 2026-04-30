@@ -3,11 +3,9 @@ package org.qubic.qx.api.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.api.AbstractSpringIntegrationTest;
-import org.qubic.qx.api.adapter.il.domain.*;
 import org.qubic.qx.api.controller.domain.AssetOrder;
 import org.qubic.qx.api.controller.domain.EntityOrder;
 import org.qubic.qx.api.controller.domain.Fees;
-import org.qubic.qx.api.util.JsonUtil;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,8 +13,10 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.io.IOException;
 import java.time.Duration;
-import java.util.List;
+
+import static org.qubic.qx.api.uitl.FileUtil.readFile;
 
 class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
 
@@ -37,92 +37,92 @@ class QxFunctionsControllerSpringIT extends AbstractSpringIntegrationTest {
 
     @Test
     void getFees() {
-        IlFees ilFees = new IlFees(1L, 2L, 3L);
+        String responseJson = """
+                { "responseData": "AMqaO2QAAADAxi0A" }""";
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(JsonUtil.toJson(ilFees)));
+                .setBody(responseJson));
 
         client.get().uri("/fees")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Fees.class)
-                .isEqualTo(new Fees(1L, 2L, 3L));
+                .isEqualTo(new Fees(1_000_000_000, 100, 3_000_000));
 
-        assertRequest("/v1/qx/getFees");
+        assertRequest("/live/v1/querySmartContract");
     }
 
     @Test
-    void getAssetAskOrders() {
-        IlAssetOrder assetOrder = new IlAssetOrder("entity", "1", "2");
-        IlAssetOrders assetOrders = new IlAssetOrders(List.of(assetOrder));
+    void getAssetAskOrders() throws IOException {
+        String json = readFile("/testdata/db/responses/get-asset-ask-orders-response.json");
 
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(JsonUtil.toJson(assetOrders)));
+                .setBody(json));
 
         client.get().uri("/issuer/"+ISSUER+"/asset/TEST/asks")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(AssetOrder.class)
-                .isEqualTo(List.of(new AssetOrder("entity", 1L, 2L)));
+                .contains(new AssetOrder("BOJOBRHAZILUCDADNGBXYUIYHNIDCKBSQEWGUFCAJASIOPFNBMWWXDJHCCTC", 3, 424634414));
 
-        assertRequest("/v1/qx/getAssetAskOrders");
+        assertRequest("/live/v1/querySmartContract");
     }
 
     @Test
-    void getAssetBidOrders() {
-        IlAssetOrder assetOrder = new IlAssetOrder("entity", "1", "2");
-        IlAssetOrders assetOrders = new IlAssetOrders(List.of(assetOrder));
+    void getAssetBidOrders() throws IOException {
+        String json = readFile("/testdata/db/responses/get-asset-bid-orders-response.json");
+
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(JsonUtil.toJson(assetOrders)));
+                .setBody(json));
 
         client.get().uri("/issuer/"+ISSUER+"/asset/TEST/bids")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(AssetOrder.class)
-                .isEqualTo(List.of(new AssetOrder("entity", 1L, 2L)));
+                .contains(new AssetOrder("JHCGKVNUKTBVJGGZTCDBPVSYIOIDFUPCQOVCQFNMEGYHVWMINTEJITLGTXGO", 1, 23116901));
 
-        assertRequest("/v1/qx/getAssetBidOrders");
+        assertRequest("/live/v1/querySmartContract");
     }
 
     @Test
-    void getEntityAskOrders() {
-        IlEntityOrder entityOrder = new IlEntityOrder("issuer", "asset", "1", "2");
-        IlEntityOrders entityOrders = new IlEntityOrders(List.of(entityOrder));
+    void getEntityAskOrders() throws IOException {
+        String json = readFile("/testdata/db/responses/get-entity-ask-orders-response.json");
+
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(JsonUtil.toJson(entityOrders)));
+                .setBody(json));
 
         client.get().uri("/entity/"+ ID + "/asks")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(EntityOrder.class)
-                .isEqualTo(List.of(new EntityOrder("issuer", "asset", 1, 2)));
+                .contains(new EntityOrder("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "MLM", 4_500_000_000L, 1));
 
-        assertRequest("/v1/qx/getEntityAskOrders?entityId=" + ID);
+        assertRequest("/live/v1/querySmartContract");
     }
 
     @Test
-    void getEntityBidOrders() {
-        IlEntityOrder entityOrder = new IlEntityOrder("issuer", "asset", "1", "2");
-        IlEntityOrders entityOrders = new IlEntityOrders(List.of(entityOrder));
+    void getEntityBidOrders() throws IOException {
+        String json = readFile("/testdata/db/responses/get-entity-bid-orders-response.json");
+
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(JsonUtil.toJson(entityOrders)));
+                .setBody(json));
 
         client.get().uri("/entity/" + ID + "/bids")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(EntityOrder.class)
-                .isEqualTo(List.of(new EntityOrder("issuer", "asset", 1, 2)));
+                .contains(new EntityOrder("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB", "MLM", 1_900_000_000L, 1));
 
-        assertRequest("/v1/qx/getEntityBidOrders?entityId=" + ID);
+        assertRequest("/live/v1/querySmartContract");
     }
 
 }

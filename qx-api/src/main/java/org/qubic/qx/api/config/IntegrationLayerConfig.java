@@ -1,11 +1,11 @@
 package org.qubic.qx.api.config;
 
+import at.qubic.api.crypto.IdentityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.qubic.qx.api.adapter.CoreApiService;
-import org.qubic.qx.api.adapter.QxApiService;
-import org.qubic.qx.api.adapter.il.IntegrationCoreApiService;
-import org.qubic.qx.api.adapter.il.IntegrationQxApiService;
+import org.qubic.qx.api.adapter.il.DataTypeTranslator;
+import org.qubic.qx.api.adapter.il.IntegrationApiService;
+import org.qubic.qx.api.adapter.il.IntegrationLiveClient;
 import org.qubic.qx.api.adapter.il.QxMapper;
 import org.qubic.qx.api.properties.IntegrationClientProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,24 +26,10 @@ import java.util.List;
 @Configuration
 public class IntegrationLayerConfig {
 
-    @ConfigurationProperties(prefix = "il.qx.client", ignoreUnknownFields = false)
-    @Bean(name="qxClientProperties")
-    IntegrationClientProperties integrationQxClientProperties() {
-        return new IntegrationClientProperties();
-    }
-
     @ConfigurationProperties(prefix = "il.core.client", ignoreUnknownFields = false)
     @Bean(name="coreClientProperties")
     IntegrationClientProperties integrationCoreClientProperties() {
         return new IntegrationClientProperties();
-    }
-
-    @Bean(name="qxClient")
-    WebClient integrationQxWebClient(@Qualifier("qxClientProperties") IntegrationClientProperties properties, WebClient.Builder builder) {
-        HttpClient httpClient = createHttpClient();
-        URI uri = createUri(properties);
-        log.info("Integration layer qx API url: {}", uri);
-        return createClient(builder, httpClient, uri);
     }
 
     @Bean(name="coreClient")
@@ -55,13 +41,18 @@ public class IntegrationLayerConfig {
     }
 
     @Bean
-    QxApiService integrationQxApiService(@Qualifier("qxClient") WebClient integrationApiWebClient, QxMapper qxIntegrationMapper) {
-        return new IntegrationQxApiService(integrationApiWebClient, qxIntegrationMapper);
+    IntegrationLiveClient integrationCoreApiService(@Qualifier("coreClient") WebClient webClient) {
+        return new IntegrationLiveClient(webClient);
     }
 
     @Bean
-    CoreApiService integrationCoreApiService(@Qualifier("coreClient") WebClient webClient) {
-        return new IntegrationCoreApiService(webClient);
+    DataTypeTranslator dataTypeTranslator(IdentityUtil identityUtil) {
+        return new DataTypeTranslator(identityUtil);
+    }
+
+    @Bean
+    IntegrationApiService integrationQxApiService(IdentityUtil identityUtil, IntegrationLiveClient client, QxMapper qxIntegrationMapper) {
+        return new IntegrationApiService(identityUtil, client, qxIntegrationMapper);
     }
 
     // helper methods
