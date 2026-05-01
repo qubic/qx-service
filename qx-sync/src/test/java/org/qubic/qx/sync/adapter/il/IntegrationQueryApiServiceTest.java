@@ -171,8 +171,8 @@ class IntegrationQueryApiServiceTest {
 
     @Test
     void getTickInfo_happyPath() {
-        IlQueryApiLastProcessedTick apiDto = new IlQueryApiLastProcessedTick(300L, 200, 100L);
-        TickInfo mapped = new TickInfo(200, 300L, 100L);
+        IlQueryApiLastProcessedTick apiDto = new IlQueryApiLastProcessedTick(300L, 200, 100L, 0);
+        TickInfo mapped = new TickInfo(200, 300L, 100L, 0);
 
         when(webClient.get()
                 .uri("/query/v1/getLastProcessedTick")
@@ -188,8 +188,8 @@ class IntegrationQueryApiServiceTest {
 
     @Test
     void getCurrentTick_happyPath() {
-        IlQueryApiLastProcessedTick apiDto = new IlQueryApiLastProcessedTick(300L, 200, 100L);
-        TickInfo mapped = new TickInfo(200, 300L, 100L);
+        IlQueryApiLastProcessedTick apiDto = new IlQueryApiLastProcessedTick(300L, 200, 100L, 0);
+        TickInfo mapped = new TickInfo(200, 300L, 100L, 0);
 
         when(webClient.get()
                 .uri("/query/v1/getLastProcessedTick")

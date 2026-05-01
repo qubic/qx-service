@@ -8,7 +8,6 @@ import org.qubic.qx.sync.adapter.il.IntegrationQueryApiService;
 import org.qubic.qx.sync.adapter.il.mapping.IlQueryApiMapper;
 import org.qubic.qx.sync.properties.IntegrationClientProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +22,6 @@ import java.time.Duration;
 import java.util.List;
 
 @Slf4j
-@ConditionalOnProperty(value = "backend", havingValue = "integration", matchIfMissing = true)
 @Configuration
 public class IntegrationLayerConfig {
 

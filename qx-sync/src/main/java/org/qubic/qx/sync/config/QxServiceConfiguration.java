@@ -4,7 +4,6 @@ import at.qubic.api.crypto.IdentityUtil;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.EventApiService;
 import org.qubic.qx.sync.adapter.ExtraDataMapper;
-import org.qubic.qx.sync.adapter.qubicj.mapping.DataTypeTranslator;
 import org.qubic.qx.sync.job.EventsProcessor;
 import org.qubic.qx.sync.job.TickSyncJob;
 import org.qubic.qx.sync.job.TickSyncJobRunner;
@@ -29,12 +28,6 @@ public class QxServiceConfiguration {
     @Bean
     ExtraDataMapper extraDataMapper(IdentityUtil identityUtil) {
         return new ExtraDataMapper(identityUtil);
-    }
-
-    // only necessary for qubicj but it is automatically injected by mapstruct
-    @Bean
-    DataTypeTranslator dataTypeTranslator(IdentityUtil identityUtil, ExtraDataMapper extraDataMapper) {
-        return new DataTypeTranslator(identityUtil, extraDataMapper);
     }
 
     @Bean

@@ -33,6 +33,7 @@ public abstract class IlQueryApiMapper {
 
     @Mapping(target = "tick", source = "tickNumber")
     @Mapping(target = "initialTick", source = "intervalInitialTick")
+    @Mapping(target = "logTick", source = "logTickNumber")
     public abstract TickInfo map(IlQueryApiLastProcessedTick source);
 
     @Mapping(target = "tick", source = "tickNumber")

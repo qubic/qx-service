@@ -35,7 +35,7 @@ class TickSyncJobTest {
 
     @Test
     void sync_givenNoNewTick_thenDoNotSync() {
-        TickInfo currentTickInfo = new TickInfo(1, 3459, 3456);
+        TickInfo currentTickInfo = new TickInfo(1, 3459, 3456, 0);
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(3459L));
 
@@ -51,7 +51,7 @@ class TickSyncJobTest {
 
     @Test
     void sync_givenOneNewTick_thenProcessTick() {
-        TickInfo currentTickInfo = new TickInfo(1, 3460, 3456);
+        TickInfo currentTickInfo = new TickInfo(1, 3460, 3456, 0);
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(3458L));
 
@@ -71,7 +71,7 @@ class TickSyncJobTest {
     @Test
     void sync_givenEmptyTickEventsOrNoTickData_thenError() {
 
-        TickInfo currentTickInfo = new TickInfo(1, 3458, 1000);
+        TickInfo currentTickInfo = new TickInfo(1, 3458, 1000, 0);
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(3456L));
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(false));
@@ -101,7 +101,7 @@ class TickSyncJobTest {
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(false));
         when(tickRepository.addToProcessedTicks(anyLong())).thenReturn(Mono.just(1L));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(2345L));
-        TickInfo currentTickInfo = new TickInfo(1, 3459, 3456);
+        TickInfo currentTickInfo = new TickInfo(1, 3459, 3456, 0);
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
 
         when(coreService.getQxTransactions(3456L)).thenReturn(Flux.just(tx));
@@ -124,7 +124,7 @@ class TickSyncJobTest {
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(false));
         when(tickRepository.addToProcessedTicks(anyLong())).thenReturn(Mono.just(1L));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(2345L));
-        TickInfo currentTickInfo = new TickInfo(1, 3459, 3456);
+        TickInfo currentTickInfo = new TickInfo(1, 3459, 3456, 0);
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
 
         when(coreService.getQxTransactions(3456L)).thenReturn(Flux.just(tx));
@@ -147,7 +147,7 @@ class TickSyncJobTest {
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(true));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(0L));
 
-        TickInfo currentTickInfo = new TickInfo(1, 100, 95);
+        TickInfo currentTickInfo = new TickInfo(1, 100, 95, 0);
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
 
         StepVerifier.create(tickSync.sync())
