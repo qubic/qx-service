@@ -16,27 +16,35 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Objects;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 class IntegrationQueryApiServiceIT extends AbstractIntegrationApiTest {
 
     private static final String TICK_INFO_RESPONSE = """
             {
                "tickNumber": 300,
                "epoch": 200,
-               "intervalInitialTick": 100
+               "intervalInitialTick": 100,
+               "logTickNumber": 400
              }""";
 
     @Autowired
     private CoreApiService apiService;
 
     @Test
-    void getCurrentTick() {
+    void getTickInfo() {
         prepareResponse(response -> response
                 .setResponseCode(HttpStatus.OK.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(TICK_INFO_RESPONSE));
 
-        StepVerifier.create(apiService.getCurrentTick())
-                .expectNext(300L)
+        StepVerifier.create(apiService.getTickInfo())
+                .assertNext(ti -> {
+                    assertThat(ti.tick()).isEqualTo(300L);
+                    assertThat(ti.epoch()).isEqualTo(200);
+                    assertThat(ti.initialTick()).isEqualTo(100L);
+                    assertThat(ti.logTick()).isEqualTo(400L);
+                })
                 .verifyComplete();
 
         assertRequest("/query/v1/getLastProcessedTick");

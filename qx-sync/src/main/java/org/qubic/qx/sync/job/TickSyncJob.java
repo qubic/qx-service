@@ -71,7 +71,7 @@ public class TickSyncJob {
     private Mono<Tuple2<TickInfo, EpochAndTick>> getLatestAvailableTick() {
         return Mono.zip(coreService.getTickInfo(), eventService.getLastProcessedTick())
                 .doOnNext(tuple -> {
-                    latestLiveTick.set(tuple.getT1().tick());
+                    latestLiveTick.set(tuple.getT1().tick()); // FIXME we don't fetch the live tick anymore
                     latestEventTick.set(tuple.getT2().tickNumber());
                     // log if there is a 'larger' gap between current tick and event service
                     if (Math.abs(tuple.getT1().tick() - tuple.getT2().tickNumber()) > 10) {

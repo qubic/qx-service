@@ -10,8 +10,6 @@ public interface CoreApiService {
 
     Mono<TickInfo> getTickInfo();
 
-    Mono<Long> getCurrentTick();
-
     Mono<TickData> getTickData(long tickNumber);
 
     Flux<Transaction> getQxTransactions(long tick);

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.il.domain.query.IlQueryApiTransaction;
 import org.qubic.qx.sync.domain.TickData;
+import org.qubic.qx.sync.domain.TickInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -27,15 +28,8 @@ class IntegrationQueryApiServiceManualIT {
     }
 
     @Test
-    void getCurrentTick() {
-        Long tick = apiService.getCurrentTick().block();
-        assertThat(tick).isPositive();
-        log.info("Current tick: {}", tick);
-    }
-
-    @Test
     void getTickData() {
-        Long tick = apiService.getCurrentTick().block();
+        Long tick = apiService.getTickInfo().map(TickInfo::tick).block();
         assertThat(tick).isNotNull();
         assertThat(tick).isPositive();
         TickData tickData = apiService.getTickData(tick).block();
@@ -45,7 +39,7 @@ class IntegrationQueryApiServiceManualIT {
 
     @Test
     void getTickTransactions() {
-        Long tick = apiService.getCurrentTick().block();
+        Long tick = apiService.getTickInfo().map(TickInfo::tick).block();
         assertThat(tick).isNotNull();
         assertThat(tick).isPositive();
         List<IlQueryApiTransaction> transactions = apiService.getTickTransactions(tick).collectList().block();

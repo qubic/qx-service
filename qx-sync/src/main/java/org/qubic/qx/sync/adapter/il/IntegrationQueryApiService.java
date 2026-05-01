@@ -48,14 +48,6 @@ public class IntegrationQueryApiService implements CoreApiService {
     }
 
     @Override
-    public Mono<Long> getCurrentTick() {
-        return getTickInfo()
-                .map(TickInfo::tick)
-                .doOnNext(tick -> log.debug("Current tick: [{}]", tick))
-                .doOnError(e -> logError("Error getting current tick", e));
-    }
-
-    @Override
     public Mono<TickData> getTickData(long tickNumber) {
         return webClient.post()
                 .uri(QUERY_API_BASE_PATH + "/getTickData")
@@ -66,7 +58,7 @@ public class IntegrationQueryApiService implements CoreApiService {
                         ? new IlQueryApiTickData(0,0,0) // empty tick
                         : response.tickData())
                 .map(mapper::map)
-                .switchIfEmpty(Mono.error(emptyResult("get tick data", tickNumber)))
+                .switchIfEmpty(Mono.error(emptyTickData(tickNumber)))
                 .doOnError(e -> logError(String.format("Error getting tick data for tick [%d]", tickNumber), e))
                 .retryWhen(retrySpec());
     }
@@ -120,8 +112,8 @@ public class IntegrationQueryApiService implements CoreApiService {
                 }""".formatted(tickNumber, Qx.QX_PUBLIC_ID);
     }
 
-    private static EmptyResultException emptyResult(String action, long tick) {
-        return new EmptyResultException(String.format("Could not %s for tick [%d].", action, tick));
+    private static EmptyResultException emptyTickData(long tick) {
+        return new EmptyResultException(String.format("Could not fetch tick data for tick [%d].", tick));
     }
 
     private RetryBackoffSpec retrySpec() {
