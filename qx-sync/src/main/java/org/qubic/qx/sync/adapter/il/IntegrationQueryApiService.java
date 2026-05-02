@@ -114,34 +114,39 @@ public class IntegrationQueryApiService implements CoreApiService {
                 .retrieve()
                 .bodyToMono(IlQueryApiEventLogsResponse.class)
                 .flatMapIterable(IlQueryApiEventLogsResponse::eventLogs)
-                .mapNotNull(this::mapEventLog)
+                .map(this::mapEventLog)
                 .doOnError(e -> logError(String.format("Error getting event logs for tick [%d]", tickNumber), e))
                 .retryWhen(retrySpec());
     }
 
     private TransactionEvent mapEventLog(IlQueryApiEventLog eventLog) {
-        EventHeader header = new EventHeader(eventLog.epoch(), eventLog.tickNumber(), eventLog.logId(), eventLog.logDigest());
         var builder = TransactionEvent.builder()
-                .header(header)
-                .eventType(eventLog.logType())
+                .tick(eventLog.tickNumber())
+                .logId(eventLog.logId())
+                .logDigest(eventLog.logDigest())
+                .logType(eventLog.logType())
                 .transactionHash(eventLog.transactionHash());
         return switch (eventLog.logType()) {
+            case 1 -> {
+                IlQueryApiAssetIssuanceData data = eventLog.assetIssuance();
+                yield builder.assetIssuance(
+                        new AssetIssuance(data.assetIssuer(), data.assetName())
+                ).build();
+            }
             case 2 -> {
                 IlQueryApiAssetChangeData data = eventLog.assetOwnershipChange();
-                yield builder.assetOwnershipChange(new AssetOwnershipChange(
-                        data.source(), data.destination(), data.assetIssuer(), data.assetName(),
-                        data.numberOfShares())).build();
+                yield builder.assetOwnershipChange(
+                        new AssetOwnershipChange(data.source(), data.destination(), data.assetIssuer(), data.assetName(), data.numberOfShares())
+                ).build();
             }
             case 6 -> {
                 IlQueryApiSmartContractMessage msg = eventLog.smartContractMessage();
-                yield builder.eventData(eventLog.rawPayload())
+                yield builder.rawPayload(eventLog.rawPayload())
                         .smartContractMessage(new SmartContractEvent(msg.contractIndex(), msg.contractMessageType()))
                         .build();
             }
-            default -> {
-                log.warn("Unknown logType [{}] in event log [{}]", eventLog.logType(), eventLog.logId());
-                yield null;
-            }
+            default -> throw new IllegalArgumentException(
+                    String.format("Unknown logType [%d] in event log [%s]", eventLog.logType(), eventLog.logId()));
         };
     }
 

@@ -32,7 +32,7 @@ class TransactionProcessorTest {
 
     @Test
     void processTransaction_givenTrade_thenStoreTransaction() {
-        TransactionEvent te = TransactionEvent.builder().eventType(1).eventSize(2).eventData("foo").build();
+        TransactionEvent te = TransactionEvent.builder().logType(1).rawPayload("foo").build();
         TransactionWithMeta transaction = testTransaction(te);
         // transaction is only stored if there is a trade
         Trade trade = mock();
@@ -46,7 +46,7 @@ class TransactionProcessorTest {
 
     @Test
     void processTransaction_givenNoTrade_thenNotifyOnly() {
-        TransactionEvent te = TransactionEvent.builder().eventType(1).eventSize(2).eventData("foo").build();
+        TransactionEvent te = TransactionEvent.builder().logType(1).rawPayload("foo").build();
         TransactionWithMeta transaction = testTransaction(te);
         // transaction is only stored if there is a trade
         when(eventsProcessor.calculateTrades(eq(transaction), any())).thenReturn(List.of());
@@ -60,7 +60,7 @@ class TransactionProcessorTest {
 
     @Test
     void processTransaction_givenTrade_thenStoreTrade() {
-        TransactionEvent te = TransactionEvent.builder().eventType(1).eventSize(2).eventData("foo").build();
+        TransactionEvent te = TransactionEvent.builder().logType(1).rawPayload("foo").build();
         TransactionWithMeta transaction = testTransaction(te);
         Trade trade = mock();
         when(eventsProcessor.calculateTrades(eq(transaction), any())).thenReturn(List.of(trade));

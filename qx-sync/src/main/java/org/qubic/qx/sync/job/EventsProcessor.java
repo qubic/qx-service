@@ -1,6 +1,5 @@
 package org.qubic.qx.sync.job;
 
-import at.qubic.api.crypto.IdentityUtil;
 import at.qubic.api.domain.event.EventType;
 import at.qubic.api.domain.event.response.QxTradeMessageEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -95,7 +94,7 @@ public class EventsProcessor {
                 .filter(e -> e.getSmartContractMessage().contractIndex() == Qx.CONTRACT_INDEX
                         && e.getSmartContractMessage().contractMessageType() == 0
                 )
-                .map(e -> QxTradeMessageEvent.fromBytes(Base64.getDecoder().decode(e.getEventData())))
+                .map(e -> QxTradeMessageEvent.fromBytes(Base64.getDecoder().decode(e.getRawPayload())))
                 .toList();
     }
 
@@ -107,7 +106,7 @@ public class EventsProcessor {
     }
 
     private static Predicate<TransactionEvent> byTransactionEvent(EventType eventType) {
-        return e -> e.getEventType() == eventType.getCode();
+        return e -> e.getLogType() == eventType.getCode();
     }
 
     private static Qx.OrderType getOrderType(int inputType) {

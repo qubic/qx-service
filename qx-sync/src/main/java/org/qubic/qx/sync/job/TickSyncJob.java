@@ -151,7 +151,7 @@ public class TickSyncJob {
     }
 
     private Mono<?> processTransactions(Long tickNumber, List<TransactionWithMeta> txs) {
-        Mono<Long> storeTickNumberMono = Mono.defer(() -> tickRepository.addToProcessedTicks(tickNumber));
+        Mono<?> storeTickNumberMono = Mono.defer(() -> tickRepository.addToProcessedTicks(tickNumber));
         if (CollectionUtils.isEmpty(txs)) {
             return storeTickNumberMono
                     .then(Mono.just(false));

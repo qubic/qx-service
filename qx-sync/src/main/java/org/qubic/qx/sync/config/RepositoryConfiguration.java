@@ -9,6 +9,7 @@ import org.qubic.qx.sync.repository.domain.TransactionMessage;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
@@ -59,8 +60,9 @@ public class RepositoryConfiguration {
     }
 
     @Bean
-    TickRepository tickRepository(ReactiveStringRedisTemplate redisStringTemplate) {
-        return new TickRepository(redisStringTemplate);
+    TickRepository tickRepository(Environment environment, ReactiveStringRedisTemplate redisStringTemplate) {
+        boolean keepTickNumbers = environment.getProperty("sync.store-processed-tick-numbers", Boolean.class, false);
+        return new TickRepository(redisStringTemplate, keepTickNumbers);
     }
 
     @Bean

@@ -8,6 +8,7 @@ import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
 import org.qubic.qx.sync.domain.Transaction;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -22,7 +23,7 @@ class IntegrationQueryApiServiceTest {
 
     private final WebClient webClient = mock(WebClient.class, RETURNS_DEEP_STUBS);
     private final IlQueryApiMapper mapper = mock();
-    private final IntegrationQueryApiService service = spy(new IntegrationQueryApiService(webClient, mapper, 3));
+    private final IntegrationQueryApiService service = spy(new IntegrationQueryApiService(webClient, mapper, 1));
 
     @Test
     void getQxTransactions_shouldFilterRelevantTransactions() {
@@ -279,16 +280,22 @@ class IntegrationQueryApiServiceTest {
 
         StepVerifier.create(service.getAssetEventLogs(tick))
                 .assertNext(e -> {
-                    assertThat(e.getEventType()).isEqualTo(2);
+                    assertThat(e.getLogType()).isEqualTo(2);
                     assertThat(e.getTransactionHash()).isEqualTo("txHash");
                     assertThat(e.getAssetOwnershipChange()).isNotNull();
                     assertThat(e.getAssetOwnershipChange().numberOfShares()).isEqualTo(5);
                 })
                 .assertNext(e -> {
-                    assertThat(e.getEventType()).isEqualTo(6);
-                    assertThat(e.getEventData()).isEqualTo("rawPayload");
+                    assertThat(e.getLogType()).isEqualTo(6);
+                    assertThat(e.getRawPayload()).isEqualTo("rawPayload");
                     assertThat(e.getSmartContractMessage()).isNotNull();
                     assertThat(e.getSmartContractMessage().contractIndex()).isEqualTo(1);
+                })
+                .assertNext(e -> {
+                    assertThat(e.getLogType()).isEqualTo(1);
+                    assertThat(e.getAssetIssuance()).isNotNull();
+                    assertThat(e.getAssetIssuance().assetName()).isEqualTo("asset-name");
+                    assertThat(e.getAssetIssuance().assetIssuer()).isEqualTo("asset-issuer");
                 })
                 .verifyComplete();
     }
@@ -296,22 +303,20 @@ class IntegrationQueryApiServiceTest {
     private static IlQueryApiEventLogsResponse getIlQueryApiEventLogsResponse(long tick) {
         IlQueryApiAssetChangeData assetData = new IlQueryApiAssetChangeData("SOURCE", "DEST", "ISSUER", "CFB", 5);
         IlQueryApiEventLog ownershipLog = new IlQueryApiEventLog(210, tick, "0", "txHash", 2, "1001", "digest1", List.of(),
-                assetData, null, null, null);
-        IlQueryApiEventLog possessionLog = new IlQueryApiEventLog(210, tick, "0", "txHash", 3, "1002", "digest2", List.of(),
                 null, assetData, null, null);
         IlQueryApiEventLog smartContractLog = new IlQueryApiEventLog(210, tick, "0", "txHash", 6, "1003", "digest3", List.of(),
-                null, null, "rawPayload", new IlQueryApiSmartContractMessage(1, 0));
-        return new IlQueryApiEventLogsResponse(List.of(ownershipLog, possessionLog, smartContractLog));
+                "rawPayload", null, new IlQueryApiSmartContractMessage(1, 0), null);
+        IlQueryApiEventLog assetIssuanceLog = new IlQueryApiEventLog(210, tick, "0", "txHash", 1, "1004", "digest4", List.of(),
+                null, null, null, new IlQueryApiAssetIssuanceData("asset-issuer", "asset-name"));
+        return new IlQueryApiEventLogsResponse(List.of(ownershipLog, smartContractLog, assetIssuanceLog));
     }
 
     @Test
-    void getAssetEventLogs_shouldSkipUnknownLogType() {
+    void getAssetEventLogs_whenUnknownLogType_shouldError() {
         long tick = 50689005L;
         IlQueryApiEventLog unknownLog = new IlQueryApiEventLog(210, tick, "0", "txHash", 99, "1001", "digest", List.of(),
                 null, null, null, null);
-        IlQueryApiEventLog ownershipLog = new IlQueryApiEventLog(210, tick, "0", "txHash", 2, "1002", "digest", List.of(),
-                new IlQueryApiAssetChangeData("SRC", "DST", "ISS", "AST", 1), null, null, null);
-        IlQueryApiEventLogsResponse response = new IlQueryApiEventLogsResponse(List.of(unknownLog, ownershipLog));
+        IlQueryApiEventLogsResponse response = new IlQueryApiEventLogsResponse(List.of(unknownLog));
 
         when(webClient.post()
                 .uri("/query/v1/getEventLogs")
@@ -321,8 +326,9 @@ class IntegrationQueryApiServiceTest {
                 .thenReturn(Mono.just(response));
 
         StepVerifier.create(service.getAssetEventLogs(tick))
-                .assertNext(e -> assertThat(e.getEventType()).isEqualTo(2))
-                .verifyComplete();
+                // we throw an illegal argument exception, but the final error is because
+                // of the failed retries
+                .verifyErrorSatisfies(error -> assertThat(Exceptions.isRetryExhausted(error)).isTrue());
     }
 
     private IlQueryApiTransaction createTransaction(long tick, int inputType, String txId) {

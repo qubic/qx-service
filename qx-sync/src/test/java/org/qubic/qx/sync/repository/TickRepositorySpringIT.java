@@ -4,9 +4,11 @@ import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.AbstractRedisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
+import org.springframework.test.context.TestPropertySource;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+@TestPropertySource(properties = "sync.store-processed-tick-numbers=true")
 class TickRepositorySpringIT extends AbstractRedisTest {
 
     @Autowired

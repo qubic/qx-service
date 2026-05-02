@@ -10,8 +10,8 @@ public record IlQueryApiEventLog(int epoch,
                                  String logId,
                                  String logDigest,
                                  List<String> categories,
-                                 IlQueryApiAssetChangeData assetOwnershipChange,
-                                 IlQueryApiAssetChangeData assetPossessionChange,
                                  String rawPayload,
-                                 IlQueryApiSmartContractMessage smartContractMessage) {
+                                 IlQueryApiAssetChangeData assetOwnershipChange,
+                                 IlQueryApiSmartContractMessage smartContractMessage,
+                                 IlQueryApiAssetIssuanceData assetIssuance) {
 }

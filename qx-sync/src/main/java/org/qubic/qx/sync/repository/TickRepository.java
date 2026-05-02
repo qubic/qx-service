@@ -11,10 +11,12 @@ public class TickRepository {
     public static final String KEY_TICK_SYNCED_LATEST = "tick:synced:latest"; // key value
     public static final String KEY_TICKS_PROCESSED = "ticks:processed"; // set
 
+    private final boolean storeProcessedTickNumbers;
     private final ReactiveStringRedisTemplate redisStringTemplate;
 
-    public TickRepository(ReactiveStringRedisTemplate redisStringTemplate) {
+    public TickRepository(ReactiveStringRedisTemplate redisStringTemplate, boolean storeProcessedTickNumbers) {
         this.redisStringTemplate = redisStringTemplate;
+        this.storeProcessedTickNumbers = storeProcessedTickNumbers;
     }
 
     public Mono<Long> getLatestSyncedTick() {
@@ -28,7 +30,11 @@ public class TickRepository {
     }
 
     public Mono<Long> addToProcessedTicks(long tickNumber) {
-        return addToSet(KEY_TICKS_PROCESSED, String.valueOf(tickNumber));
+        if (storeProcessedTickNumbers) {
+            return addToSet(KEY_TICKS_PROCESSED, String.valueOf(tickNumber));
+        } else {
+            return Mono.just(0L);
+        }
     }
 
     public Mono<Boolean> isProcessedTick(long tickNumber) {

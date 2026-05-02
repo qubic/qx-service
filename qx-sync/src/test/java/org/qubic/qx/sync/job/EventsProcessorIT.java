@@ -1,18 +1,10 @@
 package org.qubic.qx.sync.job;
 
-import at.qubic.api.crypto.IdentityUtil;
-import at.qubic.api.domain.event.EventType;
-import io.micrometer.core.instrument.util.IOUtils;
-import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.domain.*;
-import org.qubic.qx.sync.util.JsonUtil;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -69,27 +61,27 @@ class EventsProcessorIT {
         List<TransactionEvent> events = List.of(
                 TransactionEvent.builder()
                         .transactionHash(transactionHash)
-                        .eventType(2)
+                        .logType(2)
                         .assetOwnershipChange(new AssetOwnershipChange(seller, buyer1, issuer, assetName, 1))
                         .build(),
 
                 TransactionEvent.builder()
                         .transactionHash(transactionHash)
-                        .eventType(6)
-                        .eventData("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAEbDIwAAAAABAAAAAAAAAA==")
+                        .logType(6)
+                        .rawPayload("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAEbDIwAAAAABAAAAAAAAAA==")
                         .smartContractMessage(new SmartContractEvent(1, 0))
                         .build(),
 
                 TransactionEvent.builder()
                         .transactionHash(transactionHash)
-                        .eventType(2)
+                        .logType(2)
                         .assetOwnershipChange(new AssetOwnershipChange(seller, buyer2, issuer, assetName, 1))
                         .build(),
 
                 TransactionEvent.builder()
                         .transactionHash(transactionHash)
-                        .eventType(6)
-                        .eventData("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAcLrCwAAAAABAAAAAAAAAA==")
+                        .logType(6)
+                        .rawPayload("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAcLrCwAAAAABAAAAAAAAAA==")
                         .smartContractMessage(new SmartContractEvent(1, 0))
                         .build()
         );

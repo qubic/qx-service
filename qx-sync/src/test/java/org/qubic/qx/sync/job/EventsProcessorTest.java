@@ -19,12 +19,12 @@ class EventsProcessorTest {
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 2, 3);
         Transaction transaction = new Transaction("hash", "source", "destination", 1, 42,6, 0, orderData);
         List<TransactionEvent> events = List.of(
-                TransactionEvent.builder().eventType(2)
+                TransactionEvent.builder().logType(2)
                         .assetOwnershipChange(new AssetOwnershipChange("maker", "taker-not-used", "issuer-not-used", "asset-not-used", 1))
-                        .eventData("0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv02EYTUnxm1rKM15TYeDdxsn6lv0WHZd47t7Tzvs+MeIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAqAAAAAAAAAE1MTQAAAAAAAAAAAAAAAA==").build(),
-                TransactionEvent.builder().eventType(6)
+                        .rawPayload("0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv02EYTUnxm1rKM15TYeDdxsn6lv0WHZd47t7Tzvs+MeIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAqAAAAAAAAAE1MTQAAAAAAAAAAAAAAAA==").build(),
+                TransactionEvent.builder().logType(6)
                         .smartContractMessage(new SmartContractEvent(1, 0))
-                        .eventData("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAcLrCwAAAAABAAAAAAAAAA==").build()
+                        .rawPayload("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAcLrCwAAAAABAAAAAAAAAA==").build()
         );
 
         TransactionWithMeta transactionWithMeta = TransactionWithMeta.builder().transaction(transaction).events(events).time(Instant.EPOCH).build();
@@ -48,12 +48,12 @@ class EventsProcessorTest {
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 3, 69899); // price and number of shares is not relevant here but in qx trade event
         Transaction transaction = new Transaction("hash", "buyer", "destination", 1, 2, 6, 0, orderData); // add bid
         List<TransactionEvent> events = List.of(
-                TransactionEvent.builder().eventType(2)
+                TransactionEvent.builder().logType(2)
                         .assetOwnershipChange(new AssetOwnershipChange("seller", "buyer-not-used", "issuer-not-used", "asset-not-used", 69899))
-                        .eventData("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ==").build(),
-                TransactionEvent.builder().eventType(6)
+                        .rawPayload("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ==").build(),
+                TransactionEvent.builder().logType(6)
                         .smartContractMessage(new SmartContractEvent(1, 0))
-                        .eventData("AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==").build()
+                        .rawPayload("AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==").build()
         );
         TransactionWithMeta transactionWithMeta = TransactionWithMeta.builder().transaction(transaction).events(events).time(Instant.EPOCH).build();
 
@@ -75,14 +75,14 @@ class EventsProcessorTest {
 
         List<TransactionEvent> events = List.of(
                 // the type 0 events are irrelevant
-                TransactionEvent.builder().eventType(0).eventData("JMrv6y7p07Jw6kBog1fCGOmCDhzDtt8SR1IR42qQQ0EBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACEzAwAAAAAA").build(),
-                TransactionEvent.builder().eventType(0).eventData("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADymrKZ7qm/15hUDu1de8gP1X9FfDK/NKJ3FLVwj+bcRAgvAwAAAAAA").build(),
-                TransactionEvent.builder().eventType(2)
+                TransactionEvent.builder().logType(0).rawPayload("JMrv6y7p07Jw6kBog1fCGOmCDhzDtt8SR1IR42qQQ0EBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACEzAwAAAAAA").build(),
+                TransactionEvent.builder().logType(0).rawPayload("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADymrKZ7qm/15hUDu1de8gP1X9FfDK/NKJ3FLVwj+bcRAgvAwAAAAAA").build(),
+                TransactionEvent.builder().logType(2)
                         .assetOwnershipChange(new AssetOwnershipChange("seller", "buyer", "issuer-not-used", "asset-not-used", 69899))
-                        .eventData("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ==").build(),
-                TransactionEvent.builder().eventType(6)
+                        .rawPayload("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ==").build(),
+                TransactionEvent.builder().logType(6)
                         .smartContractMessage(new SmartContractEvent(1, 0))
-                        .eventData("AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==").build()
+                        .rawPayload("AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==").build()
         );
         TransactionWithMeta transactionWithMeta = TransactionWithMeta.builder().transaction(transaction).events(events).time(Instant.EPOCH).build();
 
@@ -98,7 +98,7 @@ class EventsProcessorTest {
     @Test
     void isAssetIssued_givenAssetIssuanceEvent_thenTrue() {
         List<TransactionEvent> events = List.of(
-                TransactionEvent.builder().eventType(EventType.ASSET_ISSUANCE.getCode()).eventSize(123).eventData("foo").build()
+                TransactionEvent.builder().logType(EventType.ASSET_ISSUANCE.getCode()).rawPayload("foo").build()
         );
         boolean issued = processor.isAssetIssued(events);
         assertThat(issued).isTrue();
@@ -107,7 +107,7 @@ class EventsProcessorTest {
     @Test
     void isAssetIssued_givenOtherEvent_thenFalse() {
         List<TransactionEvent> events = List.of(
-                TransactionEvent.builder().eventType(EventType.ASSET_OWNERSHIP_CHANGE.getCode()).eventSize(123).eventData("foo").build()
+                TransactionEvent.builder().logType(EventType.ASSET_OWNERSHIP_CHANGE.getCode()).rawPayload("foo").build()
         );
         boolean issued = processor.isAssetIssued(events);
         assertThat(issued).isFalse();
@@ -122,7 +122,7 @@ class EventsProcessorTest {
     @Test
     void isAssetTransferred_givenOwnershipChange_thenTrue() {
         List<TransactionEvent> events = List.of(
-                TransactionEvent.builder().eventType(EventType.ASSET_OWNERSHIP_CHANGE.getCode()).eventSize(123).eventData("foo").build()
+                TransactionEvent.builder().logType(EventType.ASSET_OWNERSHIP_CHANGE.getCode()).rawPayload("foo").build()
         );
         boolean issued = processor.isAssetTransferred(events);
         assertThat(issued).isTrue();
@@ -131,7 +131,7 @@ class EventsProcessorTest {
     @Test
     void isAssetTransferred_givenOtherEvent_thenFalse() {
         List<TransactionEvent> events = List.of(
-                TransactionEvent.builder().eventType(EventType.QU_TRANSFER.getCode()).eventSize(123).eventData("foo").build()
+                TransactionEvent.builder().logType(EventType.QU_TRANSFER.getCode()).rawPayload("foo").build()
         );
         boolean issued = processor.isAssetTransferred(events);
         assertThat(issued).isFalse();

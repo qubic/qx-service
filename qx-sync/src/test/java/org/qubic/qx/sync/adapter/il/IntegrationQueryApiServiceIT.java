@@ -138,14 +138,14 @@ class IntegrationQueryApiServiceIT extends AbstractIntegrationApiTest {
                 .setBody(body));
 
         String txHash = "wbnbeyoyayiksefueiqbrtkushneibjzeuypuiyhhhojlygugcotpavddayj";
-        EventHeader headerOwnership = new EventHeader(210, 50689005L, "202835888", "507d7fdcf246915f");
-        EventHeader headerSmartContract = new EventHeader(210, 50689005L, "202835890", "f3b3e9c3aa9d99c3");
 
-        StepVerifier.create(((IntegrationQueryApiService) apiService).getAssetEventLogs(50689005L))
+        StepVerifier.create(apiService.getAssetEventLogs(50689005L))
                 .assertNext(e -> {
-                    assertThat(e.getEventType()).isEqualTo(2);
+                    assertThat(e.getLogType()).isEqualTo(2);
                     assertThat(e.getTransactionHash()).isEqualTo(txHash);
-                    assertThat(e.getHeader()).isEqualTo(headerOwnership);
+                    assertThat(e.getTick()).isEqualTo(50689005L);
+                    assertThat(e.getLogId()).isEqualTo("202835888");
+                    assertThat(e.getLogDigest()).isEqualTo("507d7fdcf246915f");
                     AssetOwnershipChange ownership = e.getAssetOwnershipChange();
                     assertThat(ownership).isNotNull();
                     assertThat(ownership.source()).isEqualTo("KCGDXLBIJRFWZAAPJASCSOFICYRAEJBXYCTPFAAXIDDWIRXJDBLCOETFGSGA");
@@ -154,14 +154,27 @@ class IntegrationQueryApiServiceIT extends AbstractIntegrationApiTest {
                     assertThat(ownership.numberOfShares()).isEqualTo(1);
                 })
                 .assertNext(e -> {
-                    assertThat(e.getEventType()).isEqualTo(6);
+                    assertThat(e.getLogType()).isEqualTo(6);
                     assertThat(e.getTransactionHash()).isEqualTo(txHash);
-                    assertThat(e.getHeader()).isEqualTo(headerSmartContract);
-                    assertThat(e.getEventData()).isEqualTo("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRVVRJTAAAAMCe5gUAAAAAAQAAAAAAAAA=");
+                    assertThat(e.getTick()).isEqualTo(50689005L);
+                    assertThat(e.getLogId()).isEqualTo("202835890");
+                    assertThat(e.getLogDigest()).isEqualTo("f3b3e9c3aa9d99c3");
+                    assertThat(e.getRawPayload()).isEqualTo("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRVVRJTAAAAMCe5gUAAAAAAQAAAAAAAAA=");
                     SmartContractEvent sc = e.getSmartContractMessage();
                     assertThat(sc).isNotNull();
                     assertThat(sc.contractIndex()).isEqualTo(1);
                     assertThat(sc.contractMessageType()).isEqualTo(0);
+                })
+                .assertNext(e -> {
+                    assertThat(e.getLogType()).isEqualTo(1);
+                    assertThat(e.getTransactionHash()).isEqualTo(txHash);
+                    assertThat(e.getTick()).isEqualTo(50689005L);
+                    assertThat(e.getLogId()).isEqualTo("202835887");
+                    assertThat(e.getLogDigest()).isEqualTo("foo");
+                    AssetIssuance ai = e.getAssetIssuance();
+                    assertThat(ai).isNotNull();
+                    assertThat(ai.assetIssuer()).isEqualTo("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB");
+                    assertThat(ai.assetName()).isEqualTo("QUTIL");
                 })
                 .verifyComplete();
 

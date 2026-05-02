@@ -27,23 +27,6 @@
       "tickNumber": 50689005,
       "timestamp": "1777463628000",
       "transactionHash": "wbnbeyoyayiksefueiqbrtkushneibjzeuypuiyhhhojlygugcotpavddayj",
-      "logType": 3,
-      "logId": "202835889",
-      "logDigest": "507d7fdcf246915f",
-      "categories": [],
-      "assetPossessionChange": {
-        "source": "KCGDXLBIJRFWZAAPJASCSOFICYRAEJBXYCTPFAAXIDDWIRXJDBLCOETFGSGA",
-        "destination": "LMZGHNHLWNVZIGCMMPFDPZKZJEDADUCLIMLCWFCMJAXRNCVYFTSFJVRDTYZI",
-        "assetIssuer": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB",
-        "assetName": "QUTIL",
-        "numberOfShares": "1"
-      }
-    },
-    {
-      "epoch": 210,
-      "tickNumber": 50689005,
-      "timestamp": "1777463628000",
-      "transactionHash": "wbnbeyoyayiksefueiqbrtkushneibjzeuypuiyhhhojlygugcotpavddayj",
       "logType": 6,
       "logId": "202835890",
       "logDigest": "f3b3e9c3aa9d99c3",
@@ -52,6 +35,24 @@
       "smartContractMessage": {
         "contractIndex": "1",
         "contractMessageType": "0"
+      }
+    },
+    {
+      "epoch": 210,
+      "tickNumber": 50689005,
+      "timestamp": "1777463628000",
+      "transactionHash": "wbnbeyoyayiksefueiqbrtkushneibjzeuypuiyhhhojlygugcotpavddayj",
+      "logType": 1,
+      "logId": "202835887",
+      "logDigest": "foo",
+      "categories": [],
+      "assetIssuance": {
+        "assetIssuer": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB",
+        "assetName": "QUTIL",
+        "numberOfShares": "12345",
+        "managingContractIndex": "1",
+        "numberOfDecimalPlaces": "0",
+        "unitOfMeasurement": "foo"
       }
     }
   ],
