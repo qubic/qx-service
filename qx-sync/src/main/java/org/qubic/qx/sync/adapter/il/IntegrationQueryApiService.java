@@ -154,7 +154,7 @@ public class IntegrationQueryApiService implements CoreApiService {
 
     private static String getEventLogsQuery(long tickNumber) {
         return """
-                { "filters": { "tickNumber": "%d", "logType": "2,3,6" },
+                { "filters": { "tickNumber": "%d", "logType": "1,2,6" },
                   "pagination": { "offset": 0, "size": 1000 }
                 }""".formatted(tickNumber);
     }
