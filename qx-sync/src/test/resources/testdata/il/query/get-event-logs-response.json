@@ -1,0 +1,59 @@
+{
+  "hits": {
+    "total": 3,
+    "from": 0,
+    "size": 1000
+  },
+  "eventLogs": [
+    {
+      "epoch": 210,
+      "tickNumber": 50689005,
+      "timestamp": "1777463628000",
+      "transactionHash": "wbnbeyoyayiksefueiqbrtkushneibjzeuypuiyhhhojlygugcotpavddayj",
+      "logType": 2,
+      "logId": "202835888",
+      "logDigest": "507d7fdcf246915f",
+      "categories": [],
+      "assetOwnershipChange": {
+        "source": "KCGDXLBIJRFWZAAPJASCSOFICYRAEJBXYCTPFAAXIDDWIRXJDBLCOETFGSGA",
+        "destination": "LMZGHNHLWNVZIGCMMPFDPZKZJEDADUCLIMLCWFCMJAXRNCVYFTSFJVRDTYZI",
+        "assetIssuer": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB",
+        "assetName": "QUTIL",
+        "numberOfShares": "1"
+      }
+    },
+    {
+      "epoch": 210,
+      "tickNumber": 50689005,
+      "timestamp": "1777463628000",
+      "transactionHash": "wbnbeyoyayiksefueiqbrtkushneibjzeuypuiyhhhojlygugcotpavddayj",
+      "logType": 3,
+      "logId": "202835889",
+      "logDigest": "507d7fdcf246915f",
+      "categories": [],
+      "assetPossessionChange": {
+        "source": "KCGDXLBIJRFWZAAPJASCSOFICYRAEJBXYCTPFAAXIDDWIRXJDBLCOETFGSGA",
+        "destination": "LMZGHNHLWNVZIGCMMPFDPZKZJEDADUCLIMLCWFCMJAXRNCVYFTSFJVRDTYZI",
+        "assetIssuer": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB",
+        "assetName": "QUTIL",
+        "numberOfShares": "1"
+      }
+    },
+    {
+      "epoch": 210,
+      "tickNumber": 50689005,
+      "timestamp": "1777463628000",
+      "transactionHash": "wbnbeyoyayiksefueiqbrtkushneibjzeuypuiyhhhojlygugcotpavddayj",
+      "logType": 6,
+      "logId": "202835890",
+      "logDigest": "f3b3e9c3aa9d99c3",
+      "categories": [],
+      "rawPayload": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRVVRJTAAAAMCe5gUAAAAAAQAAAAAAAAA=",
+      "smartContractMessage": {
+        "contractIndex": "1",
+        "contractMessageType": "0"
+      }
+    }
+  ],
+  "validForTick": 51013093
+}

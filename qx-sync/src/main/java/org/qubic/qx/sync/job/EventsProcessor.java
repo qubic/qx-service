@@ -24,7 +24,7 @@ public class EventsProcessor {
     public List<Trade> calculateTrades(TransactionWithMeta tx, QxAssetOrderData orderData) {
 
         List<Trade> trades = new ArrayList<>();
-        List<AssetChangeEvent> assetTransfers = getAssetTransfers(tx.getEvents());
+        List<AssetOwnershipChange> assetTransfers = getAssetTransfers(tx.getEvents());
         List<QxTradeMessageEvent> qxTrades = getTrades(tx.getEvents());
 
         log.info("Events for transaction [{}]: [{}] asset transfers, [{}] trades",
@@ -65,23 +65,19 @@ public class EventsProcessor {
         return events != null && events.stream().anyMatch(byTransactionEvent(EventType.ASSET_ISSUANCE));
     }
 
-    private String tryToInferMakerFromEvents(List<QxTradeMessageEvent> qxTrades, List<AssetChangeEvent> assetTransfers, boolean isAskOrder, int i) {
-        Optional<AssetChangeEvent> assetChangeEvent = getAssetChangeEventForTrade(qxTrades, assetTransfers, i);
-        return assetChangeEvent.map(e -> isAskOrder
-                        ? getIdentityFromPublicKey(e.getDestinationPublicKey())
-                        : getIdentityFromPublicKey(e.getSourcePublicKey()))
+    private String tryToInferMakerFromEvents(List<QxTradeMessageEvent> qxTrades, List<AssetOwnershipChange> assetTransfers, boolean isAskOrder, int i) {
+        Optional<AssetOwnershipChange> assetChangeEvent = getAssetChangeEventForTrade(qxTrades, assetTransfers, i);
+        return assetChangeEvent.map(assetTransfer -> isAskOrder
+                        ? assetTransfer.destination()
+                        : assetTransfer.source())
                 .orElse(null);
     }
 
-    private String getIdentityFromPublicKey(byte[] publicKey) {
-        return identityUtil.getIdentityFromPublicKey(publicKey);
-    }
-
-    private static Optional<AssetChangeEvent> getAssetChangeEventForTrade(List<QxTradeMessageEvent> qxTrades, List<AssetChangeEvent> assetTransfers, int i) {
+    private static Optional<AssetOwnershipChange> getAssetChangeEventForTrade(List<QxTradeMessageEvent> qxTrades, List<AssetOwnershipChange> assetTransfers, int i) {
 
         QxTradeMessageEvent qxTrade = qxTrades.get(i);
-        List<AssetChangeEvent> relevantAssetChanges = assetTransfers.stream()
-                .filter(tr -> tr.getNumberOfShares() == qxTrade.getNumberOfShares())
+        List<AssetOwnershipChange> relevantAssetChanges = assetTransfers.stream()
+                .filter(tr -> tr.numberOfShares() == qxTrade.getNumberOfShares())
                 .toList();
 
         if (relevantAssetChanges.size() == 1) { // easy
@@ -89,7 +85,7 @@ public class EventsProcessor {
             return Optional.of(relevantAssetChanges.getFirst());
 
         } else if (qxTrades.size() == assetTransfers.size() // one asset change per trade
-                && qxTrade.getNumberOfShares() == assetTransfers.get(i).getNumberOfShares()) {
+                && qxTrade.getNumberOfShares() == assetTransfers.get(i).numberOfShares()) {
 
             log.info("Taking trade #{} to find maker.", i);
             return Optional.of(assetTransfers.get(i)); // hope that order is deterministic
@@ -99,26 +95,41 @@ public class EventsProcessor {
             return Optional.empty();
 
         }
-
     }
-
-
 
     private static List<QxTradeMessageEvent> getTrades(List<TransactionEvent> relevantEvents) {
         return relevantEvents.stream()
                 .filter(byTransactionEvent(EventType.CONTRACT_INFORMATION_MESSAGE))
                 .filter(e -> { // filter trade messages
-                    ContractInformationEvent cie = ContractInformationEvent.fromBytes(Base64.getDecoder().decode(e.getEventData()));
-                    return cie.getType() == 0 && cie.getContractIndex() == Qx.CONTRACT_INDEX;
+                    if (e.getSmartContractMessage() != null) {
+                        return e.getSmartContractMessage().contractIndex() == Qx.CONTRACT_INDEX
+                                && e.getSmartContractMessage().contractMessageType() == 0;
+                    } else { // TODO remove old format
+                        ContractInformationEvent cie = ContractInformationEvent.fromBytes(Base64.getDecoder().decode(e.getEventData()));
+                        return cie.getType() == 0 && cie.getContractIndex() == Qx.CONTRACT_INDEX;
+                    }
                 })
                 .map(e -> QxTradeMessageEvent.fromBytes(Base64.getDecoder().decode(e.getEventData())))
                 .toList();
     }
 
-    private static List<AssetChangeEvent> getAssetTransfers(List<TransactionEvent> relevantEvents) {
+    private List<AssetOwnershipChange> getAssetTransfers(List<TransactionEvent> relevantEvents) {
         return Objects.requireNonNull(relevantEvents).stream()
                 .filter(byTransactionEvent(EventType.ASSET_OWNERSHIP_CHANGE))
-                .map(e -> AssetChangeEvent.fromBytes(Base64.getDecoder().decode(e.getEventData())))
+                .map(e -> {
+                    if (e.getAssetOwnershipChange() != null) {
+                        return e.getAssetOwnershipChange();
+                    } else { // TODO remove old format
+                        AssetChangeEvent ace = AssetChangeEvent.fromBytes(Base64.getDecoder().decode(e.getEventData()));
+                        return new AssetOwnershipChange(
+                                identityUtil.getIdentityFromPublicKey(ace.getSourcePublicKey()),
+                                identityUtil.getIdentityFromPublicKey(ace.getDestinationPublicKey()),
+                                identityUtil.getIdentityFromPublicKey(ace.getIssuerPublicKey()),
+                                ace.getName(),
+                                ace.getNumberOfShares()
+                        );
+                    }
+                })
                 .toList();
     }
 

@@ -5,14 +5,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.Qx;
 import org.qubic.qx.sync.adapter.exception.EmptyResultException;
-import org.qubic.qx.sync.adapter.il.domain.query.IlQueryApiLastProcessedTick;
-import org.qubic.qx.sync.adapter.il.domain.query.IlQueryApiTickData;
-import org.qubic.qx.sync.adapter.il.domain.query.IlQueryApiTickDataResponse;
-import org.qubic.qx.sync.adapter.il.domain.query.IlQueryApiTransaction;
+import org.qubic.qx.sync.adapter.il.domain.query.*;
 import org.qubic.qx.sync.adapter.il.mapping.IlQueryApiMapper;
-import org.qubic.qx.sync.domain.TickData;
-import org.qubic.qx.sync.domain.TickInfo;
-import org.qubic.qx.sync.domain.Transaction;
+import org.qubic.qx.sync.domain.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -110,6 +105,51 @@ public class IntegrationQueryApiService implements CoreApiService {
                   "filters": { "destination": "%s" },
                   "ranges": { "inputType": { "gt": "0" } }
                 }""".formatted(tickNumber, Qx.QX_PUBLIC_ID);
+    }
+
+    public Flux<TransactionEvent> getEventLogs(long tickNumber) {
+        return webClient.post()
+                .uri(QUERY_API_BASE_PATH + "/getEventLogs")
+                .bodyValue(getEventLogsQuery(tickNumber))
+                .retrieve()
+                .bodyToMono(IlQueryApiEventLogsResponse.class)
+                .flatMapIterable(IlQueryApiEventLogsResponse::eventLogs)
+                .mapNotNull(this::mapEventLog)
+                .doOnError(e -> logError(String.format("Error getting event logs for tick [%d]", tickNumber), e))
+                .retryWhen(retrySpec());
+    }
+
+    private TransactionEvent mapEventLog(IlQueryApiEventLog eventLog) {
+        EventHeader header = new EventHeader(eventLog.epoch(), eventLog.tickNumber(), eventLog.logId(), eventLog.logDigest());
+        var builder = TransactionEvent.builder()
+                .header(header)
+                .eventType(eventLog.logType())
+                .transactionHash(eventLog.transactionHash());
+        return switch (eventLog.logType()) {
+            case 2 -> {
+                IlQueryApiAssetChangeData data = eventLog.assetOwnershipChange();
+                yield builder.assetOwnershipChange(new AssetOwnershipChange(
+                        data.source(), data.destination(), data.assetIssuer(), data.assetName(),
+                        data.numberOfShares())).build();
+            }
+            case 6 -> {
+                IlQueryApiSmartContractMessage msg = eventLog.smartContractMessage();
+                yield builder.eventData(eventLog.rawPayload())
+                        .smartContractMessage(new SmartContractEvent(msg.contractIndex(), msg.contractMessageType()))
+                        .build();
+            }
+            default -> {
+                log.warn("Unknown logType [{}] in event log [{}]", eventLog.logType(), eventLog.logId());
+                yield null;
+            }
+        };
+    }
+
+    private static String getEventLogsQuery(long tickNumber) {
+        return """
+                { "filters": { "tickNumber": "%d", "logType": "2,3,6" },
+                  "pagination": { "offset": 0, "size": 1000 }
+                }""".formatted(tickNumber);
     }
 
     private static EmptyResultException emptyTickData(long tick) {

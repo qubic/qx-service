@@ -24,8 +24,8 @@ class EventsProcessorTest {
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 2, 3);
         Transaction transaction = new Transaction("hash", "source", "destination", 1, 42,6, 0, orderData);
         List<TransactionEvent> events = List.of(
-                new TransactionEvent(mock(), 2, 0, "0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv02EYTUnxm1rKM15TYeDdxsn6lv0WHZd47t7Tzvs+MeIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAqAAAAAAAAAE1MTQAAAAAAAAAAAAAAAA=="),
-                new TransactionEvent(mock(), 6, 0, "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAcLrCwAAAAABAAAAAAAAAA==")
+                TransactionEvent.builder().eventType(2).eventData("0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv02EYTUnxm1rKM15TYeDdxsn6lv0WHZd47t7Tzvs+MeIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAqAAAAAAAAAE1MTQAAAAAAAAAAAAAAAA==").build(),
+                TransactionEvent.builder().eventType(6).eventData("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAcLrCwAAAAABAAAAAAAAAA==").build()
         );
         when(identityUtil.getIdentityFromPublicKey(Base64.decode("0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv0="))).thenReturn("maker");
 
@@ -50,8 +50,8 @@ class EventsProcessorTest {
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 2, 3);
         Transaction transaction = new Transaction("hash", "buyer", "destination", 1, 2, 6, 0, orderData); // add bid
         List<TransactionEvent> events = List.of(
-                new TransactionEvent(mock(), 2, 0, "8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ=="),
-                new TransactionEvent(mock(), 6, 0, "AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==")
+                TransactionEvent.builder().eventType(2).eventData("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ==").build(),
+                TransactionEvent.builder().eventType(6).eventData("AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==").build()
         );
         when(identityUtil.getIdentityFromPublicKey(Base64.decode("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQ="))).thenReturn("seller");
         TransactionWithMeta transactionWithMeta = TransactionWithMeta.builder().transaction(transaction).events(events).time(Instant.EPOCH).build();
@@ -73,10 +73,10 @@ class EventsProcessorTest {
         Transaction transaction = new Transaction("hash", "seller", "destination", 1, 2, 5, 0, orderData); // add bid
 
         List<TransactionEvent> events = List.of(
-                new TransactionEvent(mock(), 0, 0, "JMrv6y7p07Jw6kBog1fCGOmCDhzDtt8SR1IR42qQQ0EBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACEzAwAAAAAA"),
-                new TransactionEvent(mock(), 0, 0, "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADymrKZ7qm/15hUDu1de8gP1X9FfDK/NKJ3FLVwj+bcRAgvAwAAAAAA"),
-                new TransactionEvent(mock(), 2, 0, "8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ=="),
-                new TransactionEvent(mock(), 6, 0, "AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==")
+                TransactionEvent.builder().eventType(0).eventData("JMrv6y7p07Jw6kBog1fCGOmCDhzDtt8SR1IR42qQQ0EBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACEzAwAAAAAA").build(),
+                TransactionEvent.builder().eventType(0).eventData("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADymrKZ7qm/15hUDu1de8gP1X9FfDK/NKJ3FLVwj+bcRAgvAwAAAAAA").build(),
+                TransactionEvent.builder().eventType(2).eventData("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ==").build(),
+                TransactionEvent.builder().eventType(6).eventData("AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==").build()
         );
         when(identityUtil.getIdentityFromPublicKey(Base64.decode("JMrv6y7p07Jw6kBog1fCGOmCDhzDtt8SR1IR42qQQ0E="))).thenReturn("buyer");
         TransactionWithMeta transactionWithMeta = TransactionWithMeta.builder().transaction(transaction).events(events).time(Instant.EPOCH).build();
@@ -93,7 +93,7 @@ class EventsProcessorTest {
     @Test
     void isAssetIssued_givenAssetIssuanceEvent_thenTrue() {
         List<TransactionEvent> events = List.of(
-                new TransactionEvent(mock(), EventType.ASSET_ISSUANCE.getCode(), 123, "foo")
+                TransactionEvent.builder().eventType(EventType.ASSET_ISSUANCE.getCode()).eventSize(123).eventData("foo").build()
         );
         boolean issued = processor.isAssetIssued(events);
         assertThat(issued).isTrue();
@@ -102,7 +102,7 @@ class EventsProcessorTest {
     @Test
     void isAssetIssued_givenOtherEvent_thenFalse() {
         List<TransactionEvent> events = List.of(
-                new TransactionEvent(mock(), EventType.ASSET_OWNERSHIP_CHANGE.getCode(), 123, "foo")
+                TransactionEvent.builder().eventType(EventType.ASSET_OWNERSHIP_CHANGE.getCode()).eventSize(123).eventData("foo").build()
         );
         boolean issued = processor.isAssetIssued(events);
         assertThat(issued).isFalse();
@@ -117,7 +117,7 @@ class EventsProcessorTest {
     @Test
     void isAssetTransferred_givenOwnershipChange_thenTrue() {
         List<TransactionEvent> events = List.of(
-                new TransactionEvent(mock(), EventType.ASSET_OWNERSHIP_CHANGE.getCode(), 123, "foo")
+                TransactionEvent.builder().eventType(EventType.ASSET_OWNERSHIP_CHANGE.getCode()).eventSize(123).eventData("foo").build()
         );
         boolean issued = processor.isAssetTransferred(events);
         assertThat(issued).isTrue();
@@ -126,7 +126,7 @@ class EventsProcessorTest {
     @Test
     void isAssetTransferred_givenOtherEvent_thenFalse() {
         List<TransactionEvent> events = List.of(
-                new TransactionEvent(mock(), EventType.QU_TRANSFER.getCode(), 123, "foo")
+                TransactionEvent.builder().eventType(EventType.QU_TRANSFER.getCode()).eventSize(123).eventData("foo").build()
         );
         boolean issued = processor.isAssetTransferred(events);
         assertThat(issued).isFalse();

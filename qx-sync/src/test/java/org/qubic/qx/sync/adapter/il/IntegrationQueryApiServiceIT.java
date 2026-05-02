@@ -3,9 +3,7 @@ package org.qubic.qx.sync.adapter.il;
 import io.micrometer.core.instrument.util.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.adapter.CoreApiService;
-import org.qubic.qx.sync.domain.QxAssetOrderData;
-import org.qubic.qx.sync.domain.TickData;
-import org.qubic.qx.sync.domain.Transaction;
+import org.qubic.qx.sync.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -128,6 +126,46 @@ class IntegrationQueryApiServiceIT extends AbstractIntegrationApiTest {
                 .verifyComplete();
 
         assertRequest("/query/v1/getTransactionsForTick");
+    }
+
+    @Test
+    void getEventLogs() {
+        String body = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
+                "/testdata/il/query/get-event-logs-response.json")), StandardCharsets.UTF_8);
+        prepareResponse(response -> response
+                .setResponseCode(HttpStatus.OK.value())
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setBody(body));
+
+        String txHash = "wbnbeyoyayiksefueiqbrtkushneibjzeuypuiyhhhojlygugcotpavddayj";
+        EventHeader headerOwnership = new EventHeader(210, 50689005L, "202835888", "507d7fdcf246915f");
+        EventHeader headerSmartContract = new EventHeader(210, 50689005L, "202835890", "f3b3e9c3aa9d99c3");
+
+        StepVerifier.create(((IntegrationQueryApiService) apiService).getEventLogs(50689005L))
+                .assertNext(e -> {
+                    assertThat(e.getEventType()).isEqualTo(2);
+                    assertThat(e.getTransactionHash()).isEqualTo(txHash);
+                    assertThat(e.getHeader()).isEqualTo(headerOwnership);
+                    AssetOwnershipChange ownership = e.getAssetOwnershipChange();
+                    assertThat(ownership).isNotNull();
+                    assertThat(ownership.source()).isEqualTo("KCGDXLBIJRFWZAAPJASCSOFICYRAEJBXYCTPFAAXIDDWIRXJDBLCOETFGSGA");
+                    assertThat(ownership.destination()).isEqualTo("LMZGHNHLWNVZIGCMMPFDPZKZJEDADUCLIMLCWFCMJAXRNCVYFTSFJVRDTYZI");
+                    assertThat(ownership.assetName()).isEqualTo("QUTIL");
+                    assertThat(ownership.numberOfShares()).isEqualTo(1);
+                })
+                .assertNext(e -> {
+                    assertThat(e.getEventType()).isEqualTo(6);
+                    assertThat(e.getTransactionHash()).isEqualTo(txHash);
+                    assertThat(e.getHeader()).isEqualTo(headerSmartContract);
+                    assertThat(e.getEventData()).isEqualTo("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRVVRJTAAAAMCe5gUAAAAAAQAAAAAAAAA=");
+                    SmartContractEvent sc = e.getSmartContractMessage();
+                    assertThat(sc).isNotNull();
+                    assertThat(sc.contractIndex()).isEqualTo(1);
+                    assertThat(sc.contractMessageType()).isEqualTo(0);
+                })
+                .verifyComplete();
+
+        assertRequest("/query/v1/getEventLogs");
     }
 
 }

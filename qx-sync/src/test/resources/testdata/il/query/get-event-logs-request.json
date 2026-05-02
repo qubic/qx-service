@@ -1,0 +1,10 @@
+{
+  "filters": {
+    "tickNumber": "50689005",
+    "logType": "2,6"
+  },
+  "pagination": {
+    "offset": 0,
+    "size": 1000
+  }
+}
