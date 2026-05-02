@@ -15,6 +15,7 @@ import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
 
 import java.time.Duration;
+import java.util.function.Function;
 
 @Slf4j
 public class IntegrationQueryApiService implements CoreApiService {
@@ -113,6 +114,7 @@ public class IntegrationQueryApiService implements CoreApiService {
                 .bodyValue(getEventLogsQuery(tickNumber))
                 .retrieve()
                 .bodyToMono(IlQueryApiEventLogsResponse.class)
+                .flatMap(validatePaginationInformation(tickNumber))
                 .flatMapIterable(IlQueryApiEventLogsResponse::eventLogs)
                 .map(this::mapEventLog)
                 .doOnError(e -> logError(String.format("Error getting event logs for tick [%d]", tickNumber), e))
@@ -170,5 +172,17 @@ public class IntegrationQueryApiService implements CoreApiService {
                 // here we warn only because we retry and log the error later if retries are exhausted
                 e -> log.warn("{}: {}", logMessage, ExceptionUtils.getMessage(e))
         );
+    }
+
+    private static Function<IlQueryApiEventLogsResponse, Mono<? extends IlQueryApiEventLogsResponse>> validatePaginationInformation(long tickNumber) {
+        return response -> {
+            IlQueryApiHits hits = response.hits();
+            if (hits.total() > hits.size()) {
+                return Mono.error(new IllegalStateException(
+                        String.format("Event log result for tick [%d] is truncated: total [%d] exceeds page size [%d]",
+                                tickNumber, hits.total(), hits.size())));
+            }
+            return Mono.just(response);
+        };
     }
 }

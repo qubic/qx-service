@@ -308,7 +308,7 @@ class IntegrationQueryApiServiceTest {
                 "rawPayload", null, new IlQueryApiSmartContractMessage(1, 0), null);
         IlQueryApiEventLog assetIssuanceLog = new IlQueryApiEventLog(210, tick, "0", "txHash", 1, "1004", "digest4", List.of(),
                 null, null, null, new IlQueryApiAssetIssuanceData("asset-issuer", "asset-name"));
-        return new IlQueryApiEventLogsResponse(List.of(ownershipLog, smartContractLog, assetIssuanceLog));
+        return new IlQueryApiEventLogsResponse(new IlQueryApiHits(3, 0, 1000), List.of(ownershipLog, smartContractLog, assetIssuanceLog));
     }
 
     @Test
@@ -316,7 +316,7 @@ class IntegrationQueryApiServiceTest {
         long tick = 50689005L;
         IlQueryApiEventLog unknownLog = new IlQueryApiEventLog(210, tick, "0", "txHash", 99, "1001", "digest", List.of(),
                 null, null, null, null);
-        IlQueryApiEventLogsResponse response = new IlQueryApiEventLogsResponse(List.of(unknownLog));
+        IlQueryApiEventLogsResponse response = new IlQueryApiEventLogsResponse(new IlQueryApiHits(1, 0, 1000), List.of(unknownLog));
 
         when(webClient.post()
                 .uri("/query/v1/getEventLogs")
@@ -328,6 +328,22 @@ class IntegrationQueryApiServiceTest {
         StepVerifier.create(service.getAssetEventLogs(tick))
                 // we throw an illegal argument exception, but the final error is because
                 // of the failed retries
+                .verifyErrorSatisfies(error -> assertThat(Exceptions.isRetryExhausted(error)).isTrue());
+    }
+
+    @Test
+    void getAssetEventLogs_whenTotalExceedsPageSize_shouldError() {
+        long tick = 50689005L;
+        IlQueryApiEventLogsResponse response = new IlQueryApiEventLogsResponse(new IlQueryApiHits(1001, 0, 1000), List.of());
+
+        when(webClient.post()
+                .uri("/query/v1/getEventLogs")
+                .bodyValue(any())
+                .retrieve()
+                .bodyToMono(IlQueryApiEventLogsResponse.class))
+                .thenReturn(Mono.just(response));
+
+        StepVerifier.create(service.getAssetEventLogs(tick))
                 .verifyErrorSatisfies(error -> assertThat(Exceptions.isRetryExhausted(error)).isTrue());
     }
 
