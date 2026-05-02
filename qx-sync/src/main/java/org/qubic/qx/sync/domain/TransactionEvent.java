@@ -1,4 +1,13 @@
 package org.qubic.qx.sync.domain;
 
-public record TransactionEvent(EventHeader header, int eventType, long eventSize, String eventData) {
+import lombok.Data;
+
+@Data
+public class TransactionEvent {
+
+    private final EventHeader header;
+    private final int eventType;
+    private final long eventSize;
+    private final String eventData;
+
 }

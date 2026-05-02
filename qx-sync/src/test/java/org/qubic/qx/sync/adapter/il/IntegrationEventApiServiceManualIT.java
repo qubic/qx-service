@@ -42,14 +42,14 @@ class IntegrationEventApiServiceManualIT {
 
         for (TransactionEvent transactionEvent : events) {
             log.trace(transactionEvent.toString());
-            String eventData = transactionEvent.eventData();
+            String eventData = transactionEvent.getEventData();
             log.debug("base64 event data: {}", eventData);
             byte[] byteEventData = Base64.decode(eventData);
 
-            if (transactionEvent.eventType() == EventType.ASSET_ISSUANCE.getCode()) {
+            if (transactionEvent.getEventType() == EventType.ASSET_ISSUANCE.getCode()) {
                 AssetIssuanceEvent event = AssetIssuanceEvent.fromBytes(byteEventData);
                 log.info(event.toString());
-            } else if (transactionEvent.eventType() == EventType.ASSET_OWNERSHIP_CHANGE.getCode()) {
+            } else if (transactionEvent.getEventType() == EventType.ASSET_OWNERSHIP_CHANGE.getCode()) {
                 AssetChangeEvent event = AssetChangeEvent.fromBytes(byteEventData);
                 log.info("Asset ownership change: [{}]/[{}] from [{}] to [{}]. Number of shares: [{}]",
                         StringUtils.abbreviate(identityUtil.getIdentityFromPublicKey(event.getIssuerPublicKey()), "",10),
@@ -58,7 +58,7 @@ class IntegrationEventApiServiceManualIT {
                         identityUtil.getIdentityFromPublicKey(event.getDestinationPublicKey()),
                         event.getNumberOfShares()
                 );
-            } else if (transactionEvent.eventType() == EventType.ASSET_POSSESSION_CHANGE.getCode()) {
+            } else if (transactionEvent.getEventType() == EventType.ASSET_POSSESSION_CHANGE.getCode()) {
                 AssetChangeEvent event = AssetChangeEvent.fromBytes(byteEventData);
                 log.info("Asset possession change: [{}]/[{}] from [{}] to [{}]. Number of shares: [{}]",
                         StringUtils.abbreviate(identityUtil.getIdentityFromPublicKey(event.getIssuerPublicKey()), "",10),
@@ -67,14 +67,14 @@ class IntegrationEventApiServiceManualIT {
                         identityUtil.getIdentityFromPublicKey(event.getDestinationPublicKey()),
                         event.getNumberOfShares()
                         );
-            } else if (transactionEvent.eventType() == EventType.QU_TRANSFER.getCode()) {
+            } else if (transactionEvent.getEventType() == EventType.QU_TRANSFER.getCode()) {
                 QuTransferEvent event = QuTransferEvent.fromBytes(byteEventData);
                 log.info("Qu transfer: from [{}] to [{}]: [{}]",
                         identityUtil.getIdentityFromPublicKey(event.getSourcePublicKey()),
                         identityUtil.getIdentityFromPublicKey(event.getDestinationPublicKey()),
                         event.getAmount()
                 );
-            } else if (transactionEvent.eventType() == EventType.CONTRACT_INFORMATION_MESSAGE.getCode()) {
+            } else if (transactionEvent.getEventType() == EventType.CONTRACT_INFORMATION_MESSAGE.getCode()) {
                 ContractInformationEvent cim = ContractInformationEvent.fromBytes(byteEventData);
                 if (cim.getContractIndex() == Qx.CONTRACT_INDEX) {
                     QxTradeMessageEvent event = QxTradeMessageEvent.fromBytes(byteEventData);
@@ -86,7 +86,7 @@ class IntegrationEventApiServiceManualIT {
                     log.warn("Unknown contract information message: {}", cim);
                 }
             } else {
-                log.warn("Unprocessed event of type [{}]", transactionEvent.eventType());
+                log.warn("Unprocessed event of type [{}]", transactionEvent.getEventType());
             }
         }
 

@@ -108,22 +108,22 @@ public class EventsProcessor {
         return relevantEvents.stream()
                 .filter(byTransactionEvent(EventType.CONTRACT_INFORMATION_MESSAGE))
                 .filter(e -> { // filter trade messages
-                    ContractInformationEvent cie = ContractInformationEvent.fromBytes(Base64.getDecoder().decode(e.eventData()));
+                    ContractInformationEvent cie = ContractInformationEvent.fromBytes(Base64.getDecoder().decode(e.getEventData()));
                     return cie.getType() == 0 && cie.getContractIndex() == Qx.CONTRACT_INDEX;
                 })
-                .map(e -> QxTradeMessageEvent.fromBytes(Base64.getDecoder().decode(e.eventData())))
+                .map(e -> QxTradeMessageEvent.fromBytes(Base64.getDecoder().decode(e.getEventData())))
                 .toList();
     }
 
     private static List<AssetChangeEvent> getAssetTransfers(List<TransactionEvent> relevantEvents) {
         return Objects.requireNonNull(relevantEvents).stream()
                 .filter(byTransactionEvent(EventType.ASSET_OWNERSHIP_CHANGE))
-                .map(e -> AssetChangeEvent.fromBytes(Base64.getDecoder().decode(e.eventData())))
+                .map(e -> AssetChangeEvent.fromBytes(Base64.getDecoder().decode(e.getEventData())))
                 .toList();
     }
 
     private static Predicate<TransactionEvent> byTransactionEvent(EventType quTransfer) {
-        return e -> e.eventType() == quTransfer.getCode();
+        return e -> e.getEventType() == quTransfer.getCode();
     }
 
     private static Qx.OrderType getOrderType(int inputType) {

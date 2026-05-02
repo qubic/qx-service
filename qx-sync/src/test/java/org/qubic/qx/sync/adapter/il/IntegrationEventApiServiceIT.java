@@ -83,10 +83,10 @@ class IntegrationEventApiServiceIT extends AbstractIntegrationApiTest {
     }
 
     private static void assertTransactionEvent(TransactionEvent transactionEvent, String data, String eventId, String eventDigest) {
-        assertThat(transactionEvent.eventType()).isEqualTo(0);
-        assertThat(transactionEvent.eventSize()).isEqualTo(72);
-        assertThat(transactionEvent.eventData()).isEqualTo(data);
-        EventHeader header = transactionEvent.header();
+        assertThat(transactionEvent.getEventType()).isEqualTo(0);
+        assertThat(transactionEvent.getEventSize()).isEqualTo(72);
+        assertThat(transactionEvent.getEventData()).isEqualTo(data);
+        EventHeader header = transactionEvent.getHeader();
         assertThat(header.epoch()).isEqualTo(129);
         assertThat(header.tick()).isEqualTo(TICK);
         assertThat(header.eventId()).isEqualTo(eventId);
