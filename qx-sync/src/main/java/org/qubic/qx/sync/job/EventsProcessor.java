@@ -1,7 +1,6 @@
 package org.qubic.qx.sync.job;
 
 import at.qubic.api.domain.event.EventType;
-import at.qubic.api.domain.event.response.QxTradeMessageEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.sync.adapter.Qx;
 import org.qubic.qx.sync.domain.*;
@@ -16,7 +15,7 @@ public class EventsProcessor {
 
         List<Trade> trades = new ArrayList<>();
         List<AssetOwnershipChange> assetTransfers = getAssetTransfers(tx.getEvents());
-        List<QxTradeMessageEvent> qxTrades = getTrades(tx.getEvents());
+        List<QxTrade> qxTrades = getTrades(tx.getEvents());
 
         log.info("Events for transaction [{}]: [{}] asset transfers, [{}] trades",
                 tx.transactionHash(),assetTransfers.size(), qxTrades.size());
@@ -26,7 +25,7 @@ public class EventsProcessor {
 
         for (int i = 0; i < qxTrades.size(); i++) {
 
-            QxTradeMessageEvent qxTrade = qxTrades.get(i);
+            QxTrade qxTrade = qxTrades.get(i);
             log.info("Processing trade event: {}", qxTrade);
 
             String maker = tryToInferMakerFromEvents(qxTrades, assetTransfers, isAskOrder(getOrderType(tx.inputType())), i);
@@ -56,7 +55,7 @@ public class EventsProcessor {
         return events != null && events.stream().anyMatch(byTransactionEvent(EventType.ASSET_ISSUANCE));
     }
 
-    private String tryToInferMakerFromEvents(List<QxTradeMessageEvent> qxTrades, List<AssetOwnershipChange> assetTransfers, boolean isAskOrder, int i) {
+    private String tryToInferMakerFromEvents(List<QxTrade> qxTrades, List<AssetOwnershipChange> assetTransfers, boolean isAskOrder, int i) {
         Optional<AssetOwnershipChange> assetChangeEvent = getAssetChangeEventForTrade(qxTrades, assetTransfers, i);
         return assetChangeEvent.map(assetTransfer -> isAskOrder
                         ? assetTransfer.destination()
@@ -64,9 +63,9 @@ public class EventsProcessor {
                 .orElse(null);
     }
 
-    private static Optional<AssetOwnershipChange> getAssetChangeEventForTrade(List<QxTradeMessageEvent> qxTrades, List<AssetOwnershipChange> assetTransfers, int i) {
+    private static Optional<AssetOwnershipChange> getAssetChangeEventForTrade(List<QxTrade> qxTrades, List<AssetOwnershipChange> assetTransfers, int i) {
 
-        QxTradeMessageEvent qxTrade = qxTrades.get(i);
+        QxTrade qxTrade = qxTrades.get(i);
         List<AssetOwnershipChange> relevantAssetChanges = assetTransfers.stream()
                 .filter(tr -> tr.numberOfShares() == qxTrade.getNumberOfShares())
                 .toList();
@@ -88,13 +87,13 @@ public class EventsProcessor {
         }
     }
 
-    private static List<QxTradeMessageEvent> getTrades(List<TransactionEvent> relevantEvents) {
+    private static List<QxTrade> getTrades(List<TransactionEvent> relevantEvents) {
         return relevantEvents.stream()
                 .filter(byTransactionEvent(EventType.CONTRACT_INFORMATION_MESSAGE))
                 .filter(e -> e.getSmartContractMessage().contractIndex() == Qx.CONTRACT_INDEX
                         && e.getSmartContractMessage().contractMessageType() == 0
                 )
-                .map(e -> QxTradeMessageEvent.fromBytes(Base64.getDecoder().decode(e.getRawPayload())))
+                .map(e -> QxTrade.fromBytes(Base64.getDecoder().decode(e.getRawPayload())))
                 .toList();
     }
 

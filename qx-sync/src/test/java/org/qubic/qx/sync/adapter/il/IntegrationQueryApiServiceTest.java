@@ -1,6 +1,7 @@
 package org.qubic.qx.sync.adapter.il;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.qubic.qx.sync.adapter.Qx;
 import org.qubic.qx.sync.adapter.il.domain.query.*;
 import org.qubic.qx.sync.adapter.il.mapping.IlQueryApiMapper;
@@ -298,6 +299,26 @@ class IntegrationQueryApiServiceTest {
                     assertThat(e.getAssetIssuance().assetIssuer()).isEqualTo("asset-issuer");
                 })
                 .verifyComplete();
+    }
+
+    @Test
+    void getAssetEventLogs_shouldQueryLogTypes1And2And6WithSize1000() {
+        long tick = 50689005L;
+        IlQueryApiEventLogsResponse response = getIlQueryApiEventLogsResponse(tick);
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
+
+        when(webClient.post()
+                .uri("/query/v1/getEventLogs")
+                .bodyValue(bodyCaptor.capture())
+                .retrieve()
+                .bodyToMono(IlQueryApiEventLogsResponse.class))
+                .thenReturn(Mono.just(response));
+
+        service.getAssetEventLogs(tick).blockLast();
+
+        String body = bodyCaptor.getValue();
+        assertThat(body).contains("\"1,2,6\"");
+        assertThat(body).contains("\"size\": 1000");
     }
 
     private static IlQueryApiEventLogsResponse getIlQueryApiEventLogsResponse(long tick) {

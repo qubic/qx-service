@@ -24,7 +24,7 @@ class EventsProcessorTest {
                         .rawPayload("0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv02EYTUnxm1rKM15TYeDdxsn6lv0WHZd47t7Tzvs+MeIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAqAAAAAAAAAE1MTQAAAAAAAAAAAAAAAA==").build(),
                 TransactionEvent.builder().logType(6)
                         .smartContractMessage(new SmartContractEvent(1, 0))
-                        .rawPayload("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAcLrCwAAAAABAAAAAAAAAA==").build()
+                        .rawPayload("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABNTE0AAAAAAAHC6wsAAAAAAQAAAAAAAAA=").build()
         );
 
         TransactionWithMeta transactionWithMeta = TransactionWithMeta.builder().transaction(transaction).events(events).time(Instant.EPOCH).build();
@@ -53,7 +53,7 @@ class EventsProcessorTest {
                         .rawPayload("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ==").build(),
                 TransactionEvent.builder().logType(6)
                         .smartContractMessage(new SmartContractEvent(1, 0))
-                        .rawPayload("AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==").build()
+                        .rawPayload("CDC7Y799XhZKyMvThoBjD/dnCh6/OfchC0C83KJT0F9DRkIAAAAAAAMAAAAAAAAACxEBAAAAAAA=").build()
         );
         TransactionWithMeta transactionWithMeta = TransactionWithMeta.builder().transaction(transaction).events(events).time(Instant.EPOCH).build();
 
@@ -69,7 +69,6 @@ class EventsProcessorTest {
 
     @Test
     void calculateTrades_givenAsk_thenBuyerIsMaker() {
-
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 3, 69899); // price and shares are used from qx trade event not from here
         Transaction transaction = new Transaction("hash", "seller", "destination", 1, 2, 5, 0, orderData); // add bid
 
@@ -82,7 +81,7 @@ class EventsProcessorTest {
                         .rawPayload("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ==").build(),
                 TransactionEvent.builder().logType(6)
                         .smartContractMessage(new SmartContractEvent(1, 0))
-                        .rawPayload("AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==").build()
+                        .rawPayload("CDC7Y799XhZKyMvThoBjD/dnCh6/OfchC0C83KJT0F9DRkIAAAAAAAMAAAAAAAAACxEBAAAAAAA=").build()
         );
         TransactionWithMeta transactionWithMeta = TransactionWithMeta.builder().transaction(transaction).events(events).time(Instant.EPOCH).build();
 

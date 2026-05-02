@@ -68,7 +68,7 @@ class EventsProcessorIT {
                 TransactionEvent.builder()
                         .transactionHash(transactionHash)
                         .logType(6)
-                        .rawPayload("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAEbDIwAAAAABAAAAAAAAAA==")
+                        .rawPayload("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABNTE0AAAAAAABGwyMAAAAAAQAAAAAAAAA=")
                         .smartContractMessage(new SmartContractEvent(1, 0))
                         .build(),
 
@@ -81,7 +81,7 @@ class EventsProcessorIT {
                 TransactionEvent.builder()
                         .transactionHash(transactionHash)
                         .logType(6)
-                        .rawPayload("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAcLrCwAAAAABAAAAAAAAAA==")
+                        .rawPayload("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABNTE0AAAAAAAHC6wsAAAAAAQAAAAAAAAA=")
                         .smartContractMessage(new SmartContractEvent(1, 0))
                         .build()
         );
