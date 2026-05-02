@@ -129,7 +129,7 @@ class IntegrationQueryApiServiceIT extends AbstractIntegrationApiTest {
     }
 
     @Test
-    void getEventLogs() {
+    void getAssetEventLogs() {
         String body = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
                 "/testdata/il/query/get-event-logs-response.json")), StandardCharsets.UTF_8);
         prepareResponse(response -> response
@@ -141,7 +141,7 @@ class IntegrationQueryApiServiceIT extends AbstractIntegrationApiTest {
         EventHeader headerOwnership = new EventHeader(210, 50689005L, "202835888", "507d7fdcf246915f");
         EventHeader headerSmartContract = new EventHeader(210, 50689005L, "202835890", "f3b3e9c3aa9d99c3");
 
-        StepVerifier.create(((IntegrationQueryApiService) apiService).getEventLogs(50689005L))
+        StepVerifier.create(((IntegrationQueryApiService) apiService).getAssetEventLogs(50689005L))
                 .assertNext(e -> {
                     assertThat(e.getEventType()).isEqualTo(2);
                     assertThat(e.getTransactionHash()).isEqualTo(txHash);

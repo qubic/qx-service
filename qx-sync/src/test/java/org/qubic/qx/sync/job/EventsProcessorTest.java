@@ -1,8 +1,6 @@
 package org.qubic.qx.sync.job;
 
-import at.qubic.api.crypto.IdentityUtil;
 import at.qubic.api.domain.event.EventType;
-import org.bouncycastle.util.encoders.Base64;
 import org.junit.jupiter.api.Test;
 import org.qubic.qx.sync.domain.*;
 
@@ -10,24 +8,24 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SuppressWarnings("SpellCheckingInspection")
 class EventsProcessorTest {
 
-    private final IdentityUtil identityUtil = mock(IdentityUtil.class);
-    private final EventsProcessor processor = new EventsProcessor(identityUtil);
+    private final EventsProcessor processor = new EventsProcessor();
 
     @Test
     void calculateTrades() {
         QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 2, 3);
         Transaction transaction = new Transaction("hash", "source", "destination", 1, 42,6, 0, orderData);
         List<TransactionEvent> events = List.of(
-                TransactionEvent.builder().eventType(2).eventData("0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv02EYTUnxm1rKM15TYeDdxsn6lv0WHZd47t7Tzvs+MeIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAqAAAAAAAAAE1MTQAAAAAAAAAAAAAAAA==").build(),
-                TransactionEvent.builder().eventType(6).eventData("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAcLrCwAAAAABAAAAAAAAAA==").build()
+                TransactionEvent.builder().eventType(2)
+                        .assetOwnershipChange(new AssetOwnershipChange("maker", "taker-not-used", "issuer-not-used", "asset-not-used", 1))
+                        .eventData("0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv02EYTUnxm1rKM15TYeDdxsn6lv0WHZd47t7Tzvs+MeIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAqAAAAAAAAAE1MTQAAAAAAAAAAAAAAAA==").build(),
+                TransactionEvent.builder().eventType(6)
+                        .smartContractMessage(new SmartContractEvent(1, 0))
+                        .eventData("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1MTQAAAAAAAcLrCwAAAAABAAAAAAAAAA==").build()
         );
-        when(identityUtil.getIdentityFromPublicKey(Base64.decode("0VGbNisG/WoCJ31lNTqScnrtWbF+ZuwLYqLQJkopJv0="))).thenReturn("maker");
 
         TransactionWithMeta transactionWithMeta = TransactionWithMeta.builder().transaction(transaction).events(events).time(Instant.EPOCH).build();
         List<Trade> trades = processor.calculateTrades(transactionWithMeta, orderData);
@@ -47,13 +45,16 @@ class EventsProcessorTest {
     @Test
     void calculateTrades_givenBid_thenSellerIsMaker() {
 
-        QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 2, 3);
+        QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 3, 69899); // price and number of shares is not relevant here but in qx trade event
         Transaction transaction = new Transaction("hash", "buyer", "destination", 1, 2, 6, 0, orderData); // add bid
         List<TransactionEvent> events = List.of(
-                TransactionEvent.builder().eventType(2).eventData("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ==").build(),
-                TransactionEvent.builder().eventType(6).eventData("AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==").build()
+                TransactionEvent.builder().eventType(2)
+                        .assetOwnershipChange(new AssetOwnershipChange("seller", "buyer-not-used", "issuer-not-used", "asset-not-used", 69899))
+                        .eventData("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ==").build(),
+                TransactionEvent.builder().eventType(6)
+                        .smartContractMessage(new SmartContractEvent(1, 0))
+                        .eventData("AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==").build()
         );
-        when(identityUtil.getIdentityFromPublicKey(Base64.decode("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQ="))).thenReturn("seller");
         TransactionWithMeta transactionWithMeta = TransactionWithMeta.builder().transaction(transaction).events(events).time(Instant.EPOCH).build();
 
         List<Trade> trades = processor.calculateTrades(transactionWithMeta, orderData);
@@ -69,16 +70,20 @@ class EventsProcessorTest {
     @Test
     void calculateTrades_givenAsk_thenBuyerIsMaker() {
 
-        QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 2, 3);
+        QxAssetOrderData orderData = new QxAssetOrderData("issuer", "asset", 3, 69899); // price and shares are used from qx trade event not from here
         Transaction transaction = new Transaction("hash", "seller", "destination", 1, 2, 5, 0, orderData); // add bid
 
         List<TransactionEvent> events = List.of(
+                // the type 0 events are irrelevant
                 TransactionEvent.builder().eventType(0).eventData("JMrv6y7p07Jw6kBog1fCGOmCDhzDtt8SR1IR42qQQ0EBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACEzAwAAAAAA").build(),
                 TransactionEvent.builder().eventType(0).eventData("AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADymrKZ7qm/15hUDu1de8gP1X9FfDK/NKJ3FLVwj+bcRAgvAwAAAAAA").build(),
-                TransactionEvent.builder().eventType(2).eventData("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ==").build(),
-                TransactionEvent.builder().eventType(6).eventData("AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==").build()
+                TransactionEvent.builder().eventType(2)
+                        .assetOwnershipChange(new AssetOwnershipChange("seller", "buyer", "issuer-not-used", "asset-not-used", 69899))
+                        .eventData("8pqyme6pv9eYVA7tXXvID9V/RXwyvzSidxS1cI/m3EQkyu/rLunTsnDqQGiDV8IY6YIOHMO23xJHUhHjapBDQQgwu2O/fV4WSsjL04aAYw/3Zwoevzn3IQtAvNyiU9BfCxEBAAAAAAAqAAAAAAAAAENGQgAAAAAAANAA0CMYFQ==").build(),
+                TransactionEvent.builder().eventType(6)
+                        .smartContractMessage(new SmartContractEvent(1, 0))
+                        .eventData("AQAAAAAAAAAIMLtjv31eFkrIy9OGgGMP92cKHr859yELQLzcolPQX0NGQgAAAAAAAwAAAAAAAAALEQEAAAAAAA==").build()
         );
-        when(identityUtil.getIdentityFromPublicKey(Base64.decode("JMrv6y7p07Jw6kBog1fCGOmCDhzDtt8SR1IR42qQQ0E="))).thenReturn("buyer");
         TransactionWithMeta transactionWithMeta = TransactionWithMeta.builder().transaction(transaction).events(events).time(Instant.EPOCH).build();
 
         List<Trade> trades = processor.calculateTrades(transactionWithMeta, orderData);

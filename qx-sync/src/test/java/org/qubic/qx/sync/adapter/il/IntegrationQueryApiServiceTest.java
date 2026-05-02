@@ -266,7 +266,7 @@ class IntegrationQueryApiServiceTest {
     }
 
     @Test
-    void getEventLogs_shouldMapAllEventTypes() {
+    void getEventLogs_shouldMapAllAssetEventTypes() {
         long tick = 50689005L;
         IlQueryApiEventLogsResponse response = getIlQueryApiEventLogsResponse(tick);
 
@@ -277,7 +277,7 @@ class IntegrationQueryApiServiceTest {
                 .bodyToMono(IlQueryApiEventLogsResponse.class))
                 .thenReturn(Mono.just(response));
 
-        StepVerifier.create(service.getEventLogs(tick))
+        StepVerifier.create(service.getAssetEventLogs(tick))
                 .assertNext(e -> {
                     assertThat(e.getEventType()).isEqualTo(2);
                     assertThat(e.getTransactionHash()).isEqualTo("txHash");
@@ -305,7 +305,7 @@ class IntegrationQueryApiServiceTest {
     }
 
     @Test
-    void getEventLogs_shouldSkipUnknownLogType() {
+    void getAssetEventLogs_shouldSkipUnknownLogType() {
         long tick = 50689005L;
         IlQueryApiEventLog unknownLog = new IlQueryApiEventLog(210, tick, "0", "txHash", 99, "1001", "digest", List.of(),
                 null, null, null, null);
@@ -320,7 +320,7 @@ class IntegrationQueryApiServiceTest {
                 .bodyToMono(IlQueryApiEventLogsResponse.class))
                 .thenReturn(Mono.just(response));
 
-        StepVerifier.create(service.getEventLogs(tick))
+        StepVerifier.create(service.getAssetEventLogs(tick))
                 .assertNext(e -> assertThat(e.getEventType()).isEqualTo(2))
                 .verifyComplete();
     }

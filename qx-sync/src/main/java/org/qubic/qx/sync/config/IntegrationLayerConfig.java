@@ -3,7 +3,6 @@ package org.qubic.qx.sync.config;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.qubic.qx.sync.adapter.CoreApiService;
-import org.qubic.qx.sync.adapter.il.IntegrationEventApiService;
 import org.qubic.qx.sync.adapter.il.IntegrationQueryApiService;
 import org.qubic.qx.sync.adapter.il.mapping.IlQueryApiMapper;
 import org.qubic.qx.sync.properties.IntegrationClientProperties;
@@ -43,20 +42,6 @@ public class IntegrationLayerConfig {
         URI uri = createUri(coreClientProperties());
         log.info("Integration layer core API url: {}", uri);
         return createClient(builder, httpClient, uri);
-    }
-
-    @Bean(name="eventClient")
-    WebClient eventApiWebClient(WebClient.Builder builder) {
-        HttpClient httpClient = createHttpClient();
-        URI uri = createUri(eventClientProperties());
-        log.info("Integration layer event API url: {}", uri);
-        return createClient(builder, httpClient, uri);
-    }
-
-    @Bean
-    IntegrationEventApiService integrationEventApiService(@Qualifier("eventClient") WebClient webClient) {
-        int retries = eventClientProperties().getRetries();
-        return new IntegrationEventApiService(webClient, retries);
     }
 
     @Bean

@@ -107,7 +107,7 @@ public class IntegrationQueryApiService implements CoreApiService {
                 }""".formatted(tickNumber, Qx.QX_PUBLIC_ID);
     }
 
-    public Flux<TransactionEvent> getEventLogs(long tickNumber) {
+    public Flux<TransactionEvent> getAssetEventLogs(long tickNumber) {
         return webClient.post()
                 .uri(QUERY_API_BASE_PATH + "/getEventLogs")
                 .bodyValue(getEventLogsQuery(tickNumber))

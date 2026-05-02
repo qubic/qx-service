@@ -2,7 +2,6 @@ package org.qubic.qx.sync.config;
 
 import at.qubic.api.crypto.IdentityUtil;
 import org.qubic.qx.sync.adapter.CoreApiService;
-import org.qubic.qx.sync.adapter.EventApiService;
 import org.qubic.qx.sync.adapter.ExtraDataMapper;
 import org.qubic.qx.sync.job.EventsProcessor;
 import org.qubic.qx.sync.job.TickSyncJob;
@@ -31,8 +30,8 @@ public class QxServiceConfiguration {
     }
 
     @Bean
-    EventsProcessor eventsProcessor(IdentityUtil identityUtil) {
-        return new EventsProcessor(identityUtil);
+    EventsProcessor eventsProcessor() {
+        return new EventsProcessor();
     }
 
     @Bean
@@ -43,9 +42,8 @@ public class QxServiceConfiguration {
     }
 
     @Bean
-    TickSyncJob tickSyncJob(TickRepository tickRepository, CoreApiService coreService,
-                            EventApiService eventApiService, TransactionProcessor transactionProcessor) {
-        return new TickSyncJob(tickRepository, coreService, eventApiService, transactionProcessor);
+    TickSyncJob tickSyncJob(TickRepository tickRepository, CoreApiService coreService, TransactionProcessor transactionProcessor) {
+        return new TickSyncJob(tickRepository, coreService, transactionProcessor);
     }
 
     @Bean

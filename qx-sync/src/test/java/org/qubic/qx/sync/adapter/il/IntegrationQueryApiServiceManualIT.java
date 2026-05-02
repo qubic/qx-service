@@ -7,6 +7,7 @@ import org.qubic.qx.sync.adapter.CoreApiService;
 import org.qubic.qx.sync.adapter.il.domain.query.IlQueryApiTransaction;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
+import org.qubic.qx.sync.domain.TransactionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -45,6 +46,18 @@ class IntegrationQueryApiServiceManualIT {
         List<IlQueryApiTransaction> transactions = apiService.getTickTransactions(tick).collectList().block();
         assertThat(transactions).isNotNull();
         log.info("Transactions: {}", transactions);
+    }
+
+    @Test
+    void getAssetEventLogs() {
+        Long tick = apiService.getTickInfo().map(TickInfo::logTick).block();
+        assertThat(tick).isNotNull();
+        assertThat(tick).isPositive();
+
+        // only returns data for ticks with asset transfers
+        List<TransactionEvent> eventLogs = apiService.getAssetEventLogs(51010163).collectList().block();
+        assertThat(eventLogs).isNotNull();
+        log.info("Event logs: {}", eventLogs);
     }
 
 }

@@ -2,8 +2,6 @@ package org.qubic.qx.sync.job;
 
 import at.qubic.api.crypto.IdentityUtil;
 import at.qubic.api.domain.event.EventType;
-import at.qubic.api.domain.event.response.AssetChangeEvent;
-import at.qubic.api.domain.event.response.ContractInformationEvent;
 import at.qubic.api.domain.event.response.QxTradeMessageEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.qx.sync.adapter.Qx;
@@ -14,12 +12,6 @@ import java.util.function.Predicate;
 
 @Slf4j
 public class EventsProcessor {
-
-    private final IdentityUtil identityUtil;
-
-    public EventsProcessor(IdentityUtil identityUtil) {
-        this.identityUtil = identityUtil;
-    }
 
     public List<Trade> calculateTrades(TransactionWithMeta tx, QxAssetOrderData orderData) {
 
@@ -100,15 +92,9 @@ public class EventsProcessor {
     private static List<QxTradeMessageEvent> getTrades(List<TransactionEvent> relevantEvents) {
         return relevantEvents.stream()
                 .filter(byTransactionEvent(EventType.CONTRACT_INFORMATION_MESSAGE))
-                .filter(e -> { // filter trade messages
-                    if (e.getSmartContractMessage() != null) {
-                        return e.getSmartContractMessage().contractIndex() == Qx.CONTRACT_INDEX
-                                && e.getSmartContractMessage().contractMessageType() == 0;
-                    } else { // TODO remove old format
-                        ContractInformationEvent cie = ContractInformationEvent.fromBytes(Base64.getDecoder().decode(e.getEventData()));
-                        return cie.getType() == 0 && cie.getContractIndex() == Qx.CONTRACT_INDEX;
-                    }
-                })
+                .filter(e -> e.getSmartContractMessage().contractIndex() == Qx.CONTRACT_INDEX
+                        && e.getSmartContractMessage().contractMessageType() == 0
+                )
                 .map(e -> QxTradeMessageEvent.fromBytes(Base64.getDecoder().decode(e.getEventData())))
                 .toList();
     }
@@ -116,25 +102,12 @@ public class EventsProcessor {
     private List<AssetOwnershipChange> getAssetTransfers(List<TransactionEvent> relevantEvents) {
         return Objects.requireNonNull(relevantEvents).stream()
                 .filter(byTransactionEvent(EventType.ASSET_OWNERSHIP_CHANGE))
-                .map(e -> {
-                    if (e.getAssetOwnershipChange() != null) {
-                        return e.getAssetOwnershipChange();
-                    } else { // TODO remove old format
-                        AssetChangeEvent ace = AssetChangeEvent.fromBytes(Base64.getDecoder().decode(e.getEventData()));
-                        return new AssetOwnershipChange(
-                                identityUtil.getIdentityFromPublicKey(ace.getSourcePublicKey()),
-                                identityUtil.getIdentityFromPublicKey(ace.getDestinationPublicKey()),
-                                identityUtil.getIdentityFromPublicKey(ace.getIssuerPublicKey()),
-                                ace.getName(),
-                                ace.getNumberOfShares()
-                        );
-                    }
-                })
+                .map(TransactionEvent::getAssetOwnershipChange)
                 .toList();
     }
 
-    private static Predicate<TransactionEvent> byTransactionEvent(EventType quTransfer) {
-        return e -> e.getEventType() == quTransfer.getCode();
+    private static Predicate<TransactionEvent> byTransactionEvent(EventType eventType) {
+        return e -> e.getEventType() == eventType.getCode();
     }
 
     private static Qx.OrderType getOrderType(int inputType) {

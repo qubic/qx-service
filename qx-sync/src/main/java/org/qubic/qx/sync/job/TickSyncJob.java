@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Strings;
 import org.qubic.qx.sync.adapter.CoreApiService;
-import org.qubic.qx.sync.adapter.EventApiService;
 import org.qubic.qx.sync.adapter.Qx;
 import org.qubic.qx.sync.adapter.exception.EmptyResultException;
 import org.qubic.qx.sync.domain.*;
@@ -32,7 +31,6 @@ public class TickSyncJob {
 
     private final TickRepository tickRepository;
     private final CoreApiService coreService;
-    private final EventApiService eventService;
     private final TransactionProcessor transactionProcessor;
 
     // export tick numbers as metric
@@ -43,10 +41,9 @@ public class TickSyncJob {
     private final AtomicLong latestLiveTick = Objects.requireNonNull(
             Metrics.gauge(METRIC_LATEST_TICK, Tags.of(TAG_KEY_SOURCE, TAG_VALUE_LIVE), new AtomicLong(0)));
 
-    public TickSyncJob(TickRepository tickRepository, CoreApiService coreService, EventApiService eventService, TransactionProcessor transactionProcessor) {
+    public TickSyncJob(TickRepository tickRepository, CoreApiService coreService, TransactionProcessor transactionProcessor) {
         this.tickRepository = tickRepository;
         this.coreService = coreService;
-        this.eventService = eventService;
         this.transactionProcessor = transactionProcessor;
     }
 
@@ -68,15 +65,15 @@ public class TickSyncJob {
                 .then(Mono.just(syncedTick));
     }
 
-    private Mono<Tuple2<TickInfo, EpochAndTick>> getLatestAvailableTick() {
-        return Mono.zip(coreService.getTickInfo(), eventService.getLastProcessedTick())
-                .doOnNext(tuple -> {
-                    latestLiveTick.set(tuple.getT1().tick()); // FIXME we don't fetch the live tick anymore
-                    latestEventTick.set(tuple.getT2().tickNumber());
+    private Mono<TickInfo> getLatestAvailableTick() {
+        return coreService.getTickInfo()
+                .doOnNext(tickInfo -> {
+                    latestLiveTick.set(tickInfo.tick());
+                    latestEventTick.set(tickInfo.logTick());
                     // log if there is a 'larger' gap between current tick and event service
-                    if (Math.abs(tuple.getT1().tick() - tuple.getT2().tickNumber()) > 10) {
+                    if (Math.abs(tickInfo.tick() - tickInfo.logTick()) > 10) {
                         log.info("Current tick: [{}]. Events are available until tick [{}].",
-                                tuple.getT1().tick(), tuple.getT2().tickNumber());
+                                tickInfo.tick(), tickInfo.logTick());
                     }
                 });
     }
@@ -103,15 +100,15 @@ public class TickSyncJob {
         }
     }
 
-    private Mono<Tuple2<Long, Long>> calculateStartAndEndTick(Tuple2<TickInfo, EpochAndTick> tuple) {
+    private Mono<Tuple2<Long, Long>> calculateStartAndEndTick(TickInfo tuple) {
         return tickRepository.getLatestSyncedTick()
                 .doOnNext(latestSyncedTick::set)
                 // take latest stored tick + 1 as next tick or initial tick if no old ticks are available
-                .map(latestStoredTick -> latestStoredTick < tuple.getT1().initialTick()
-                        ? tuple.getT1().initialTick()
+                .map(latestStoredTick -> latestStoredTick < tuple.initialTick()
+                        ? tuple.initialTick()
                         : latestStoredTick + 1)
-                // take the lowest common tick as end tick from normal nodes and event nodes
-                .map(startTick -> Tuples.of(startTick, Math.min(tuple.getT1().tick(), tuple.getT2().tickNumber())));
+                // take the lowest common tick as end tick (tick or log tick number)
+                .map(startTick -> Tuples.of(startTick, Math.min(tuple.tick(), tuple.logTick())));
     }
 
     private Mono<Long> processTick(Long tickNumber) {
@@ -130,34 +127,27 @@ public class TickSyncJob {
     }
 
     private Mono<List<TransactionWithMeta>> queryTransactionsWithMetadata(long tickNumber) {
-        Mono<List<TransactionEvents>> tickEventsMono = eventService.getTickEvents(tickNumber); // never empty
-        Mono<TickData> tickDataMono = coreService.getTickData(tickNumber); // for time stamp // never empty
+        Mono<List<TransactionEvent>> eventLogsMono = coreService.getAssetEventLogs(tickNumber).collectList(); // empty list, if empty flux
+        Mono<TickData> tickDataMono = coreService.getTickData(tickNumber); // for time stamp, never empty
         Mono<List<Transaction>> qxTransactionsListMono = coreService.getQxTransactions(tickNumber)
                 .doOnNext(tx -> log.info("[{}] Received [{}] transaction.", tx.transactionHash(), Qx.OrderType.fromCode(tx.inputType())))
                 .collectList(); // empty list, if empty flux
-        return Mono.zip(tickDataMono, qxTransactionsListMono, tickEventsMono)
+        return Mono.zip(tickDataMono, qxTransactionsListMono, eventLogsMono)
                 .switchIfEmpty(emptyResult(String.format("Error getting tick data, transactions and/or events for tick [%s].", tickNumber)))
                 .map(tuple -> mapToTransactionsWithMetadata(tuple.getT1(), tuple.getT2(), tuple.getT3()));
     }
 
-    private static List<TransactionWithMeta> mapToTransactionsWithMetadata(TickData tickData, List<Transaction> qxTransactions, List<TransactionEvents> events) {
+    private static List<TransactionWithMeta> mapToTransactionsWithMetadata(TickData tickData, List<Transaction> qxTransactions, List<TransactionEvent> eventLogs) {
         List<TransactionWithMeta> meta = new ArrayList<>();
         for (Transaction tx : qxTransactions) {
             meta.add(TransactionWithMeta.builder()
                     .transaction(tx)
                     .time(tickData.timestamp())
-                    .events(getEventsForTransaction(events, tx.transactionHash()))
+                    // filter events for this transaction
+                    .events(eventLogs.stream().filter(txe -> Strings.CS.equals(tx.transactionHash(), txe.getTransactionHash())).toList())
                     .build());
         }
         return meta;
-    }
-
-    private static List<TransactionEvent> getEventsForTransaction(List<TransactionEvents> events, String transactionHash) {
-        return events.stream()
-                .filter(txe -> Strings.CS.equals(transactionHash, txe.txId()))
-                .findAny() // there should only be one
-                .orElse(new TransactionEvents(transactionHash, List.of())) // empty
-                .events();
     }
 
     private Mono<?> processTransactions(Long tickNumber, List<TransactionWithMeta> txs) {
