@@ -31,7 +31,7 @@
         <testcontainers-redis.version>2.2.2</testcontainers-redis.version>
 
         <!-- vulnerablity overrides -->
-        <commons-lang3.version>[3.18.0,)</commons-lang3.version> <!-- 3.17.0 is vulnerable -->
+        <commons-lang3.version>3.20.0</commons-lang3.version> <!-- 3.17.0 is vulnerable -->
         <commons-compress.version>[1.28.0,)</commons-compress.version> <!-- 1.24 is vulnerable -->
 
     </properties>
