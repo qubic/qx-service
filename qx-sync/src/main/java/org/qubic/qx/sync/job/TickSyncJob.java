@@ -71,9 +71,9 @@ public class TickSyncJob {
                     latestLiveTick.set(tickInfo.tick());
                     latestEventTick.set(tickInfo.logTick());
                     // log if there is a 'larger' gap between current tick and event service
-                    if (Math.abs(tickInfo.tick() - tickInfo.logTick()) > 10) {
-                        log.info("Current tick: [{}]. Events are available until tick [{}].",
-                                tickInfo.tick(), tickInfo.logTick());
+                    long delta = Math.abs(tickInfo.tick() - tickInfo.logTick());
+                    if (delta > 10) {
+                        log.info("Current tick: [{}]. Log tick [{}]. Delta: [{}]", tickInfo.tick(), tickInfo.logTick(), delta);
                     }
                 });
     }
