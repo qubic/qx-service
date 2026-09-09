@@ -9,6 +9,7 @@ import org.qubic.qx.sync.adapter.il.domain.query.*;
 import org.qubic.qx.sync.adapter.il.mapping.IlQueryApiMapper;
 import org.qubic.qx.sync.domain.*;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -170,7 +171,13 @@ public class IntegrationQueryApiService implements CoreApiService {
     private void logError(String logMessage, Throwable throwable) {
         ExceptionUtils.forEach(throwable,
                 // here we warn only because we retry and log the error later if retries are exhausted
-                e -> log.warn("{}: {}", logMessage, ExceptionUtils.getMessage(e))
+                e -> {
+                    if (e instanceof WebClientResponseException wcre) {
+                        log.warn("{}: {} | Response Body: {}", logMessage, ExceptionUtils.getMessage(e), wcre.getResponseBodyAsString());
+                    } else {
+                        log.warn("{}: {}", logMessage, ExceptionUtils.getMessage(e));
+                    }
+                }
         );
     }
 

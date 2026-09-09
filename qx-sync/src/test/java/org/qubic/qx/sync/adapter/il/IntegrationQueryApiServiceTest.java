@@ -8,7 +8,10 @@ import org.qubic.qx.sync.adapter.il.mapping.IlQueryApiMapper;
 import org.qubic.qx.sync.domain.TickData;
 import org.qubic.qx.sync.domain.TickInfo;
 import org.qubic.qx.sync.domain.Transaction;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -365,6 +368,29 @@ class IntegrationQueryApiServiceTest {
                 .thenReturn(Mono.just(response));
 
         StepVerifier.create(service.getAssetEventLogs(tick))
+                .verifyErrorSatisfies(error -> assertThat(Exceptions.isRetryExhausted(error)).isTrue());
+    }
+
+    @Test
+    void getTickData_whenWebClientResponseException_shouldLogAndRetry() {
+        long tickNumber = 44191622L;
+        byte[] responseBody = "{\"error\":\"Invalid tick\"}".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        WebClientResponseException badRequestException = WebClientResponseException.create(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                HttpHeaders.EMPTY,
+                responseBody,
+                java.nio.charset.StandardCharsets.UTF_8
+        );
+
+        when(webClient.post()
+                .uri("/query/v1/getTickData")
+                .bodyValue(any())
+                .retrieve()
+                .bodyToMono(IlQueryApiTickDataResponse.class))
+                .thenReturn(Mono.error(badRequestException));
+
+        StepVerifier.create(service.getTickData(tickNumber))
                 .verifyErrorSatisfies(error -> assertThat(Exceptions.isRetryExhausted(error)).isTrue());
     }
 
